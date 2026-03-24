@@ -586,7 +586,7 @@ function VisitorPass({ name }) {
     <div style={{ width: "100%", maxWidth: 420, margin: "0 auto" }}>
       {/* Pass card */}
       <div style={{ position: "relative", background: BGCOLOR, border: `3px solid ${HAZARD_YELLOW}`, borderRadius: 8, overflow: "hidden", padding: "24px 22px" }}>
-        <ChevronBg color={Y} opacity={0.05} />
+        <ChevronBg color={HAZARD_YELLOW} opacity={0.05} />
         <div style={{ position: "relative", zIndex: 1 }}>
           {/* Header stripe */}
           <div style={{ background: HAZARD_YELLOW, margin: "-24px -22px 20px", padding: "10px 22px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
@@ -668,7 +668,7 @@ export default function SATOrientation() {
   if (screen === "welcome") return (
     <div style={{ minHeight: "100vh", background: BGCOLOR, display: "flex", flexDirection: "column", fontFamily: "'Source Serif 4', serif", position: "relative", overflow: "hidden" }}>
       <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Source+Serif+4:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet" />
-      <ChevronBg color={Y} opacity={0.035} />
+      <ChevronBg color={HAZARD_YELLOW} opacity={0.035} />
 
       {/* Top stripe */}
       <div style={{ background: HAZARD_YELLOW, padding: "12px 24px", display: "flex", alignItems: "center", justifyContent: "space-between", position: "relative", zIndex: 1 }}>
@@ -721,7 +721,7 @@ export default function SATOrientation() {
   if (screen === "complete") return (
     <div style={{ minHeight: "100vh", background: BGCOLOR, fontFamily: "'Source Serif 4', serif", position: "relative", overflow: "hidden" }}>
       <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Source+Serif+4:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet" />
-      <ChevronBg color={Y} opacity={0.03} />
+      <ChevronBg color={HAZARD_YELLOW} opacity={0.03} />
 
       <div style={{ background: HAZARD_YELLOW, padding: "12px 24px", position: "relative", zIndex: 1 }}>
         <span style={{ fontFamily: "'Oswald', sans-serif", fontWeight: 700, fontSize: 13, letterSpacing: 3, color: BGCOLOR }}>DINGFELDER INDUSTRIAL CAMPUS — ORIENTATION COMPLETE</span>

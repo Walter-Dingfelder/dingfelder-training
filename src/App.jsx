@@ -392,25 +392,27 @@ function AIRONSplash({ onDone }) {
           <div style={{
             position: 'fixed',
             left: '50%',
-            bottom: 'max(20px, env(safe-area-inset-bottom, 0px) + 12px)',
+            bottom: 'max(16px, env(safe-area-inset-bottom, 0px) + 10px)',
             transform: 'translateX(-50%)',
-            width: 'min(92vw, 560px)',
-            padding: '10px 14px 12px',
-            borderRadius: 16,
+            right: 'auto',
+            maxWidth: 420,
+            width: 'min(88vw, 420px)',
+            padding: '8px 12px 10px',
+            borderRadius: 14,
             background: 'linear-gradient(180deg, rgba(8,8,8,0.78), rgba(8,8,8,0.92))',
             border: '1px solid rgba(255,255,255,0.08)',
-            boxShadow: '0 16px 40px rgba(0,0,0,0.34)',
+            boxShadow: '0 12px 28px rgba(0,0,0,0.30)',
             backdropFilter: 'blur(4px)',
             animation: 'aironFadeUp 0.6s ease-out both',
           }}>
             <div style={{
               display: 'flex',
               alignItems: 'center',
-              gap: 10,
+              gap: 8,
             }}>
               <div style={{
-                width: 22,
-                height: 22,
+                width: 18,
+                height: 18,
                 borderRadius: '50%',
                 border: '2px solid rgba(255,255,255,0.18)',
                 borderTopColor: '#FF6B00',
@@ -422,15 +424,15 @@ function AIRONSplash({ onDone }) {
                 <div style={{
                   color: '#FFF',
                   fontFamily: "'IBM Plex Mono', monospace",
-                  fontSize: 10,
-                  letterSpacing: 1.6,
-                  marginBottom: 6,
+                  fontSize: 9,
+                  letterSpacing: 1.0,
+                  marginBottom: 5,
                   textTransform: 'uppercase',
                 }}>
                   {loadingMessages[messageIndex]}
                 </div>
                 <div style={{
-                  height: 4,
+                  height: 3,
                   overflow: 'hidden',
                   borderRadius: 999,
                   background: 'rgba(255,255,255,0.10)',
@@ -448,12 +450,12 @@ function AIRONSplash({ onDone }) {
             </div>
 
             <div style={{
-              marginTop: 8,
+              marginTop: 6,
               color: '#C8C8C8',
-              fontSize: 11,
-              lineHeight: 1.45,
+              fontSize: 10,
+              lineHeight: 1.35,
               fontFamily: "'IBM Plex Mono', monospace",
-              letterSpacing: 0.7,
+              letterSpacing: 0.55,
               textTransform: 'uppercase',
             }}>
               THE DINGFELDER ENTERPRISES TRIANGLE · YOU'RE GETTING VALUE AT ZERO COST · GOOD THINGS TAKE TIME
@@ -463,20 +465,20 @@ function AIRONSplash({ onDone }) {
               <button
                 onClick={onDone}
                 style={{
-                  marginTop: 12,
+                  marginTop: 10,
                   width: '100%',
                   appearance: 'none',
                   border: '1px solid rgba(255,255,255,0.18)',
                   background: 'linear-gradient(180deg, rgba(255,209,0,0.95), rgba(255,107,0,0.92))',
                   color: '#050505',
-                  padding: '10px 14px',
-                  borderRadius: 12,
+                  padding: '8px 12px',
+                  borderRadius: 10,
                   fontFamily: "'Barlow Condensed', sans-serif",
-                  fontSize: 20,
+                  fontSize: 18,
                   fontWeight: 800,
-                  letterSpacing: 1.2,
+                  letterSpacing: 1.0,
                   cursor: 'pointer',
-                  boxShadow: '0 12px 28px rgba(255,107,0,0.22)',
+                  boxShadow: '0 10px 22px rgba(255,107,0,0.18)',
                 }}
               >
                 CONTINUE
@@ -535,7 +537,7 @@ function AIRONLanding() {
             <div style={{
               color: '#FFD100',
               fontFamily: "'IBM Plex Mono', monospace",
-              fontSize: 11,
+              fontSize: 10,
               letterSpacing: 2,
               marginBottom: 4,
             }}>
@@ -553,7 +555,7 @@ function AIRONLanding() {
           <div style={{
             color: '#DDD',
             fontFamily: "'IBM Plex Mono', monospace",
-            fontSize: 11,
+            fontSize: 10,
             letterSpacing: 1.5,
             textAlign: 'right',
           }}>
@@ -627,7 +629,7 @@ function AIRONLanding() {
                     padding: '15px 22px',
                     borderRadius: 10,
                     fontFamily: "'Barlow Condensed', sans-serif",
-                    fontSize: 20,
+                    fontSize: 18,
                     fontWeight: 800,
                     letterSpacing: 1,
                     cursor: 'pointer',
@@ -646,7 +648,7 @@ function AIRONLanding() {
                     padding: '15px 22px',
                     borderRadius: 10,
                     fontFamily: "'Barlow Condensed', sans-serif",
-                    fontSize: 20,
+                    fontSize: 18,
                     fontWeight: 700,
                     letterSpacing: 1,
                     cursor: 'pointer',
@@ -668,7 +670,7 @@ function AIRONLanding() {
               <div style={{
                 color: '#FFD100',
                 fontFamily: "'IBM Plex Mono', monospace",
-                fontSize: 11,
+                fontSize: 10,
                 letterSpacing: 2,
                 marginBottom: 10,
               }}>
@@ -700,10 +702,10 @@ function AIRONLanding() {
                 ].map(item => (
                   <div key={item} style={{
                     display: 'flex',
-                    gap: 10,
+                    gap: 8,
                     alignItems: 'flex-start',
                     padding: '10px 12px',
-                    borderRadius: 12,
+                    borderRadius: 10,
                     background: 'rgba(255,255,255,0.04)',
                     border: '1px solid rgba(255,255,255,0.06)',
                   }}>
@@ -712,7 +714,7 @@ function AIRONLanding() {
                       height: 8,
                       borderRadius: '50%',
                       background: '#FF6B00',
-                      marginTop: 8,
+                      marginTop: 6,
                       flexShrink: 0,
                     }} />
                     <div style={{ color: '#F1F1F1', lineHeight: 1.5, fontSize: 14 }}>{item}</div>
@@ -755,14 +757,14 @@ function AIRONLanding() {
             ].map(card => (
               <div key={card.title} style={{
                 padding: 18,
-                borderRadius: 16,
+                borderRadius: 14,
                 background: 'rgba(255,255,255,0.04)',
                 border: '1px solid rgba(255,255,255,0.08)',
               }}>
                 <div style={{
                   color: '#FFD100',
                   fontFamily: "'IBM Plex Mono', monospace",
-                  fontSize: 11,
+                  fontSize: 10,
                   letterSpacing: 2,
                   marginBottom: 10,
                 }}>{card.title}</div>
@@ -789,7 +791,7 @@ function AIRONLanding() {
           borderTop: '1px solid rgba(255,255,255,0.08)',
           padding: '16px 24px',
           color: '#A0A0A0',
-          fontSize: 11,
+          fontSize: 10,
           fontFamily: "'IBM Plex Mono', monospace",
           letterSpacing: 1.1,
           background: 'rgba(0,0,0,0.24)',
@@ -841,9 +843,9 @@ function PortalHome() {
           <div style={{
             color: '#fff',
             fontFamily: "'Barlow Condensed', sans-serif",
-            fontSize: 20, fontWeight: 800, letterSpacing: 1,
+            fontSize: 18, fontWeight: 800, letterSpacing: 1,
           }}>A.I.R.O.N. SAFETY TRAINING</div>
-          <div style={{ color: '#6A6A6A', fontSize: 10, letterSpacing: 3 }}>
+          <div style={{ color: '#6A6A6A', fontSize: 9, letterSpacing: 3 }}>
             BY DINGFELDER ENTERPRISES · DINGFELDER INDUSTRIAL CAMPUS
           </div>
         </div>
@@ -857,7 +859,7 @@ function PortalHome() {
           <span style={{
             color: '#22CC66',
             fontFamily: "'IBM Plex Mono', monospace",
-            fontSize: 11, letterSpacing: 2,
+            fontSize: 10, letterSpacing: 2,
           }}>PORTAL ONLINE</span>
         </div>
       </div>
@@ -873,7 +875,7 @@ function PortalHome() {
         <div style={{
           color: '#FF6B00',
           fontFamily: "'Barlow Condensed', sans-serif",
-          fontSize: 10, letterSpacing: 5, marginBottom: 10,
+          fontSize: 9, letterSpacing: 5, marginBottom: 10,
         }}>FREE LEARNING SESSIONS · INDUSTRIAL SAFETY · A.I.R.O.N. BY DINGFELDER ENTERPRISES</div>
         <h1 style={{
           fontFamily: "'Barlow Condensed', sans-serif",
@@ -906,7 +908,7 @@ function PortalHome() {
         <div style={{
           color: '#444',
           fontFamily: "'Barlow Condensed', sans-serif",
-          fontSize: 11, letterSpacing: 3,
+          fontSize: 10, letterSpacing: 3,
           marginBottom: 16,
         }}>AVAILABLE TRAINING PROGRAMS — {PROGRAMS.length} PROGRAMS</div>
 
@@ -949,7 +951,7 @@ function PortalHome() {
                   border: `1px solid ${prog.color}44`,
                   borderRadius: 6,
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontSize: 20, flexShrink: 0,
+                  fontSize: 18, flexShrink: 0,
                 }}>{prog.icon}</div>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{
@@ -959,7 +961,7 @@ function PortalHome() {
                     lineHeight: 1.2,
                   }}>{prog.label}</div>
                   <div style={{
-                    color: '#666', fontSize: 11,
+                    color: '#666', fontSize: 10,
                     fontFamily: "'Barlow Condensed', sans-serif",
                     letterSpacing: 0.5, marginTop: 2,
                   }}>{prog.short}</div>
@@ -973,7 +975,7 @@ function PortalHome() {
                 display: 'flex', flexDirection: 'column', gap: 4,
               }}>
                 <div style={{
-                  color: '#777', fontSize: 11,
+                  color: '#777', fontSize: 10,
                   fontFamily: "'IBM Plex Mono', monospace",
                 }}>{prog.regulation}</div>
                 <div style={{ color: '#989898', fontSize: 11 }}>
@@ -988,7 +990,7 @@ function PortalHome() {
                 marginTop: 'auto',
               }}>
                 <span style={{
-                  color: '#666', fontSize: 11,
+                  color: '#666', fontSize: 10,
                   fontFamily: "'IBM Plex Mono', monospace",
                 }}>~{prog.minutes} min</span>
                 <span style={{
@@ -1014,12 +1016,12 @@ function PortalHome() {
         <span style={{
           color: '#444',
           fontFamily: "'IBM Plex Mono', monospace",
-          fontSize: 11, letterSpacing: 1,
+          fontSize: 10, letterSpacing: 1,
         }}>A.I.R.O.N. SAFETY TRAINING · DINGFELDER ENTERPRISES</span>
         <span style={{
           color: '#444',
           fontFamily: "'IBM Plex Mono', monospace",
-          fontSize: 11, letterSpacing: 1,
+          fontSize: 10, letterSpacing: 1,
         }}>{new Date().getFullYear()} · TRAINING ENVIRONMENTS INCLUDE THE DINGFELDER INDUSTRIAL CAMPUS</span>
       </div>
     </div>

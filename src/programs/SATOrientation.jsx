@@ -1,12 +1,12 @@
 import { useState, useEffect, useRef } from "react";
 
 // ─── PALETTE & CONSTANTS ──────────────────────────────────────────────────────
-const HAZARD_YELLOW = "#FFD100";      // hazard yellow
-const BGCOLOR = "#0f0e0b";     // near black
-const DARKWARM = "#1a1806";     // dark warm
-const GRIDDARK = "#2a2510";     // grid dark
-const MIDTONE = "#4a4220";    // mid tone
-const LIGHTCREAM = "#fff8e1";     // light cream
+const Y = "#FFD100";      // hazard yellow
+const BK = "#0f0e0b";     // near black
+const DK = "#1a1806";     // dark warm
+const GR = "#2a2510";     // grid dark
+const MID = "#4a4220";    // mid tone
+const LT = "#fff8e1";     // light cream
 const RED = "#FF2D2D";    // danger red
 const GRN = "#22CC66";    // safe green
 const ORG = "#FF8C00";    // warning orange
@@ -19,7 +19,7 @@ const SECTIONS = [
     zone: "GATE",
     icon: "🏭",
     title: "Welcome to Dingfelder Industrial Campus",
-    color: HAZARD_YELLOW,
+    color: Y,
     slides: [
       {
         heading: "Before You Step Past This Lobby",
@@ -106,7 +106,7 @@ const SECTIONS = [
     zone: "ELECTRICAL HAZARDS",
     icon: "⚡",
     title: "Electrical & Substation Hazards",
-    color: HAZARD_YELLOW,
+    color: Y,
     slides: [
       {
         heading: "The Dingfelder Electrical System",
@@ -371,7 +371,7 @@ const SECTIONS = [
     zone: "VISITOR RULES",
     icon: "🦺",
     title: "Personal Conduct & PPE",
-    color: HAZARD_YELLOW,
+    color: Y,
     slides: [
       {
         heading: "Required PPE by Area",
@@ -429,7 +429,7 @@ function useAnim(dep) {
 }
 
 // Chevron stripe background
-function ChevronBg({ color = HAZARD_YELLOW, opacity = 0.04 }) {
+function ChevronBg({ color = Y, opacity = 0.04 }) {
   return (
     <div style={{ position: "absolute", inset: 0, overflow: "hidden", pointerEvents: "none", zIndex: 0 }}>
       <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
@@ -474,7 +474,7 @@ function SlideView({ slide, color, onNext, onPrev, isFirst, isLast, sectionIdx, 
       <div style={{ fontSize: 56, marginBottom: 14, filter: "drop-shadow(0 4px 12px rgba(0,0,0,0.5))" }}>{slide.icon}</div>
 
       {/* Heading */}
-      <h2 style={{ fontFamily: "'Oswald', sans-serif", fontSize: 26, fontWeight: 700, color: LIGHTCREAM, margin: "0 0 6px", lineHeight: 1.15, letterSpacing: 0.3 }}>{slide.heading}</h2>
+      <h2 style={{ fontFamily: "'Oswald', sans-serif", fontSize: 26, fontWeight: 700, color: LT, margin: "0 0 6px", lineHeight: 1.15, letterSpacing: 0.3 }}>{slide.heading}</h2>
       {slide.sub && <p style={{ fontFamily: "'Source Serif 4', serif", fontSize: 13, color: "#9a8c5a", margin: "0 0 14px", fontStyle: "italic", lineHeight: 1.5 }}>{slide.sub}</p>}
 
       {/* Body */}
@@ -493,7 +493,7 @@ function SlideView({ slide, color, onNext, onPrev, isFirst, isLast, sectionIdx, 
       {slide.callout && (
         <div style={{ padding: "12px 14px", background: `${slide.callout.color}15`, border: `1px solid ${slide.callout.color}50`, borderLeft: `4px solid ${slide.callout.color}`, borderRadius: 3, marginBottom: 14 }}>
           <span style={{ fontFamily: "'Oswald', sans-serif", fontSize: 10, letterSpacing: 4, color: slide.callout.color, display: "block", marginBottom: 4 }}>{slide.callout.label}</span>
-          <span style={{ fontFamily: "'Source Serif 4', serif", fontSize: 13.5, lineHeight: 1.5, color: "#ddd" }}>{slide.callout.text}</span>
+          <span style={{ fontFamily: "'Source Serif 4', serif", fontSize: 13.5, color: Lt, lineHeight: 1.5, color: "#ddd" }}>{slide.callout.text}</span>
         </div>
       )}
 
@@ -502,7 +502,7 @@ function SlideView({ slide, color, onNext, onPrev, isFirst, isLast, sectionIdx, 
         {!isFirst && (
           <button onClick={onPrev} style={{ flex: 1, padding: "11px", background: "transparent", border: `1px solid #3a3018`, borderRadius: 3, color: "#6a5e30", cursor: "pointer", fontFamily: "'Oswald', sans-serif", fontSize: 13, letterSpacing: 2 }}>← BACK</button>
         )}
-        <button onClick={onNext} style={{ flex: 2, padding: "12px", background: color, border: "none", borderRadius: 3, color: BGCOLOR, cursor: "pointer", fontFamily: "'Oswald', sans-serif", fontSize: 15, fontWeight: 700, letterSpacing: 3 }}>
+        <button onClick={onNext} style={{ flex: 2, padding: "12px", background: color, border: "none", borderRadius: 3, color: BK, cursor: "pointer", fontFamily: "'Oswald', sans-serif", fontSize: 15, fontWeight: 700, letterSpacing: 3 }}>
           {isLast ? "TAKE CHECKPOINT →" : "NEXT →"}
         </button>
       </div>
@@ -536,7 +536,7 @@ function QuizView({ section, onPass }) {
       <div style={{ width: 70, height: 70, borderRadius: "50%", background: passed ? `${GRN}22` : `${RED}22`, border: `2px solid ${passed ? GRN : RED}`, display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 20 }}>
         <span style={{ fontFamily: "'Oswald', sans-serif", fontSize: 24, fontWeight: 700, color: passed ? GRN : RED }}>{score}/{section.quiz.length}</span>
       </div>
-      <button onClick={() => onPass(passed)} style={{ padding: "13px 32px", background: passed ? color : "transparent", border: passed ? "none" : `1px solid ${color}`, borderRadius: 3, color: passed ? BGCOLOR : color, cursor: "pointer", fontFamily: "'Oswald', sans-serif", fontSize: 14, letterSpacing: 3, fontWeight: 700 }}>
+      <button onClick={() => onPass(passed)} style={{ padding: "13px 32px", background: passed ? color : "transparent", border: passed ? "none" : `1px solid ${color}`, borderRadius: 3, color: passed ? BK : color, cursor: "pointer", fontFamily: "'Oswald', sans-serif", fontSize: 14, letterSpacing: 3, fontWeight: 700 }}>
         {passed ? "CHECKPOINT CLEARED →" : "REVIEW & RETRY"}
       </button>
     </div>
@@ -549,7 +549,7 @@ function QuizView({ section, onPass }) {
       <div style={{ height: 2, background: "#2a2510", borderRadius: 1, marginBottom: 18, overflow: "hidden" }}>
         <div style={{ height: "100%", width: `${((cur) / section.quiz.length) * 100}%`, background: color, transition: "width 0.4s ease" }} />
       </div>
-      <h2 style={{ fontFamily: "'Oswald', sans-serif", fontSize: 20, color: LIGHTCREAM, margin: "0 0 20px", lineHeight: 1.3, fontWeight: 600 }}>{q.q}</h2>
+      <h2 style={{ fontFamily: "'Oswald', sans-serif", fontSize: 20, color: LT, margin: "0 0 20px", lineHeight: 1.3, fontWeight: 600 }}>{q.q}</h2>
       <div style={{ display: "flex", flexDirection: "column", gap: 8, flex: 1 }}>
         {q.options.map((opt, i) => {
           let bg = "#141209", bdr = "#2a2510", clr = "#9a8c5a";
@@ -568,7 +568,7 @@ function QuizView({ section, onPass }) {
         })}
       </div>
       {rev && (
-        <button onClick={next} style={{ marginTop: 16, padding: "12px", background: color, border: "none", borderRadius: 3, color: BGCOLOR, cursor: "pointer", fontFamily: "'Oswald', sans-serif", fontSize: 14, fontWeight: 700, letterSpacing: 3 }}>
+        <button onClick={next} style={{ marginTop: 16, padding: "12px", background: color, border: "none", borderRadius: 3, color: BK, cursor: "pointer", fontFamily: "'Oswald', sans-serif", fontSize: 14, fontWeight: 700, letterSpacing: 3 }}>
           {cur + 1 >= section.quiz.length ? "SEE RESULT" : "NEXT QUESTION →"}
         </button>
       )}
@@ -585,20 +585,20 @@ function VisitorPass({ name }) {
   return (
     <div style={{ width: "100%", maxWidth: 420, margin: "0 auto" }}>
       {/* Pass card */}
-      <div style={{ position: "relative", background: BGCOLOR, border: `3px solid ${HAZARD_YELLOW}`, borderRadius: 8, overflow: "hidden", padding: "24px 22px" }}>
-        <ChevronBg color={HAZARD_YELLOW} opacity={0.05} />
+      <div style={{ position: "relative", background: BK, border: `3px solid ${Y}`, borderRadius: 8, overflow: "hidden", padding: "24px 22px" }}>
+        <ChevronBg color={Y} opacity={0.05} />
         <div style={{ position: "relative", zIndex: 1 }}>
           {/* Header stripe */}
-          <div style={{ background: HAZARD_YELLOW, margin: "-24px -22px 20px", padding: "10px 22px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-            <span style={{ fontFamily: "'Oswald', sans-serif", fontWeight: 700, fontSize: 13, letterSpacing: 3, color: BGCOLOR }}>DINGFELDER INDUSTRIAL CAMPUS</span>
-            <span style={{ fontFamily: "'Oswald', sans-serif", fontSize: 11, color: BGCOLOR, letterSpacing: 2 }}>VISITOR</span>
+          <div style={{ background: Y, margin: "-24px -22px 20px", padding: "10px 22px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <span style={{ fontFamily: "'Oswald', sans-serif", fontWeight: 700, fontSize: 13, letterSpacing: 3, color: BK }}>DINGFELDER INDUSTRIAL CAMPUS</span>
+            <span style={{ fontFamily: "'Oswald', sans-serif", fontSize: 11, color: BK, letterSpacing: 2 }}>VISITOR</span>
           </div>
 
           <div style={{ display: "flex", gap: 16, marginBottom: 16, alignItems: "flex-start" }}>
-            <div style={{ width: 60, height: 60, background: `${HAZARD_YELLOW}22`, border: `2px solid ${HAZARD_YELLOW}44`, borderRadius: 6, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 30, flexShrink: 0 }}>👷</div>
+            <div style={{ width: 60, height: 60, background: `${Y}22`, border: `2px solid ${Y}44`, borderRadius: 6, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 30, flexShrink: 0 }}>👷</div>
             <div>
               <div style={{ fontFamily: "'Oswald', sans-serif", fontSize: 10, letterSpacing: 4, color: "#6a5e30", marginBottom: 4 }}>AUTHORIZED VISITOR</div>
-              <div style={{ fontFamily: "'Oswald', sans-serif", fontSize: 22, fontWeight: 700, color: LIGHTCREAM, lineHeight: 1.1 }}>{name || "CAMPUS VISITOR"}</div>
+              <div style={{ fontFamily: "'Oswald', sans-serif", fontSize: 22, fontWeight: 700, color: LT, lineHeight: 1.1 }}>{name || "CAMPUS VISITOR"}</div>
               <div style={{ fontFamily: "'Source Serif 4', serif", fontSize: 12, color: "#9a8c5a", marginTop: 4 }}>S.A.T. Orientation Complete</div>
             </div>
           </div>
@@ -607,7 +607,7 @@ function VisitorPass({ name }) {
             {[{ label: "DATE", val: date }, { label: "TIME", val: time }, { label: "PASS NO.", val: passNum }, { label: "ESCORT REQUIRED", val: "YES — AT ALL TIMES" }].map(({ label, val }) => (
               <div key={label} style={{ padding: "8px 10px", background: "#1a1806", border: "1px solid #3a3018", borderRadius: 3 }}>
                 <div style={{ fontFamily: "'Oswald', sans-serif", fontSize: 9, letterSpacing: 3, color: "#6a5e30", marginBottom: 2 }}>{label}</div>
-                <div style={{ fontFamily: "'Oswald', sans-serif", fontSize: 12, fontWeight: 600, color: HAZARD_YELLOW }}>{val}</div>
+                <div style={{ fontFamily: "'Oswald', sans-serif", fontSize: 12, fontWeight: 600, color: Y }}>{val}</div>
               </div>
             ))}
           </div>
@@ -666,22 +666,22 @@ export default function SATOrientation() {
 
   // ── WELCOME SCREEN ────────────────────────────────────────────
   if (screen === "welcome") return (
-    <div style={{ minHeight: "100vh", background: BGCOLOR, display: "flex", flexDirection: "column", fontFamily: "'Source Serif 4', serif", position: "relative", overflow: "hidden" }}>
+    <div style={{ minHeight: "100vh", background: BK, display: "flex", flexDirection: "column", fontFamily: "'Source Serif 4', serif", position: "relative", overflow: "hidden" }}>
       <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Source+Serif+4:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet" />
-      <ChevronBg color={HAZARD_YELLOW} opacity={0.035} />
+      <ChevronBg color={Y} opacity={0.035} />
 
       {/* Top stripe */}
-      <div style={{ background: HAZARD_YELLOW, padding: "12px 24px", display: "flex", alignItems: "center", justifyContent: "space-between", position: "relative", zIndex: 1 }}>
-        <span style={{ fontFamily: "'Oswald', sans-serif", fontWeight: 700, fontSize: 14, letterSpacing: 3, color: BGCOLOR }}>DINGFELDER INDUSTRIAL CAMPUS</span>
-        <span style={{ fontFamily: "'Oswald', sans-serif", fontSize: 10, color: BGCOLOR, letterSpacing: 3 }}>SAFETY & SECURITY</span>
+      <div style={{ background: Y, padding: "12px 24px", display: "flex", alignItems: "center", justifyContent: "space-between", position: "relative", zIndex: 1 }}>
+        <span style={{ fontFamily: "'Oswald', sans-serif", fontWeight: 700, fontSize: 14, letterSpacing: 3, color: BK }}>DINGFELDER INDUSTRIAL CAMPUS</span>
+        <span style={{ fontFamily: "'Oswald', sans-serif", fontSize: 10, color: BK, letterSpacing: 3 }}>SAFETY & SECURITY</span>
       </div>
 
       <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center", padding: "40px 28px", position: "relative", zIndex: 1, maxWidth: 640, width: "100%", margin: "0 auto", boxSizing: "border-box" }}>
         <div style={{ fontFamily: "'Oswald', sans-serif", fontSize: 10, letterSpacing: 5, color: "#6a5e30", marginBottom: 12 }}>REQUIRED BEFORE CAMPUS ACCESS</div>
-        <h1 style={{ fontFamily: "'Oswald', sans-serif", fontSize: 52, fontWeight: 700, color: HAZARD_YELLOW, margin: "0 0 6px", lineHeight: 1.0, letterSpacing: 1 }}>
-          SITUATIONAL<br />AWARENESS<br /><span style={{ color: LIGHTCREAM, fontSize: 38 }}>TRAINING</span>
+        <h1 style={{ fontFamily: "'Oswald', sans-serif", fontSize: 52, fontWeight: 700, color: Y, margin: "0 0 6px", lineHeight: 1.0, letterSpacing: 1 }}>
+          SITUATIONAL<br />AWARENESS<br /><span style={{ color: LT, fontSize: 38 }}>TRAINING</span>
         </h1>
-        <div style={{ width: 60, height: 3, background: HAZARD_YELLOW, margin: "16px 0 20px" }} />
+        <div style={{ width: 60, height: 3, background: Y, margin: "16px 0 20px" }} />
         <p style={{ fontSize: 15, color: "#9a8c5a", lineHeight: 1.7, marginBottom: 32, maxWidth: 480 }}>
           This orientation covers gas monitoring, electrical hazards, propane farm awareness, moving equipment safety, emergency alarms, muster points, and visitor conduct rules.
           <br /><br />
@@ -695,13 +695,13 @@ export default function SATOrientation() {
             value={nameInput}
             onChange={e => setNameInput(e.target.value)}
             placeholder="First and Last Name"
-            style={{ width: "100%", padding: "13px 16px", background: "#141209", border: `1px solid #3a3018`, borderRadius: 3, color: LIGHTCREAM, fontFamily: "'Oswald', sans-serif", fontSize: 16, letterSpacing: 1, outline: "none", boxSizing: "border-box" }}
+            style={{ width: "100%", padding: "13px 16px", background: "#141209", border: `1px solid #3a3018`, borderRadius: 3, color: LT, fontFamily: "'Oswald', sans-serif", fontSize: 16, letterSpacing: 1, outline: "none", boxSizing: "border-box" }}
           />
         </div>
 
         <button
           onClick={() => { setName(nameInput || "CAMPUS VISITOR"); setScreen("training"); }}
-          style={{ padding: "16px 32px", background: HAZARD_YELLOW, border: "none", borderRadius: 3, color: BGCOLOR, cursor: "pointer", fontFamily: "'Oswald', sans-serif", fontSize: 17, fontWeight: 700, letterSpacing: 4, alignSelf: "flex-start" }}
+          style={{ padding: "16px 32px", background: Y, border: "none", borderRadius: 3, color: BK, cursor: "pointer", fontFamily: "'Oswald', sans-serif", fontSize: 17, fontWeight: 700, letterSpacing: 4, alignSelf: "flex-start" }}
         >BEGIN ORIENTATION →</button>
 
         {/* Section previews */}
@@ -719,19 +719,19 @@ export default function SATOrientation() {
 
   // ── COMPLETE SCREEN ───────────────────────────────────────────
   if (screen === "complete") return (
-    <div style={{ minHeight: "100vh", background: BGCOLOR, fontFamily: "'Source Serif 4', serif", position: "relative", overflow: "hidden" }}>
+    <div style={{ minHeight: "100vh", background: BK, fontFamily: "'Source Serif 4', serif", position: "relative", overflow: "hidden" }}>
       <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Source+Serif+4:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet" />
-      <ChevronBg color={HAZARD_YELLOW} opacity={0.03} />
+      <ChevronBg color={Y} opacity={0.03} />
 
-      <div style={{ background: HAZARD_YELLOW, padding: "12px 24px", position: "relative", zIndex: 1 }}>
-        <span style={{ fontFamily: "'Oswald', sans-serif", fontWeight: 700, fontSize: 13, letterSpacing: 3, color: BGCOLOR }}>DINGFELDER INDUSTRIAL CAMPUS — ORIENTATION COMPLETE</span>
+      <div style={{ background: Y, padding: "12px 24px", position: "relative", zIndex: 1 }}>
+        <span style={{ fontFamily: "'Oswald', sans-serif", fontWeight: 700, fontSize: 13, letterSpacing: 3, color: BK }}>DINGFELDER INDUSTRIAL CAMPUS — ORIENTATION COMPLETE</span>
       </div>
 
       <div style={{ position: "relative", zIndex: 1, padding: "28px 22px", maxWidth: 460, margin: "0 auto" }}>
         <div style={{ textAlign: "center", marginBottom: 24 }}>
           <div style={{ fontSize: 56, marginBottom: 10 }}>✅</div>
           <div style={{ fontFamily: "'Oswald', sans-serif", fontSize: 11, letterSpacing: 4, color: GRN, marginBottom: 6 }}>ALL CHECKPOINTS CLEARED</div>
-          <h1 style={{ fontFamily: "'Oswald', sans-serif", fontSize: 32, color: HAZARD_YELLOW, margin: "0 0 8px" }}>ORIENTATION PASSED</h1>
+          <h1 style={{ fontFamily: "'Oswald', sans-serif", fontSize: 32, color: Y, margin: "0 0 8px" }}>ORIENTATION PASSED</h1>
           <p style={{ fontFamily: "'Source Serif 4', serif", fontSize: 14, color: "#9a8c5a", lineHeight: 1.6 }}>
             Your visitor pass is below. Present it at the gate and to your escort. It is valid for today only. Your escort must accompany you at all times on campus.
           </p>
@@ -742,7 +742,7 @@ export default function SATOrientation() {
         <div style={{ marginTop: 20, padding: "14px", background: "#141209", border: "1px solid #3a3018", borderRadius: 3 }}>
           <p style={{ fontFamily: "'Oswald', sans-serif", fontSize: 11, letterSpacing: 2, color: "#6a5e30", margin: 0, lineHeight: 1.8 }}>
             REMEMBER ON CAMPUS:<br />
-            <span style={{ color: HAZARD_YELLOW }}>• Stay with your escort at all times</span><br />
+            <span style={{ color: Y }}>• Stay with your escort at all times</span><br />
             <span style={{ color: ORG }}>• Gas alarm = stop, don't touch switches, move upwind</span><br />
             <span style={{ color: RED }}>• Evacuation alarm = leave immediately, go to muster point</span><br />
             <span style={{ color: GRN }}>• Never stand under suspended loads or touch any equipment</span>
@@ -756,7 +756,7 @@ export default function SATOrientation() {
 
   // ── TRAINING SCREEN ───────────────────────────────────────────
   return (
-    <div style={{ minHeight: "100vh", background: BGCOLOR, display: "flex", flexDirection: "column", position: "relative", overflow: "hidden" }}>
+    <div style={{ minHeight: "100vh", background: BK, display: "flex", flexDirection: "column", position: "relative", overflow: "hidden" }}>
       <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Source+Serif+4:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet" />
       <ChevronBg color={section.color} opacity={0.025} />
 
@@ -785,7 +785,7 @@ export default function SATOrientation() {
 
       {/* Zone label */}
       <div style={{ background: section.color, padding: "6px 18px", position: "relative", zIndex: 1 }}>
-        <span style={{ fontFamily: "'Oswald', sans-serif", fontWeight: 700, fontSize: 11, letterSpacing: 4, color: BGCOLOR }}>
+        <span style={{ fontFamily: "'Oswald', sans-serif", fontWeight: 700, fontSize: 11, letterSpacing: 4, color: BK }}>
           CHECKPOINT {sectionIdx + 1}/{SECTIONS.length} — {section.zone} {phase === "quiz" ? "· KNOWLEDGE CHECK" : `· SLIDE ${slideIdx + 1}/${section.slides.length}`}
         </span>
       </div>

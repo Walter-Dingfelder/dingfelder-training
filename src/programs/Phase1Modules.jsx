@@ -1,506 +1,219 @@
-
-import TrainingModuleShell from "./TrainingModuleShell.jsx";
-
+import TrainingModuleShell from './TrainingModuleShell.jsx'
 export const PHASE1_MODULES = [
-  {
-    path: "/hazcom",
-    label: "Hazard Communication / SDS / GHS",
-    short: "Chemical Labels, SDS, and Safe Handling",
-    icon: "🧪",
-    color: "#FFD100",
-    regulation: "OSHA Hazard Communication — Chemical labeling and SDS awareness",
-    audience: "All campus employees working around chemicals, cleaners, fuels, coatings, and process materials",
-    minutes: 18,
-    slides: [
-      {
-        heading: "Every Container Tells a Story",
-        sub: "If the label is missing, the hazard is unknown.",
-        body: "Across the Dingfelder campus, chemicals appear in foundry binders, cleaners, lubricants, food plant sanitation systems, propane and fuel systems, and maintenance shops. Hazard communication starts before use: read the label, confirm the product identity, and match the container to the job. Never use a chemical from an unmarked bottle, pail, tote, or transfer container.",
-        list: [
-          "Product identifier must match the task and the container.",
-          "Signal words like Danger or Warning indicate relative severity.",
-          "Pictograms communicate the type of hazard at a glance.",
-        ],
-        callout: { label: "SITE RULE", text: "If a secondary container is not labeled, stop and get it corrected before use." }
-      },
-      {
-        heading: "Use the SDS Before Exposure Happens",
-        sub: "The Safety Data Sheet is the operating manual for chemical risk.",
-        body: "Each chemical used on campus should have an SDS available to the work group. The SDS tells you what the product is, what hazards it creates, what PPE is required, what first aid steps apply, and how to respond to spills or leaks. Read the SDS before you begin work, not after someone has been exposed.",
-        list: [
-          "Check required gloves, eye protection, and ventilation.",
-          "Review first aid steps for skin, eye, inhalation, or ingestion exposure.",
-          "Know incompatibilities before mixing or storing materials together.",
-        ],
-      },
-      {
-        heading: "Chemical Transfer Is a High-Risk Moment",
-        sub: "Most confusion and exposure starts during pouring, mixing, or cleanup.",
-        body: "When chemicals are transferred between tanks, buckets, spray bottles, or process systems, the risk of splash, vapor release, and misidentification rises. Confirm the receiving container, control the area, use the listed PPE, and keep absorbents or emergency response supplies ready before opening the system.",
-        callout: { label: "REMEMBER", text: "No unlabeled spray bottles. No guessing. No cross-connection between sanitation chemicals, process chemicals, and fuels." }
-      },
-    ],
-    quiz: [
-      { q: "What should you do if you find a secondary container with no label?", options: ["Use it if the smell seems familiar", "Stop and get it labeled before use", "Ask a coworker to guess the contents", "Pour it into a different container"], answer: 1 },
-      { q: "When should an SDS be reviewed?", options: ["Only after an exposure happens", "Only by supervisors", "Before working with the chemical", "Only for acids"], answer: 2 },
-    ],
-  },
-  {
-    path: "/ppe",
-    label: "PPE Fundamentals",
-    short: "Basic Protective Equipment by Task and Hazard",
-    icon: "🦺",
-    color: "#22CC66",
-    regulation: "Campus PPE program — match PPE to the hazard and the task",
-    audience: "All campus roles, visitors with escorts, maintenance, operations, and sanitation teams",
-    minutes: 16,
-    slides: [
-      {
-        heading: "PPE Is the Last Layer, Not the First",
-        sub: "Use protective equipment after the hazard is understood.",
-        body: "Personal protective equipment protects the worker when other controls cannot fully remove the hazard. That means PPE selection starts with hazard recognition. On the Dingfelder campus, PPE needs differ sharply between a visitor walkway, a foundry melt deck, a beam mill electrical room, a food plant chemical washdown area, and a propane handling zone.",
-        list: [
-          "Know the job, the exposure, and the energy involved.",
-          "Wear only PPE that fits and is in serviceable condition.",
-          "Replace damaged gloves, shields, lenses, or straps immediately.",
-        ],
-      },
-      {
-        heading: "Task-Specific PPE Matters",
-        sub: "The correct PPE changes with heat, chemical, impact, and electrical risk.",
-        body: "A face shield for grinding is not the same as a face shield for chemical splash, and neither is the same as arc-rated electrical PPE. Gloves for sanitation chemicals are different from gloves used for sharp materials or hot surfaces. Always match the PPE to the task, not just to the location.",
-        list: [
-          "Eye protection for impact and splash hazards.",
-          "Gloves selected for chemical, cut, heat, or electrical exposure.",
-          "Hearing, respiratory, and body protection when the task requires it.",
-        ],
-      },
-      {
-        heading: "PPE Works Only When Worn Correctly",
-        sub: "Partial use or poor fit creates false confidence.",
-        body: "Unfastened chin straps, worn-out gloves, loose sleeves near moving equipment, and missing side shields all reduce protection. Inspect PPE before use, wear it for the full duration of the task, and remove contaminated gear safely after the job.",
-        callout: { label: "RULE", text: "Do not modify PPE to make it more comfortable if the modification reduces protection." }
-      },
-    ],
-    quiz: [
-      { q: "How should PPE be selected?", options: ["By comfort only", "By matching the PPE to the specific hazard and task", "By what most people wear", "By location sign only"], answer: 1 },
-      { q: "What should you do with damaged PPE?", options: ["Use it one last time", "Tape it and continue", "Replace it before the task starts", "Wear two damaged items"], answer: 2 },
-    ],
-  },
-  {
-    path: "/forklift",
-    label: "Forklift / Powered Industrial Truck Safety",
-    short: "Vehicle Separation, Visibility, and Load Control",
-    icon: "🚜",
-    color: "#00BFFF",
-    regulation: "Campus vehicle safety — powered industrial truck awareness",
-    audience: "Warehouse personnel, retail backroom staff, food plants, shipping, foundry support, and pedestrians",
-    minutes: 18,
-    slides: [
-      {
-        heading: "Forklifts Change the Risk Picture Fast",
-        sub: "A small truck can still crush, pin, or strike with very little warning.",
-        body: "Powered industrial trucks operate across shipping zones, warehouses, backrooms, food plants, and support areas on campus. Their loads block visibility, their rear ends swing wide, and their braking distance increases with weight and surface conditions. Pedestrians must never assume the operator sees them.",
-        list: [
-          "Maintain separation and stay out of travel lanes.",
-          "Make eye contact with the operator before crossing nearby.",
-          "Never walk under raised forks or elevated loads.",
-        ],
-      },
-      {
-        heading: "Loads Must Be Stable Before Movement",
-        sub: "A moving unstable load creates a rollover and drop hazard.",
-        body: "Operators must confirm load weight, balance, fork spacing, and travel path before moving. Tall loads, uneven pallets, slick packaging, and soft floor conditions increase the chance of loss of control. In retail and food areas, a dropped load can injure workers and contaminate product at the same time.",
-        callout: { label: "SITE RULE", text: "No passengers. No horseplay. No body parts outside the operator compartment during travel." }
-      },
-      {
-        heading: "Pedestrian Safety Is Part of Forklift Safety",
-        sub: "Most serious incidents involve poor separation, blind corners, or backing.",
-        body: "Pedestrians should use marked walkways, listen for horns, stop at intersections, and avoid shortcuts through loading or staging areas. Operators and spotters should slow at blind corners, back only when safe, and protect shared spaces such as cross aisles, dock zones, and doorways.",
-      },
-    ],
-    quiz: [
-      { q: "What should a pedestrian do before moving near a forklift?", options: ["Assume the operator sees them", "Make eye contact and maintain separation", "Walk faster behind it", "Stand between the truck and a rack"], answer: 1 },
-      { q: "Which situation increases forklift risk?", options: ["Stable loads and clear aisles", "Marked walkways", "Blind corners and uneven loads", "Using horns at intersections"], answer: 2 },
-    ],
-  },
-  {
-    path: "/fire-extinguishers",
-    label: "Fire Extinguisher Basics",
-    short: "Portable Extinguishers, Alarm, and First Response",
-    icon: "🧯",
-    color: "#FF6B00",
-    regulation: "Campus emergency response — alarm first, extinguisher only for incipient fires",
-    audience: "All campus personnel and designated emergency responders",
-    minutes: 14,
-    slides: [
-      {
-        heading: "The Alarm Comes Before the Extinguisher",
-        sub: "Report the emergency before trying to fight it.",
-        body: "Portable extinguishers are for very early-stage fires only. If a fire is growing, producing heavy smoke, involving gas, chemicals, or electrical gear beyond a small controllable source, the correct response is alarm, evacuation, and accountability. The campus needs people out and counted more than it needs a risky attempt to save equipment.",
-      },
-      {
-        heading: "Use the Right Extinguisher for the Right Fire",
-        sub: "Wrong agent choice can spread the hazard.",
-        body: "Different extinguishers are assigned to different hazards. A fire involving energized equipment, flammable liquids, ordinary combustibles, or kitchen grease does not behave the same way. Read the extinguisher label before use, keep the exit at your back, and only attempt control when you have a safe retreat path.",
-        list: [
-          "Keep your back to a clear exit path.",
-          "Check the gauge and obvious physical condition before use.",
-          "If the first attempt fails, leave immediately and close the area down.",
-        ],
-      },
-      {
-        heading: "Know When to Stop",
-        sub: "Smoke, heat, or uncertainty are signs to leave.",
-        body: "If the room is filling with smoke, the fire is climbing a wall, fuel is still feeding the fire, or you are not fully confident in the extinguisher type, stop and evacuate. A portable extinguisher does not replace the site emergency plan.",
-        callout: { label: "P.A.S.S.", text: "Pull. Aim. Squeeze. Sweep — but only after the alarm is activated and escape remains open." }
-      },
-    ],
-    quiz: [
-      { q: "What should happen before using a portable extinguisher?", options: ["Move the fire to a safer area", "Activate the alarm or report the emergency", "Wait until the fire gets bigger", "Open nearby gas valves"], answer: 1 },
-      { q: "When should you stop and evacuate?", options: ["When the fire is growing or smoke is increasing", "Only after the extinguisher is empty", "Never if equipment is valuable", "Only if a supervisor tells you"], answer: 0 },
-    ],
-  },
-  {
-    path: "/molten-metal",
-    label: "Molten Metal Awareness",
-    short: "Foundry Heat, Splash, and Contact Hazards",
-    icon: "🔥",
-    color: "#FF5A1F",
-    regulation: "Foundry hot metal awareness — treat all melt zones as severe hazard areas",
-    audience: "Foundry operators, maintenance, contractors, escorts, and authorized visitors near hot metal areas",
-    minutes: 28,
-    slides: [
-      {
-        heading: "Molten Metal Has No Safe Casual Distance",
-        sub: "Radiant heat, splash, and contact hazards extend beyond the immediate pour point.",
-        body: "The Dingfelder Foundry is anchored as BLDG-010 and runs a north-to-south process flow with melt and holding operations feeding downstream molding and finishing systems. Anywhere molten metal is present, the risk includes heat stress, radiant load, splash, steam explosion, ignition of combustibles, and severe burns from contact with hot tools, slag, or spills.",
-        callout: { label: "KNOWLEDGE BASE ALIGNMENT", text: "BLDG-010 is the primary foundry building and all hot-metal awareness content should be treated as foundry-critical." }
-      },
-      {
-        heading: "Water and Moisture Are Major Threat Multipliers",
-        sub: "Moisture contacting molten metal can create explosive steam expansion.",
-        body: "Wet scrap, damp tools, trapped water in pits or vessels, and moisture on refractory or floors can turn a small event into a violent burst. Never introduce unknown materials into hot metal operations and never assume a recently washed or weather-exposed item is dry enough for contact.",
-        list: [
-          "Keep melt areas clean, dry, and controlled.",
-          "Verify ladles, tools, and charge materials are suitable for hot service.",
-          "Respect all restricted lines, barricades, and escort limits.",
-        ],
-      },
-      {
-        heading: "The Whole Team Protects the Pour",
-        sub: "Hot metal movement depends on disciplined spacing and communication.",
-        body: "When ladles, transfer vessels, or furnace operations are active, everyone in the zone must understand travel paths, no-go areas, PPE expectations, and who has control of the move. Visitors and non-essential personnel should remain fully clear unless specifically authorized and escorted.",
-      },
+{path:"/hazcom",label:"Hazard Communication / SDS / GHS",short:"Chemical Labels, SDS, and Safe Handling",icon:"🧪",color:"#FFD100",regulation:"OSHA Hazard Communication — Chemical labeling and SDS awareness",audience:"All campus employees working around chemicals, cleaners, fuels, coatings, and process materials",minutes:18,slides:[{heading:"Every Container Tells a Story",sub:"If the label is missing, the hazard is unknown.",body:"Across the Dingfelder campus, chemicals appear in foundry binders, cleaners, lubricants, food plant sanitation systems, propane and fuel systems, and maintenance shops. Hazard communication starts before use: read the label, confirm the product identity, and match the container to the job. Never use a chemical from an unmarked bottle, pail, tote, or transfer container.",list:["Product identifier must match the task and the container.","Signal words like Danger or Warning indicate relative severity.","Pictograms communicate the type of hazard at a glance."],callout:{label:"SITE RULE",text:"If a secondary container is not labeled, stop and get it corrected before use."}},{heading:"Use the SDS Before Exposure Happens",sub:"The Safety Data Sheet is the operating manual for chemical risk.",body:"Each chemical used on campus should have an SDS available to the work group. The SDS tells you what the product is, what hazards it creates, what PPE is required, what first aid steps apply, and how to respond to spills or leaks. Read the SDS before you begin work, not after someone has been exposed.",list:["Check required gloves, eye protection, and ventilation.","Review first aid steps for skin, eye, inhalation, or ingestion exposure.","Know incompatibilities before mixing or storing materials together."]},{heading:"Chemical Transfer Is a High-Risk Moment",sub:"Most confusion and exposure starts during pouring, mixing, or cleanup.",body:"When chemicals are transferred between tanks, buckets, spray bottles, or process systems, the risk of splash, vapor release, and misidentification rises. Confirm the receiving container, control the area, use the listed PPE, and keep absorbents or emergency response supplies ready before opening the system.",callout:{label:"REMEMBER",text:"No unlabeled spray bottles. No guessing. No cross-connection between sanitation chemicals, process chemicals, and fuels."}}],quiz:[{q:"What should you do if you find a secondary container with no label?",options:["Use it if the smell seems familiar","Stop and get it labeled before use","Ask a coworker to guess the contents","Pour it into a different container"],answer:1},{q:"When should an SDS be reviewed?",options:["Only after an exposure happens","Only by supervisors","Before working with the chemical","Only for acids"],answer:2}]},
+{path:"/ppe",label:"PPE Fundamentals",short:"Basic Protective Equipment by Task and Hazard",icon:"🦺",color:"#22CC66",regulation:"Campus PPE program — match PPE to the hazard and the task",audience:"All campus roles, visitors with escorts, maintenance, operations, and sanitation teams",minutes:16,slides:[{heading:"PPE Is the Last Layer, Not the First",sub:"Use protective equipment after the hazard is understood.",body:"Personal protective equipment protects the worker when other controls cannot fully remove the hazard. That means PPE selection starts with hazard recognition. On the Dingfelder campus, PPE needs differ sharply between a visitor walkway, a foundry melt deck, a beam mill electrical room, a food plant chemical washdown area, and a propane handling zone.",list:["Know the job, the exposure, and the energy involved.","Wear only PPE that fits and is in serviceable condition.","Replace damaged gloves, shields, lenses, or straps immediately."]},{heading:"Task-Specific PPE Matters",sub:"The correct PPE changes with heat, chemical, impact, and electrical risk.",body:"A face shield for grinding is not the same as a face shield for chemical splash, and neither is the same as arc-rated electrical PPE. Gloves for sanitation chemicals are different from gloves used for sharp materials or hot surfaces. Always match the PPE to the task, not just to the location.",list:["Eye protection for impact and splash hazards.","Gloves selected for chemical, cut, heat, or electrical exposure.","Hearing, respiratory, and body protection when the task requires it."]},{heading:"PPE Works Only When Worn Correctly",sub:"Partial use or poor fit creates false confidence.",body:"Unfastened chin straps, worn-out gloves, loose sleeves near moving equipment, and missing side shields all reduce protection. Inspect PPE before use, wear it for the full duration of the task, and remove contaminated gear safely after the job.",callout:{label:"RULE",text:"Do not modify PPE to make it more comfortable if the modification reduces protection."}}],quiz:[{q:"How should PPE be selected?",options:["By comfort only","By matching the PPE to the specific hazard and task","By what most people wear","By location sign only"],answer:1},{q:"What should you do with damaged PPE?",options:["Use it one last time","Tape it and continue","Replace it before the task starts","Wear two damaged items"],answer:2}]},
 {
-  heading: "Critical Errors That Turn Heat Into Catastrophe",
-  sub: "Most severe hot-metal events start with a casual shortcut, a wet condition, or a bad position.",
-  body: "The fastest way to lose control around molten metal is to treat the area like normal production space. Workers get hurt when they cross active travel lanes, bring damp tools or materials too close to hot metal, ignore barricades, or assume a vessel or path is inactive because nothing is moving right this second.",
-  list: [
-    "Never introduce unknown, damp, or recently washed materials into hot-metal operations.",
-    "Never stand in a splash zone, travel lane, or restricted crossing point for a better view.",
-    "Never assume a recently used ladle, furnace area, or transfer path is safe without confirmation.",
-    "Visitors and escorts stay out unless the move is authorized, controlled, and communicated.",
+  path:"/forklift",
+  label:"Forklift / Powered Industrial Truck Safety",
+  short:"Vehicle Separation, Visibility, and Load Control",
+  icon:"🚜",
+  color:"#00BFFF",
+  regulation:"Campus vehicle safety — powered industrial truck awareness",
+  audience:"Warehouse personnel, retail backroom staff, food plants, shipping, foundry support, and pedestrians",
+  minutes:20,
+  slides:[
+    {
+      heading:"Forklifts Rewrite the Traffic Map",
+      sub:"A small truck can still create a fatal line-of-fire in seconds.",
+      body:"Powered industrial trucks operate across shipping zones, warehouses, food plants, support areas, and retail backrooms on campus. Loads block visibility, rear-end swing changes the path of travel, and stopping distance grows with weight and surface conditions. Pedestrians must never assume the operator sees them just because the truck is moving slowly.",
+      list:[
+        "Stay out of truck lanes unless you have positive clearance to cross.",
+        "Make eye contact before moving near the truck path.",
+        "Never walk under raised forks or elevated loads."
+      ],
+      callout:{label:"RULE",text:"Pedestrian separation is a control, not a courtesy."}
+    },
+    {
+      heading:"The Load Must Be Stable Before the Truck Moves",
+      sub:"Instability turns routine handling into drop, rollover, or struck-by exposure.",
+      body:"Operators should confirm weight, balance, fork spacing, pallet integrity, and the full travel path before moving. Tall loads, damaged pallets, slick packaging, uneven floors, ramps, and blind intersections all increase the chance of losing control. In food and retail areas, a dropped load can injure workers and contaminate product at the same time.",
+      list:[
+        "Keep the load low and controlled during travel.",
+        "Do not move a load that is visibly broken, shifted, or unsecured.",
+        "Reassess the path if doorways, corners, or floor conditions change."
+      ]
+    },
+    {
+      heading:"Shared Space Is the Highest-Risk Space",
+      sub:"Most serious incidents involve backing, blind corners, or people drifting into the lane.",
+      body:"Pedestrians should use marked walkways, stop at intersections, and avoid shortcuts through loading, staging, or dock zones. Operators and spotters should slow at blind corners, protect cross aisles, and use horns or communication controls where required. A pedestrian inside the truck envelope has already lost the safety margin.",
+      callout:{label:"SITE RULE",text:"No passengers. No horseplay. No body parts outside the operator compartment during travel."}
+    },
+    {
+      heading:"Parking and Leaving the Truck Matter Too",
+      sub:"Forks, brakes, and key control protect the next worker.",
+      body:"A truck left with raised forks, poor parking position, or uncontrolled access creates hazards even when it is not moving. Operators should lower forks, neutralize controls, set the brake, and secure the unit according to site procedure before leaving it unattended.",
+      list:[
+        "Lower forks fully before leaving the truck.",
+        "Do not leave a truck blocking exits, stairs, or emergency access.",
+        "Report defects that affect steering, brakes, horn, hydraulics, or visibility."
+      ]
+    },
+    {
+      heading:"Forklift Key Review",
+      sub:"Separation, stable loads, controlled travel, and proper parking prevent the event.",
+      body:"Forklift safety depends on both operator and pedestrian discipline. Keep distance, respect lanes, verify the load before movement, slow in shared spaces, and never normalize shortcuts around active truck traffic.",
+      callout:{label:"REMEMBER",text:"If the operator cannot see clearly, the area is not safe to enter."}
+    }
   ],
+  quiz:[
+    {q:"What should a pedestrian do before moving near a forklift?",options:["Assume the operator sees them","Make eye contact and maintain separation","Walk behind the truck quickly","Stand between the truck and a rack"],answer:1},
+    {q:"Which condition makes a forklift move higher risk?",options:["Stable load and clear aisle","Blind corner with a tall load","Marked pedestrian route","Forks fully lowered while parked"],answer:1},
+    {q:"Why should a load stay low during travel?",options:["It improves visibility and stability","It lets pedestrians pass underneath","It reduces the need for spotters","It makes the truck louder"],answer:0},
+    {q:"What should happen if a pallet looks broken or the load is leaning?",options:["Move it slowly anyway","Stabilize or correct it before travel","Have a pedestrian hold it","Tilt back harder and accelerate"],answer:1},
+    {q:"Which area should pedestrians avoid as a shortcut?",options:["Marked walkway","Truck staging or loading zone","Office hallway","Break area"],answer:1},
+    {q:"A driver approaches a blind intersection with a load blocking part of the view. What is the safest action?",options:["Speed up to clear it faster","Slow down and control the shared space before entering","Assume others will stop","Keep moving because the horn is enough"],answer:1},
+    {q:"What is the correct rule for raised forks?",options:["Pedestrians may pass under them if empty","Never walk under raised forks or elevated loads","They are only dangerous outdoors","They are safe if the truck is parked"],answer:1},
+    {q:"What should an operator do before leaving a truck unattended?",options:["Raise the forks so others can see them","Lower forks, secure the truck, and set the brake","Leave it in gear","Park in front of an exit"],answer:1},
+    {q:"Why is shared-space traffic so dangerous?",options:["Only supervisors use those areas","People drift into travel paths and operators may have limited visibility","Forklifts cannot turn there","Loads are always lighter"],answer:1},
+    {q:"A coworker steps into the truck lane while looking at a phone. What is the best response?",options:["Drive around them closely","Stop and re-establish separation before continuing","Honk once and continue through","Assume they will move in time"],answer:1}
+  ]
 },
+{path:"/fire-extinguishers",label:"Fire Extinguisher Basics",short:"Portable Extinguishers, Alarm, and First Response",icon:"🧯",color:"#FF6B00",regulation:"Campus emergency response — alarm first, extinguisher only for incipient fires",audience:"All campus personnel and designated emergency responders",minutes:14,slides:[{heading:"The Alarm Comes Before the Extinguisher",sub:"Report the emergency before trying to fight it.",body:"Portable extinguishers are for very early-stage fires only. If a fire is growing, producing heavy smoke, involving gas, chemicals, or electrical gear beyond a small controllable source, the correct response is alarm, evacuation, and accountability. The campus needs people out and counted more than it needs a risky attempt to save equipment."},{heading:"Use the Right Extinguisher for the Right Fire",sub:"Wrong agent choice can spread the hazard.",body:"Different extinguishers are assigned to different hazards. A fire involving energized equipment, flammable liquids, ordinary combustibles, or kitchen grease does not behave the same way. Read the extinguisher label before use, keep the exit at your back, and only attempt control when you have a safe retreat path.",list:["Keep your back to a clear exit path.","Check the gauge and obvious physical condition before use.","If the first attempt fails, leave immediately and close the area down."]},{heading:"Know When to Stop",sub:"Smoke, heat, or uncertainty are signs to leave.",body:"If the room is filling with smoke, the fire is climbing a wall, fuel is still feeding the fire, or you are not fully confident in the extinguisher type, stop and evacuate. A portable extinguisher does not replace the site emergency plan.",callout:{label:"P.A.S.S.",text:"Pull. Aim. Squeeze. Sweep — but only after the alarm is activated and escape remains open."}}],quiz:[{q:"What should happen before using a portable extinguisher?",options:["Move the fire to a safer area","Activate the alarm or report the emergency","Wait until the fire gets bigger","Open nearby gas valves"],answer:1},{q:"When should you stop and evacuate?",options:["When the fire is growing or smoke is increasing","Only after the extinguisher is empty","Never if equipment is valuable","Only if a supervisor tells you"],answer:0}]},
+{path:"/molten-metal",label:"Molten Metal Awareness",short:"Foundry Heat, Splash, and Contact Hazards",icon:"🔥",color:"#FF5A1F",regulation:"Foundry hot metal awareness — treat all melt zones as severe hazard areas",audience:"Foundry operators, maintenance, contractors, escorts, and authorized visitors near hot metal areas",minutes:28,slides:[{heading:"Molten Metal Has No Safe Casual Distance",sub:"Radiant heat, splash, and contact hazards extend beyond the immediate pour point.",body:"The Dingfelder Foundry is anchored as BLDG-010 and runs a north-to-south process flow with melt and holding operations feeding downstream molding and finishing systems. Anywhere molten metal is present, the risk includes heat stress, radiant load, splash, steam explosion, ignition of combustibles, and severe burns from contact with hot tools, slag, or spills.",callout:{label:"KNOWLEDGE BASE ALIGNMENT",text:"BLDG-010 is the primary foundry building and all hot-metal awareness content should be treated as foundry-critical."}},{heading:"Water and Moisture Are Major Threat Multipliers",sub:"Moisture contacting molten metal can create explosive steam expansion.",body:"Wet scrap, damp tools, trapped water in pits or vessels, and moisture on refractory or floors can turn a small event into a violent burst. Never introduce unknown materials into hot metal operations and never assume a recently washed or weather-exposed item is dry enough for contact.",list:["Keep melt areas clean, dry, and controlled.","Verify ladles, tools, and charge materials are suitable for hot service.","Respect all restricted lines, barricades, and escort limits."]},{heading:"The Whole Team Protects the Pour",sub:"Hot metal movement depends on disciplined spacing and communication.",body:"When ladles, transfer vessels, or furnace operations are active, everyone in the zone must understand travel paths, no-go areas, PPE expectations, and who has control of the move. Visitors and non-essential personnel should remain fully clear unless specifically authorized and escorted."},{heading:"Critical Errors That Turn Heat Into Catastrophe",sub:"Most severe hot-metal events start with a casual shortcut, a wet condition, or a bad position.",body:"The fastest way to lose control around molten metal is to treat the area like normal production space. Workers get hurt when they cross active travel lanes, bring damp tools or materials too close to hot metal, ignore barricades, or assume a vessel or path is inactive because nothing is moving right this second.",list:["Never introduce unknown, damp, or recently washed materials into hot-metal operations.","Never stand in a splash zone, travel lane, or restricted crossing point for a better view.","Never assume a recently used ladle, furnace area, or transfer path is safe without confirmation.","Visitors and escorts stay out unless the move is authorized, controlled, and communicated."]},{heading:"Molten Metal Key Review",sub:"Distance, dryness, discipline, and communication are controls — not suggestions.",body:"Treat every melt deck, ladle route, and hot-metal handling area as a severe hazard zone. Keep the work area dry, respect exclusion lines, stay out of transfer paths, and stop the job if conditions are unclear. PPE matters, but spacing, route control, and moisture discipline prevent the event in the first place.",callout:{label:"REMEMBER",text:"Moisture + molten metal, casual crossings, and unclear travel paths are never acceptable conditions."}}],quiz:[{q:"Why is moisture dangerous around molten metal?",options:["It cools the area too fast","It can create explosive steam expansion","It makes floors easier to clean","It reduces splash risk"],answer:1},{q:"Who should be in the area during active hot-metal movement?",options:["Anyone who wants a closer look","Only authorized and controlled personnel","Only the newest worker","Visitors without escorts"],answer:1},{q:"What should you assume about a ladle route during an active transfer?",options:["It is safe to cross if you move quickly","It is a restricted no-go path unless released by control of the move","Only visitors must avoid it","It is safe if no alarm is sounding"],answer:1},{q:"Which condition is most likely to create a steam explosion hazard?",options:["Dry refractory in controlled service","A damp tool or wet charge material contacting molten metal","A posted barricade line","An empty aisle near the melt deck"],answer:1},{q:"Why is distance considered a control around hot metal?",options:["Because PPE is optional at long distance","Because reducing exposure to splash, radiant heat, and travel paths lowers injury risk","Because only supervisors need PPE","Because distance removes the need for communication"],answer:1},{q:"A visitor stops near a barricade to watch a pour. What is the correct action?",options:["Allow it if they stay quiet","Escort them out of the restricted zone immediately","Let them stay if they wear safety glasses","Ask them to stand closer to hear instructions"],answer:1},{q:"What is the best response if you are unsure whether a vessel or path is still active?",options:["Assume it is idle until proven otherwise","Treat it as active and verify before approaching","Tap the vessel to check temperature","Wait for someone else to cross first"],answer:1},{q:"Which statement is correct about PPE around molten metal?",options:["PPE replaces distance and route control","PPE helps, but spacing, dryness, and communication still control the event","PPE is only for maintenance staff","PPE removes splash-zone risk"],answer:1},{q:"What is the right action if moisture is found on the floor or tools near hot-metal operations?",options:["Continue carefully if production is behind","Stop and correct the condition before work continues","Cover it with dry sand and proceed without notice","Move the moisture closer to the furnace so it dries faster"],answer:1},{q:"Why should non-essential personnel stay clear during active hot-metal movement?",options:["They slow down communication and can enter restricted paths unexpectedly","They need less training time","They can help by standing nearby","They are only at risk during spills, not normal moves"],answer:0},{q:"What is the most accurate rule for crossing a hot-metal path?",options:["Cross whenever the vessel appears far enough away","Cross only after the path is positively released and controlled","Cross if you are wearing gloves","Cross behind the vessel if you stay low"],answer:1},{q:"A recently washed tool looks mostly dry. What should you do?",options:["Use it if production needs it","Keep it out of hot-metal service until it is confirmed dry and suitable","Use it only for a short contact","Warm it near the metal and then use it"],answer:1}]},
 {
-  heading: "Molten Metal Key Review",
-  sub: "Distance, dryness, discipline, and communication are controls — not suggestions.",
-  body: "Treat every melt deck, ladle route, and hot-metal handling area as a severe hazard zone. Keep the work area dry, respect exclusion lines, stay out of transfer paths, and stop the job if conditions are unclear. PPE matters, but spacing, route control, and moisture discipline prevent the event in the first place.",
-  callout: { label: "REMEMBER", text: "Moisture + molten metal, casual crossings, and unclear travel paths are never acceptable conditions." }
+  path:"/furnace-melt-deck",
+  label:"Furnace & Melt Deck Safety",
+  short:"Charging, Tapping, Hot Surfaces, and Restricted Zones",
+  icon:"🏭",
+  color:"#FF7A00",
+  regulation:"Foundry furnace operations — charging and melt deck controls",
+  audience:"Melt operators, furnace support, maintenance, contractors, and approved supervisors",
+  minutes:22,
+  slides:[
+    {
+      heading:"The Melt Deck Is a Controlled Access Zone",
+      sub:"Heat, electricity, hot metal, and moving charge materials exist together here.",
+      body:"The melt deck combines multiple severe hazards in one operating band: furnace electrical systems, charging operations, hot refractory surfaces, tapping, slag handling, and movement of materials. Only trained personnel should enter, and access must stay controlled during charging, tapping, maintenance, or abnormal conditions.",
+      callout:{label:"RULE",text:"No one enters the melt deck casually. Access is task-driven and controlled."}
+    },
+    {
+      heading:"Charge Materials Must Be Known and Dry",
+      sub:"Unknown, sealed, wet, or contaminated charge is a major incident source.",
+      body:"Before material enters the furnace process, operators should confirm it is expected, acceptable, and conditionally safe. Wet scrap, closed containers, incompatible material, mixed debris, and contaminated charge can create violent reactions, contamination, or process upsets during introduction.",
+      list:[
+        "Verify incoming charge condition before introduction.",
+        "Reject sealed, pressurized, or unknown items.",
+        "Keep walkways and escape paths clear during furnace work."
+      ]
+    },
+    {
+      heading:"Hot Surfaces Stay Dangerous Long After Visible Activity Ends",
+      sub:"A quiet deck does not mean a cool deck.",
+      body:"Platforms, tools, refractory, sidewalls, ladle hardware, and adjacent structural steel can retain severe heat well after a visible pour or tap is complete. Treat all furnace-area surfaces as potentially hot until confirmed otherwise and keep combustibles out of melt-deck zones.",
+      callout:{label:"REMEMBER",text:"Recently active areas stay hazardous even when nothing appears to be moving."}
+    },
+    {
+      heading:"Charging, Tapping, and Slag Work Need Spacing and Communication",
+      sub:"Restricted lines exist to keep people out of thermal and impact pathways.",
+      body:"Charging and tapping change the hazard picture immediately. Operators, attendants, and nearby crews need clear communication on when the operation starts, where the active zone is, and what routes are closed. Barriers and floor markings are part of the control plan, not optional suggestions.",
+      list:[
+        "Do not bypass restricted lines for a better view.",
+        "Maintain full awareness of tools, hoses, and footing while working the deck.",
+        "Stop the task if spacing, route control, or communication breaks down."
+      ]
+    },
+    {
+      heading:"Furnace and Melt Deck Key Review",
+      sub:"Known charge, controlled access, hot-surface awareness, and route discipline prevent catastrophe.",
+      body:"The melt deck is not normal production space. Verify material condition before charging, treat surfaces as hot, respect barricades and restricted access, and stop work when conditions are unclear. The serious event usually begins with a casual shortcut or a bad assumption.",
+      callout:{label:"NEVER DO",text:"Never charge unknown or wet material. Never cross into the restricted zone during active furnace operations without authorization."}
+    }
+  ],
+  quiz:[
+    {q:"Why is the melt deck considered a controlled access zone?",options:["Because it is quieter than other areas","Because multiple severe hazards exist there at the same time","Because only supervisors like to work there","Because the lighting is lower"],answer:1},
+    {q:"Which type of material should never be introduced without confirmation?",options:["Known dry approved charge","Unknown, sealed, or wet material","Documented scrap already inspected","Approved process alloy"],answer:1},
+    {q:"What should you assume about furnace-area surfaces after visible activity stops?",options:["They are cool enough to touch","They may still be dangerously hot","Only the floor stays hot","They are safe after five minutes"],answer:1},
+    {q:"Why are restricted lines and barriers important during tapping or charging?",options:["They improve appearance","They keep people out of thermal and impact pathways","They only matter for visitors","They are optional if production is behind"],answer:1},
+    {q:"A worker wants to step inside the restricted line for a better view of a charge. What is the correct response?",options:["Allow it if they move quickly","Keep the line intact and deny entry unless authorized for the task","Let them in if they wear gloves","Allow it only after the charge starts"],answer:1},
+    {q:"What is the safest response to a piece of charge material with unknown contamination?",options:["Use it if the furnace is already hot","Reject or isolate it until it is verified safe","Add it last","Break it open on the deck"],answer:1},
+    {q:"What turns a quiet melt deck into a false-confidence hazard?",options:["Nothing visible is moving","Recently active surfaces and equipment may still be hot or energized","Workers are wearing PPE","The floor has been cleaned"],answer:1},
+    {q:"During active charging, what should happen to nearby travel routes?",options:["Remain open for convenience","Be controlled and communicated as needed","Be used only by visitors","Be ignored if forklifts are absent"],answer:1},
+    {q:"Which condition is most likely to trigger a severe furnace event?",options:["Known dry charge and clear communication","Wet or sealed material entering the process","Barricaded routes","Documented material verification"],answer:1},
+    {q:"What should a worker do if route control or communication breaks down during melt-deck work?",options:["Continue carefully","Stop the task and restore control before proceeding","Move closer to hear better","Rely on hand signals only"],answer:1},
+    {q:"Why is keeping escape paths clear important on the melt deck?",options:["It makes cleanup easier","Workers may need immediate safe egress during an upset","It is only for inspectors","It improves forklift speed"],answer:1},
+    {q:"Which statement best matches furnace safety expectations?",options:["Production speed takes priority once the charge begins","Known materials, controlled access, and disciplined spacing are required every time","Only operators need to respect barriers","Hot surfaces matter only during tapping"],answer:1}
+  ]
 },
-    ],
-    quiz: [
-      { q: "Why is moisture dangerous around molten metal?", options: ["It cools the area too fast", "It can create explosive steam expansion", "It makes floors easier to clean", "It reduces splash risk"], answer: 1 },
-      { q: "Who should be in the area during active hot-metal movement?", options: ["Anyone who wants a closer look", "Only authorized and controlled personnel", "Only the newest worker", "Visitors without escorts"], answer: 1 },
-{ q: "What should you assume about a ladle route during an active transfer?", options: ["It is safe to cross if you move quickly", "It is a restricted no-go path unless released by control of the move", "Only visitors must avoid it", "It is safe if no alarm is sounding"], answer: 1 },
-{ q: "Which condition is most likely to create a steam explosion hazard?", options: ["Dry refractory in controlled service", "A damp tool or wet charge material contacting molten metal", "A posted barricade line", "An empty aisle near the melt deck"], answer: 1 },
-{ q: "Why is distance considered a control around hot metal?", options: ["Because PPE is optional at long distance", "Because reducing exposure to splash, radiant heat, and travel paths lowers injury risk", "Because only supervisors need PPE", "Because distance removes the need for communication"], answer: 1 },
-{ q: "A visitor stops near a barricade to watch a pour. What is the correct action?", options: ["Allow it if they stay quiet", "Escort them out of the restricted zone immediately", "Let them stay if they wear safety glasses", "Ask them to stand closer to hear instructions"], answer: 1 },
-{ q: "What is the best response if you are unsure whether a vessel or path is still active?", options: ["Assume it is idle until proven otherwise", "Treat it as active and verify before approaching", "Tap the vessel to check temperature", "Wait for someone else to cross first"], answer: 1 },
-{ q: "Which statement is correct about PPE around molten metal?", options: ["PPE replaces distance and route control", "PPE helps, but spacing, dryness, and communication still control the event", "PPE is only for maintenance staff", "PPE removes splash-zone risk"], answer: 1 },
-{ q: "What is the right action if moisture is found on the floor or tools near hot-metal operations?", options: ["Continue carefully if production is behind", "Stop and correct the condition before work continues", "Cover it with dry sand and proceed without notice", "Move the moisture closer to the furnace so it dries faster"], answer: 1 },
-{ q: "Why should non-essential personnel stay clear during active hot-metal movement?", options: ["They slow down communication and can enter restricted paths unexpectedly", "They need less training time", "They can help by standing nearby", "They are only at risk during spills, not normal moves"], answer: 0 },
-{ q: "What is the most accurate rule for crossing a hot-metal path?", options: ["Cross whenever the vessel appears far enough away", "Cross only after the path is positively released and controlled", "Cross if you are wearing gloves", "Cross behind the vessel if you stay low"], answer: 1 },
-{ q: "A recently washed tool looks mostly dry. What should you do?", options: ["Use it if production needs it", "Keep it out of hot-metal service until it is confirmed dry and suitable", "Use it only for a short contact", "Warm it near the metal and then use it"], answer: 1 },
-    ],
-  },
-  {
-    path: "/furnace-melt-deck",
-    label: "Furnace & Melt Deck Safety",
-    short: "Charging, Tapping, Hot Surfaces, and Restricted Zones",
-    icon: "🏭",
-    color: "#FF7A00",
-    regulation: "Foundry furnace operations — charging and melt deck controls",
-    audience: "Melt operators, furnace support, maintenance, contractors, and approved supervisors",
-    minutes: 20,
-    slides: [
-      {
-        heading: "The Melt Deck Is a Controlled Access Zone",
-        sub: "Heat, electricity, moving charge materials, and molten metal exist together here.",
-        body: "The melt deck combines multiple severe hazards in one operating band: furnace electrical systems, charging operations, hot refractory surfaces, tapping, slag handling, and movement of materials. Only trained personnel should enter, and access should stay controlled during charging, tapping, or abnormal conditions.",
-      },
-      {
-        heading: "Charging Requires Material Discipline",
-        sub: "Unknown, sealed, wet, or contaminated charge is a major incident source.",
-        body: "Before materials enter the furnace process, operators should confirm they are expected, acceptable, and conditionally safe. Closed containers, wet scrap, incompatible materials, and mixed debris can create violent reactions, contamination, or process upsets.",
-        list: [
-          "Verify incoming charge condition before introduction.",
-          "Keep walkways and escape paths clear during furnace work.",
-          "Do not bypass restricted lines or barriers for a better view.",
-        ],
-      },
-      {
-        heading: "Hot Surfaces Stay Dangerous Long After Visible Activity Ends",
-        sub: "A quiet deck does not mean a cold deck.",
-        body: "Platforms, tools, refractory, sidewalls, ladle hardware, and nearby structural steel can retain heat well after a visible pour or tap is complete. Treat all furnace-area surfaces as potentially hot until confirmed otherwise and keep combustible items out of melt-deck zones.",
-        callout: { label: "RULE", text: "No one enters the melt deck for convenience. Entry is task-based, controlled, and deliberate." }
-      },
-    ],
-    quiz: [
-      { q: "What makes the melt deck a controlled access zone?", options: ["Only noise", "Multiple severe hazards operating together", "It is near the parking lot", "It is cooler than the rest of the foundry"], answer: 1 },
-      { q: "How should a quiet furnace area be treated after activity ends?", options: ["As cold and safe", "As potentially still hot and hazardous", "As open to visitors", "As a shortcut"], answer: 1 },
-    ],
-  },
-  {
-    path: "/silica-sand",
-    label: "Sand System / Dust / Silica Awareness",
-    short: "Molding Sand Handling and Airborne Dust Control",
-    icon: "🌫️",
-    color: "#C7A100",
-    regulation: "Foundry sand and dust control — dry material handling awareness",
-    audience: "Molding line workers, sand system operators, maintenance, contractors, and cleaning crews",
-    minutes: 18,
-    slides: [
-      {
-        heading: "The Sand System Is More Than a Conveyor Problem",
-        sub: "Dust generation can affect breathing zones, visibility, cleanliness, and equipment reliability.",
-        body: "The Dingfelder foundry process includes a dedicated molding and sand band with future sand tower integration above that band. Sand movement, transfer points, shakeout, reclaim, and cleaning tasks can all release dust. Even when a system is enclosed, leaks, housekeeping failures, or maintenance work can expose workers to airborne material.",
-        callout: { label: "KNOWLEDGE BASE ALIGNMENT", text: "The master specification identifies the molding and sand system as a core process band and the future sand tower as part of that architecture." }
-      },
-      {
-        heading: "Dry Cleanup Can Make Exposure Worse",
-        sub: "The wrong cleanup method turns settled material back into airborne dust.",
-        body: "Blowing dust with compressed air or sweeping aggressively can push dust back into breathing zones and across equipment. Follow site cleanup methods designed for dust control, and keep lids, guards, and collection points closed or restored after work.",
-        list: [
-          "Use approved cleanup methods, not improvised blowdown.",
-          "Keep collection points and covers in service after maintenance.",
-          "Report leaks or visible dust releases instead of working around them.",
-        ],
-      },
-      {
-        heading: "Dust Control Protects People and Process",
-        sub: "A clean, controlled sand system supports safer breathing and better operations.",
-        body: "Good dust control reduces nuisance accumulation, helps keep walkways visible, limits contamination of adjacent areas, and supports a safer environment for molding and maintenance tasks. Workers should treat repeated visible dust release as a system problem that needs correction, not as a normal condition to ignore.",
-      },
-    ],
-    quiz: [
-      { q: "Why is dry blowdown with compressed air a problem in dusty areas?", options: ["It always cools equipment too much", "It can drive settled dust back into the air", "It labels containers incorrectly", "It improves visibility"], answer: 1 },
-      { q: "What should workers do about visible repeated dust release?", options: ["Treat it as normal", "Report and correct the system issue", "Ignore it if production continues", "Push it into walkways"], answer: 1 },
-    ],
-  },
-  {
-    path: "/crane-ladle",
-    label: "Crane, Ladle & Suspended Load Safety",
-    short: "No-Go Zones, Lift Paths, and Communication Control",
-    icon: "🏗️",
-    color: "#FF8C00",
-    regulation: "Foundry lifting operations — suspended load and ladle movement control",
-    audience: "Foundry operators, crane support, maintenance, contractors, and affected personnel in lift zones",
-    minutes: 18,
-    slides: [
-      {
-        heading: "The Load Owns the Space Beneath It",
-        sub: "Nobody stands or walks under a suspended load. Ever.",
-        body: "Cranes and ladle systems move heavy, often high-consequence loads through operating space. A failure does not need to be complete to be catastrophic; a swing, sudden stop, spilled material, or hook snag can injure people well outside the obvious path. The first rule is simple: stay fully clear of the travel path and the drop zone.",
-      },
-      {
-        heading: "Lift Paths Must Be Protected",
-        sub: "Clear communication and separation prevent people from drifting into danger.",
-        body: "Lift paths should stay clear before motion begins. Spotters, operators, and affected crews need a common understanding of start point, destination, hold points, and no-go zones. Shortcuts through crane aisles and ladle travel lanes are unacceptable even when the crane appears stationary.",
-        list: [
-          "Respect floor markings, barriers, and verbal stop calls.",
-          "Never stand between a suspended load and a fixed object.",
-          "Do not approach for a closer look while a lift is underway.",
-        ],
-      },
-      {
-        heading: "Ladles Add Heat to the Suspended Load Hazard",
-        sub: "When the suspended load contains hot material, consequences rise sharply.",
-        body: "A ladle is not just heavy — it may also contain high-temperature material. That means the hazard includes both impact and thermal consequences. Treat ladle routes as special-risk corridors and maintain full clearance unless you are directly involved in the move.",
-        callout: { label: "RULE", text: "No one outruns a bad lift. Your protection is separation and discipline, not reaction time." }
-      },
-    ],
-    quiz: [
-      { q: "What is the rule for standing under a suspended load?", options: ["Allowed if the operator sees you", "Allowed for a quick shortcut", "Never permitted", "Allowed if the load is small"], answer: 2 },
-      { q: "Why are ladle lifts more severe than ordinary lifts?", options: ["They are quieter", "They combine load hazard with heat or molten contents", "They move slower", "They use painted hooks"], answer: 1 },
-    ],
-  },
-  {
-    path: "/propane-farm",
-    label: "Propane Farm Operations Safety",
-    short: "Storage, Ignition Control, and Emergency Distance",
-    icon: "🛢️",
-    color: "#B5FF00",
-    regulation: "Campus fuel gas safety — propane storage and release awareness",
-    audience: "Propane farm operators, maintenance, contractors, security, emergency response, and nearby support staff",
-    minutes: 18,
-    slides: [
-      {
-        heading: "The Campus Has a Major Propane Storage Hazard",
-        sub: "Treat the propane farm as a controlled ignition-sensitive area.",
-        body: "The Dingfelder campus includes a large propane storage farm supporting facility fuel systems. Propane is heavier than air, can travel to ignition sources, and can accumulate in low areas if released. Workers entering or working near the propane farm must control ignition sources, respect access limits, and understand emergency isolation and evacuation expectations.",
-      },
-      {
-        heading: "Normal Operations Must Stay Predictable",
-        sub: "Fuel transfer, inspection, and maintenance require disciplined control of the area.",
-        body: "During transfer or service work, vehicle movement, hot work, smoking, and unplanned electrical activity can create unacceptable ignition risk. Keep the area controlled, communicate active work, and stop immediately if odor, frost, noise, or instrument readings suggest abnormal release.",
-        list: [
-          "Control vehicle access and ignition sources.",
-          "Do not use improvised leak checks or unauthorized repair methods.",
-          "Know where to move if release or fire conditions develop.",
-        ],
-      },
-      {
-        heading: "Distance Is a Life-Saving Tool",
-        sub: "Do not crowd the scene of a gas release or fire.",
-        body: "For propane incidents, unneeded personnel should move away promptly and remain clear for responders and operators. Release conditions can change quickly, especially if vapor finds an ignition source or if pressure relief and fire conditions interact. Curiosity kills time and reduces safe options.",
-        callout: { label: "RULE", text: "If you are not assigned to the response, increase distance, report what you know, and stay accountable." }
-      },
-    ],
-    quiz: [
-      { q: "Why is propane especially hazardous after a release?", options: ["It is lighter than air and disappears instantly", "It can travel and collect in low areas before ignition", "It is harmless outdoors", "It only burns inside tanks"], answer: 1 },
-      { q: "What should unassigned personnel do during a propane incident?", options: ["Move closer for information", "Remain clear and accountable", "Test the leak with a flame", "Drive through the area quickly"], answer: 1 },
-    ],
-  },
-  {
-    path: "/food-chemical",
-    label: "Food Plant Chemical Safety & Sanitation",
-    short: "Cleaners, Sanitizers, Utility Separation, and Safe Use",
-    icon: "🥗",
-    color: "#00D77A",
-    regulation: "Food plant chemical and sanitation awareness — cleaners, sanitizers, and utility controls",
-    audience: "Salad dressing production, Juice From The Vine, sanitation teams, maintenance, and quality support",
-    minutes: 18,
-    slides: [
-      {
-        heading: "Food Plants Still Have Industrial Chemical Hazards",
-        sub: "Clean production does not mean low hazard.",
-        body: "The campus includes food and beverage operations with sanitation chemicals, cleaning systems, flavor or ingredient handling, and utilities that can still injure workers if misused. Chemical burns, eye injury, vapors, misconnection, and contamination risk often appear during cleanup, changeover, and line restoration.",
-      },
-      {
-        heading: "Sanitation Work Requires Separation and Verification",
-        sub: "Keep product systems, utility systems, and chemical systems clearly distinct.",
-        body: "Before applying any cleaner or sanitizer, confirm the circuit, the concentration, the target equipment, and the post-clean status. A misrouted hose, unlabeled tote, or incorrect reconnection can create both a worker safety issue and a product integrity failure.",
-        list: [
-          "Verify line identity before introducing any chemical.",
-          "Wear the listed PPE for splash and handling hazards.",
-          "Return the system to a known safe operating state after sanitation.",
-        ],
-      },
-      {
-        heading: "Cleaning Time Is Still Hazard Time",
-        sub: "Production being down does not reduce the need for control.",
-        body: "Slippery floors, open drains, wet hoses, and chemical application all create exposure during sanitation periods. Protect the area, use the right equipment, and communicate clearly so no one enters or restarts a system unexpectedly.",
-        callout: { label: "REMEMBER", text: "Food-safe does not mean skin-safe, eye-safe, or inhalation-safe." }
-      },
-    ],
-    quiz: [
-      { q: "Which statement is correct about food plant chemicals?", options: ["They are harmless because the plant makes food", "They still require labeling, PPE, and controlled use", "They can be stored in any unmarked bottle", "They do not need line verification"], answer: 1 },
-      { q: "What is a key step before introducing a cleaner or sanitizer?", options: ["Guess based on hose color", "Verify the line and target system", "Skip PPE during cleanup", "Start the pumps first"], answer: 1 },
-    ],
-  },
-  {
-    path: "/ammonia",
-    label: "Ammonia Refrigeration Awareness",
-    short: "Cold Systems, Leak Recognition, and Immediate Response",
-    icon: "❄️",
-    color: "#52E5FF",
-    regulation: "Refrigeration awareness — controlled response to ammonia system abnormal conditions",
-    audience: "Food plant workers, refrigeration support, maintenance, contractors, and nearby occupants",
-    minutes: 16,
-    slides: [
-      {
-        heading: "Refrigeration Systems Can Become Emergency Systems",
-        sub: "A utility room leak can become a site emergency quickly.",
-        body: "Ammonia refrigeration supports temperature-controlled operations but introduces a chemical release hazard when equipment, piping, seals, or maintenance conditions fail. The danger is not limited to technicians. Nearby occupants need to recognize abnormal odor, irritation, alarms, and area restrictions immediately.",
-      },
-      {
-        heading: "Do Not Investigate a Suspected Leak Alone",
-        sub: "Recognition and reporting come before troubleshooting.",
-        body: "If you suspect an ammonia release, do not attempt solo entry, improvised leak checks, or informal investigation. Follow the site alarm and evacuation rules, move crosswind or away as directed, and keep unauthorized personnel out of the affected zone until qualified responders take control.",
-        list: [
-          "Recognize odor, irritation, and alarm conditions early.",
-          "Do not re-enter until the area is released by authorized personnel.",
-          "Protect ingress paths for responders and utility support staff.",
-        ],
-      },
-      {
-        heading: "Utility Rooms Need Respect Even When Quiet",
-        sub: "Mechanical spaces demand controlled access and clear housekeeping.",
-        body: "Refrigeration spaces contain piping, valves, pressure equipment, and monitoring devices that should not be bypassed, blocked, or casually entered. Keep access clear, report abnormal frost, noise, odor, or instrument behavior, and treat any active release as a real emergency.",
-      },
-    ],
-    quiz: [
-      { q: "What should you do first if you suspect an ammonia leak?", options: ["Investigate by yourself", "Report it and follow site response procedures", "Ignore it if production is busy", "Open the system for a better look"], answer: 1 },
-      { q: "When can workers re-enter an affected area?", options: ["As soon as the odor seems lower", "Only after authorized release of the area", "After ten minutes", "When a coworker says it looks fine"], answer: 1 },
-    ],
-  },
-  {
-    path: "/retail-backroom",
-    label: "Retail Backroom / Baler / Compactor Safety",
-    short: "Backroom Traffic, Waste Equipment, and Lockout Awareness",
-    icon: "📦",
-    color: "#A36BFF",
-    regulation: "Retail support safety — controlled access to balers, compactors, and receiving areas",
-    audience: "Walmart support, receiving teams, stock associates, contractors, and supervisors",
-    minutes: 15,
-    slides: [
-      {
-        heading: "Retail Backrooms Are Industrial Spaces in Disguise",
-        sub: "Receiving, waste handling, and storage areas combine traffic and equipment risk.",
-        body: "The public sales floor may feel familiar, but the backroom runs like a compressed industrial warehouse. Pallets, carts, compactors, balers, powered equipment, and tight aisles create crush, struck-by, and caught-in hazards that require structure and discipline.",
-      },
-      {
-        heading: "Balers and Compactors Need Controlled Use",
-        sub: "These machines are not casual trash cans.",
-        body: "A baler or compactor can trap, crush, or unexpectedly move if used improperly. Only authorized personnel should operate them, access panels and jam-clearing tasks require the correct shutdown procedure, and no one should ever climb into or reach into equipment that is not fully controlled.",
-        list: [
-          "Do not bypass guards or interlocks.",
-          "Jam clearing is not a quick reach-in task.",
-          "Keep pedestrians out of the operating envelope.",
-        ],
-      },
-      {
-        heading: "Backroom Housekeeping Prevents Secondary Injuries",
-        sub: "Trips, unstable stacks, and blocked exits turn routine work into incidents.",
-        body: "Flattened boxes, shrink wrap, carts, and pallets build hazards quickly when the area gets busy. Keep aisles open, stage loads neatly, and do not let waste handling equipment become a congestion point.",
-        callout: { label: "RULE", text: "If equipment jams or guards are open, stop use and escalate the issue instead of improvising a fix." }
-      },
-    ],
-    quiz: [
-      { q: "Who should operate a baler or compactor?", options: ["Anyone in a hurry", "Only authorized personnel", "Customers if supervised", "Anyone wearing gloves"], answer: 1 },
-      { q: "What should happen if a baler jams?", options: ["Reach in quickly to clear it", "Stop use and follow the correct controlled procedure", "Kick the load into place", "Leave it running"], answer: 1 },
-    ],
-  },
-];
+{path:"/silica-sand",label:"Sand System / Dust / Silica Awareness",short:"Molding Sand Handling and Airborne Dust Control",icon:"🌫️",color:"#C7A100",regulation:"Foundry sand and dust control — dry material handling awareness",audience:"Molding line workers, sand system operators, maintenance, contractors, and cleaning crews",minutes:18,slides:[{heading:"The Sand System Is More Than a Conveyor Problem",sub:"Dust generation can affect breathing zones, visibility, cleanliness, and equipment reliability.",body:"The Dingfelder foundry process includes a dedicated molding and sand band with future sand tower integration above that band. Sand movement, transfer points, shakeout, reclaim, and cleaning tasks can all release dust. Even when a system is enclosed, leaks, housekeeping failures, or maintenance work can expose workers to airborne material.",callout:{label:"KNOWLEDGE BASE ALIGNMENT",text:"The master specification identifies the molding and sand system as a core process band and the future sand tower as part of that architecture."}},{heading:"Dry Cleanup Can Make Exposure Worse",sub:"The wrong cleanup method turns settled material back into airborne dust.",body:"Blowing dust with compressed air or sweeping aggressively can push dust back into breathing zones and across equipment. Follow site cleanup methods designed for dust control, and keep lids, guards, and collection points closed or restored after work.",list:["Use approved cleanup methods, not improvised blowdown.","Keep collection points and covers in service after maintenance.","Report leaks or visible dust releases instead of working around them."]},{heading:"Dust Control Protects People and Process",sub:"A clean, controlled sand system supports safer breathing and better operations.",body:"Good dust control reduces nuisance accumulation, helps keep walkways visible, limits contamination of adjacent areas, and supports a safer environment for molding and maintenance tasks. Workers should treat repeated visible dust release as a system problem that needs correction, not as a normal condition to ignore."}],quiz:[{q:"Why is dry blowdown with compressed air a problem in dusty areas?",options:["It always cools equipment too much","It can drive settled dust back into the air","It labels containers incorrectly","It improves visibility"],answer:1},{q:"What should workers do about visible repeated dust release?",options:["Treat it as normal","Report and correct the system issue","Ignore it if production continues","Push it into walkways"],answer:1}]},
+{
+  path:"/crane-ladle",
+  label:"Crane, Ladle & Suspended Load Safety",
+  short:"No-Go Zones, Lift Paths, and Communication Control",
+  icon:"🏗️",
+  color:"#FF8C00",
+  regulation:"Foundry lifting operations — suspended load and ladle movement control",
+  audience:"Foundry operators, crane support, maintenance, contractors, and affected personnel in lift zones",
+  minutes:20,
+  slides:[
+    {
+      heading:"The Load Owns the Space Beneath It",
+      sub:"Nobody stands or walks under a suspended load. Ever.",
+      body:"Cranes and ladle systems move heavy, high-consequence loads through operating space. A failure does not need to be complete to be catastrophic; a swing, sudden stop, spilled material, or hook snag can injure people well outside the obvious path. The first rule is simple: stay fully clear of the travel path and the drop zone."
+    },
+    {
+      heading:"Lift Paths Must Be Protected Before Motion Begins",
+      sub:"Clear communication and separation keep people from drifting into danger.",
+      body:"Lift paths should stay clear before movement starts. Spotters, operators, and affected crews need a common understanding of start point, destination, hold points, and no-go zones. Shortcuts through crane aisles and ladle travel lanes are unacceptable even when the crane appears stationary.",
+      list:[
+        "Respect floor markings, barriers, and verbal stop calls.",
+        "Never stand between a suspended load and a fixed object.",
+        "Do not approach for a closer look while a lift is underway."
+      ]
+    },
+    {
+      heading:"Ladles Add Thermal Consequences to the Lift Hazard",
+      sub:"When the suspended load contains hot material, distance matters even more.",
+      body:"A ladle is not just heavy — it may also contain high-temperature material. That means the hazard includes both impact and thermal consequences. Treat ladle routes as special-risk corridors and maintain full clearance unless you are directly involved in the move.",
+      callout:{label:"RULE",text:"No unauthorized crossings through crane or ladle routes during active movement."}
+    },
+    {
+      heading:"Communication Failures Turn Predictable Lifts Into Surprise Events",
+      sub:"If crews do not share the same picture, the path will not stay clear.",
+      body:"Operators, riggers, and nearby workers need clean signals and clear authority. If visibility is limited, if a spotter loses sight of the path, or if people drift into the zone, the move should be slowed or stopped until full control is restored.",
+      list:[
+        "One clear signal set beats multiple conflicting voices.",
+        "Stop the move when path control is lost.",
+        "Do not restart until all personnel are accounted for and clear."
+      ]
+    },
+    {
+      heading:"Crane and Ladle Key Review",
+      sub:"Suspended loads, no-go zones, path control, and communication discipline prevent the event.",
+      body:"The safest crane move is the one everyone understands before motion starts. Keep people out of the path, never move under a load, treat ladle routes as thermal corridors, and stop the operation if the zone is not controlled.",
+      callout:{label:"NEVER DO",text:"Never walk under, reach toward, or stand beside a suspended load for a better view or a faster shortcut."}
+    }
+  ],
+  quiz:[
+    {q:"What is the first rule of suspended load safety?",options:["Stay close so the operator can see you","Never stand or walk under the load","Follow the shortest route through the aisle","Touch the load to steady it"],answer:1},
+    {q:"When should a lift path be protected?",options:["After motion begins","Before motion begins","Only for heavy loads","Only if visitors are present"],answer:1},
+    {q:"Why are ladle routes treated as special-risk corridors?",options:["They are painted differently","They may combine suspended-load and thermal consequences","They are only for supervisors","They remove the need for spotters"],answer:1},
+    {q:"A worker sees the crane paused and wants to cross the route quickly. What is the safest response?",options:["Cross because the hook is not moving","Stay clear until the path is positively released and controlled","Cross if wearing PPE","Cross behind the operator"],answer:1},
+    {q:"What should happen if people drift into the lift zone?",options:["Speed up to clear the area faster","Slow or stop the move until the zone is controlled again","Ignore them if the load is stable","Signal with one hand and continue"],answer:1},
+    {q:"Why is standing between a load and a fixed object dangerous?",options:["It improves communication","It creates a crush zone if the load swings or shifts","It only matters outdoors","It stabilizes the load"],answer:1},
+    {q:"Which condition requires the move to stop?",options:["A clear path and consistent signals","Loss of path visibility or control","A posted barrier","A designated travel lane"],answer:1},
+    {q:"What is the safest reason to approach a ladle during movement?",options:["To get a better view","Only if you are directly assigned, authorized, and controlled in the move","To ask a question","To shorten a walking route"],answer:1},
+    {q:"What is the best communication rule during a lift?",options:["Accept multiple commands so everyone is involved","Use clear agreed signal authority and stop on confusion","Assume the operator knows the destination","Rely only on hand gestures with no stop call"],answer:1},
+    {q:"Why can a suspended-load incident still be catastrophic without a full equipment failure?",options:["Loads never swing","Snag, sudden stop, swing, or spill can still injure people","Only operators are at risk","Because the hook is always the heaviest part"],answer:1},
+    {q:"What should nearby workers do when a crane move begins?",options:["Continue normal travel through the aisle","Clear the path and stay out of the drop zone","Walk alongside for awareness","Stand beneath the load line"],answer:1},
+    {q:"Which statement best reflects crane and ladle discipline?",options:["If the load looks stable, the path can stay open","The path must remain controlled until the move is complete and released","Only maintenance crews need to stay clear","Thermal risk does not matter if the load is suspended"],answer:1}
+  ]
+},
+{path:"/propane-farm",label:"Propane Farm Operations Safety",short:"Storage, Ignition Control, and Emergency Distance",icon:"🛢️",color:"#B5FF00",regulation:"Campus fuel gas safety — propane storage and release awareness",audience:"Propane farm operators, maintenance, contractors, security, emergency response, and nearby support staff",minutes:18,slides:[{heading:"The Campus Has a Major Propane Storage Hazard",sub:"Treat the propane farm as a controlled ignition-sensitive area.",body:"The Dingfelder campus includes a large propane storage farm supporting facility fuel systems. Propane is heavier than air, can travel to ignition sources, and can accumulate in low areas if released. Workers entering or working near the propane farm must control ignition sources, respect access limits, and understand emergency isolation and evacuation expectations."},{heading:"Normal Operations Must Stay Predictable",sub:"Fuel transfer, inspection, and maintenance require disciplined control of the area.",body:"During transfer or service work, vehicle movement, hot work, smoking, and unplanned electrical activity can create unacceptable ignition risk. Keep the area controlled, communicate active work, and stop immediately if odor, frost, noise, or instrument readings suggest abnormal release.",list:["Control vehicle access and ignition sources.","Do not use improvised leak checks or unauthorized repair methods.","Know where to move if release or fire conditions develop."]},{heading:"Distance Is a Life-Saving Tool",sub:"Do not crowd the scene of a gas release or fire.",body:"For propane incidents, unneeded personnel should move away promptly and remain clear for responders and operators. Release conditions can change quickly, especially if vapor finds an ignition source or if pressure relief and fire conditions interact. Curiosity kills time and reduces safe options.",callout:{label:"RULE",text:"If you are not assigned to the response, increase distance, report what you know, and stay accountable."}}],quiz:[{q:"Why is propane especially hazardous after a release?",options:["It is lighter than air and disappears instantly","It can travel and collect in low areas before ignition","It is harmless outdoors","It only burns inside tanks"],answer:1},{q:"What should unassigned personnel do during a propane incident?",options:["Move closer for information","Remain clear and accountable","Test the leak with a flame","Drive through the area quickly"],answer:1}]},
+{path:"/food-chemical",label:"Food Plant Chemical Safety & Sanitation",short:"Cleaners, Sanitizers, Utility Separation, and Safe Use",icon:"🥗",color:"#00D77A",regulation:"Food plant chemical and sanitation awareness — cleaners, sanitizers, and utility controls",audience:"Salad dressing production, Juice From The Vine, sanitation teams, maintenance, and quality support",minutes:18,slides:[{heading:"Food Plants Still Have Industrial Chemical Hazards",sub:"Clean production does not mean low hazard.",body:"The campus includes food and beverage operations with sanitation chemicals, cleaning systems, flavor or ingredient handling, and utilities that can still injure workers if misused. Chemical burns, eye injury, vapors, misconnection, and contamination risk often appear during cleanup, changeover, and line restoration."},{heading:"Sanitation Work Requires Separation and Verification",sub:"Keep product systems, utility systems, and chemical systems clearly distinct.",body:"Before applying any cleaner or sanitizer, confirm the circuit, the concentration, the target equipment, and the post-clean status. A misrouted hose, unlabeled tote, or incorrect reconnection can create both a worker safety issue and a product integrity failure.",list:["Verify line identity before introducing any chemical.","Wear the listed PPE for splash and handling hazards.","Return the system to a known safe operating state after sanitation."]},{heading:"Cleaning Time Is Still Hazard Time",sub:"Production being down does not reduce the need for control.",body:"Slippery floors, open drains, wet hoses, and chemical application all create exposure during sanitation periods. Protect the area, use the right equipment, and communicate clearly so no one enters or restarts a system unexpectedly.",callout:{label:"REMEMBER",text:"Food-safe does not mean skin-safe, eye-safe, or inhalation-safe."}}],quiz:[{q:"Which statement is correct about food plant chemicals?",options:["They are harmless because the plant makes food","They still require labeling, PPE, and controlled use","They can be stored in any unmarked bottle","They do not need line verification"],answer:1},{q:"What is a key step before introducing a cleaner or sanitizer?",options:["Guess based on hose color","Verify the line and target system","Skip PPE during cleanup","Start the pumps first"],answer:1}]},
+{path:"/ammonia",label:"Ammonia Refrigeration Awareness",short:"Cold Systems, Leak Recognition, and Immediate Response",icon:"❄️",color:"#52E5FF",regulation:"Refrigeration awareness — controlled response to ammonia system abnormal conditions",audience:"Food plant workers, refrigeration support, maintenance, contractors, and nearby occupants",minutes:16,slides:[{heading:"Refrigeration Systems Can Become Emergency Systems",sub:"A utility room leak can become a site emergency quickly.",body:"Ammonia refrigeration supports temperature-controlled operations but introduces a chemical release hazard when equipment, piping, seals, or maintenance conditions fail. The danger is not limited to technicians. Nearby occupants need to recognize abnormal odor, irritation, alarms, and area restrictions immediately."},{heading:"Do Not Investigate a Suspected Leak Alone",sub:"Recognition and reporting come before troubleshooting.",body:"If you suspect an ammonia release, do not attempt solo entry, improvised leak checks, or informal investigation. Follow the site alarm and evacuation rules, move crosswind or away as directed, and keep unauthorized personnel out of the affected zone until qualified responders take control.",list:["Recognize odor, irritation, and alarm conditions early.","Do not re-enter until the area is released by authorized personnel.","Protect ingress paths for responders and utility support staff."]},{heading:"Utility Rooms Need Respect Even When Quiet",sub:"Mechanical spaces demand controlled access and clear housekeeping.",body:"Refrigeration spaces contain piping, valves, pressure equipment, and monitoring devices that should not be bypassed, blocked, or casually entered. Keep access clear, report abnormal frost, noise, odor, or instrument behavior, and treat any active release as a real emergency."}],quiz:[{q:"What should you do first if you suspect an ammonia leak?",options:["Investigate by yourself","Report it and follow site response procedures","Ignore it if production is busy","Open the system for a better look"],answer:1},{q:"When can workers re-enter an affected area?",options:["As soon as the odor seems lower","Only after authorized release of the area","After ten minutes","When a coworker says it looks fine"],answer:1}]},
+{path:"/retail-backroom",label:"Retail Backroom / Baler / Compactor Safety",short:"Backroom Traffic, Waste Equipment, and Lockout Awareness",icon:"📦",color:"#A36BFF",regulation:"Retail support safety — controlled access to balers, compactors, and receiving areas",audience:"Walmart support, receiving teams, stock associates, contractors, and supervisors",minutes:15,slides:[{heading:"Retail Backrooms Are Industrial Spaces in Disguise",sub:"Receiving, waste handling, and storage areas combine traffic and equipment risk.",body:"The public sales floor may feel familiar, but the backroom runs like a compressed industrial warehouse. Pallets, carts, compactors, balers, powered equipment, and tight aisles create crush, struck-by, and caught-in hazards that require structure and discipline."},{heading:"Balers and Compactors Need Controlled Use",sub:"These machines are not casual trash cans.",body:"A baler or compactor can trap, crush, or unexpectedly move if used improperly. Only authorized personnel should operate them, access panels and jam-clearing tasks require the correct shutdown procedure, and no one should ever climb into or reach into equipment that is not fully controlled.",list:["Do not bypass guards or interlocks.","Jam clearing is not a quick reach-in task.","Keep pedestrians out of the operating envelope."]},{heading:"Backroom Housekeeping Prevents Secondary Injuries",sub:"Trips, unstable stacks, and blocked exits turn routine work into incidents.",body:"Flattened boxes, shrink wrap, carts, and pallets build hazards quickly when the area gets busy. Keep aisles open, stage loads neatly, and do not let waste handling equipment become a congestion point.",callout:{label:"RULE",text:"If equipment jams or guards are open, stop use and escalate the issue instead of improvising a fix."}}],quiz:[{q:"Who should operate a baler or compactor?",options:["Anyone in a hurry","Only authorized personnel","Customers if supervised","Anyone wearing gloves"],answer:1},{q:"What should happen if a baler jams?",options:["Reach in quickly to clear it","Stop use and follow the correct controlled procedure","Kick the load into place","Leave it running"],answer:1}]}
+]
 
-export function createModuleComponent(modulePath) {
-  const module = PHASE1_MODULES.find((item) => item.path === modulePath);
-  return function Phase1ModuleWrapper() {
-    return <TrainingModuleShell module={module} />;
-  };
-}
-
-export const HazardCommunicationTraining = createModuleComponent("/hazcom");
-export const PPEFundamentalsTraining = createModuleComponent("/ppe");
-export const ForkliftSafetyTraining = createModuleComponent("/forklift");
-export const FireExtinguisherTraining = createModuleComponent("/fire-extinguishers");
-export const MoltenMetalTraining = createModuleComponent("/molten-metal");
-export const FurnaceMeltDeckTraining = createModuleComponent("/furnace-melt-deck");
-export const SilicaSandTraining = createModuleComponent("/silica-sand");
-export const CraneLadleTraining = createModuleComponent("/crane-ladle");
-export const PropaneFarmTraining = createModuleComponent("/propane-farm");
-export const FoodChemicalTraining = createModuleComponent("/food-chemical");
-export const AmmoniaTraining = createModuleComponent("/ammonia");
-export const RetailBackroomTraining = createModuleComponent("/retail-backroom");
+export const HazardCommunicationTraining = () => <TrainingModuleShell module={PHASE1_MODULES[0]} />
+export const PPEFundamentalsTraining = () => <TrainingModuleShell module={PHASE1_MODULES[1]} />
+export const ForkliftSafetyTraining = () => <TrainingModuleShell module={PHASE1_MODULES[2]} />
+export const FireExtinguisherTraining = () => <TrainingModuleShell module={PHASE1_MODULES[3]} />
+export const MoltenMetalTraining = () => <TrainingModuleShell module={PHASE1_MODULES[4]} />
+export const FurnaceMeltDeckTraining = () => <TrainingModuleShell module={PHASE1_MODULES[5]} />
+export const SilicaSandTraining = () => <TrainingModuleShell module={PHASE1_MODULES[6]} />
+export const CraneLadleTraining = () => <TrainingModuleShell module={PHASE1_MODULES[7]} />
+export const PropaneFarmTraining = () => <TrainingModuleShell module={PHASE1_MODULES[8]} />
+export const FoodChemicalTraining = () => <TrainingModuleShell module={PHASE1_MODULES[9]} />
+export const AmmoniaTraining = () => <TrainingModuleShell module={PHASE1_MODULES[10]} />
+export const RetailBackroomTraining = () => <TrainingModuleShell module={PHASE1_MODULES[11]} />

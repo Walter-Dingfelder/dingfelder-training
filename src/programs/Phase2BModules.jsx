@@ -1,372 +1,88 @@
-
-import TrainingModuleShell from "./TrainingModuleShell.jsx";
-
+import TrainingModuleShell from './TrainingModuleShell.jsx'
 export const PHASE2B_MODULES = [
-  {
-    path: "/machine-guarding-molding-line",
-    label: "Machine Guarding — Molding Line & Conveyors",
-    short: "Guards, Nip Points, Interlocks, and Jam Response",
-    icon: "🛡️",
-    color: "#00BFFF",
-    regulation: "OSHA 29 CFR 1910 Subpart O",
-    audience: "Foundry operators, conveyor attendants, maintenance, and line leads",
-    minutes: 18,
-    slides: [
-      {
-        heading: "A Guard Exists Because Contact Happens Fast",
-        sub: "Rotating, reciprocating, and in-running hazards close the gap before a worker can react.",
-        body: "On the Dingfelder molding line, conveyors, drive chains, rollers, transfer points, and powered mechanisms create predictable contact zones. Guards, covers, barriers, and interlocks are not optional accessories. They are part of the machine. If a worker can reach a nip point, pinch point, rotating shaft, or driven belt during normal work, the machine is not adequately guarded.",
-        list: [
-          "Do not operate with missing, loose, or opened guards.",
-          "Treat access doors and interlocks as safety devices, not convenience features.",
-          "Keep hands, tools, and clothing outside moving equipment envelopes.",
-        ],
-        callout: { label: "RULE", text: "If a guard is removed for service, the equipment stays under controlled energy isolation until the guard is restored." }
-      },
-      {
-        heading: "Jam Clearing Is Not Production Work",
-        sub: "Most line contact incidents occur during cleanup, alignment, or unplanned intervention.",
-        body: "When sand, molds, scrap, or product shift out of position, workers are tempted to reach into the line because the problem looks minor. That is exactly when serious injury happens. A jam must be treated as an energy-control event. Stop the line, isolate energy where required, verify motion has stopped, and clear the condition using approved tools and procedures.",
-        list: [
-          "Never reach through a guard opening while motion exists.",
-          "Use designated tools for clearing buildup or stuck material.",
-          "Restart only after the area is clear and all workers are accounted for.",
-        ],
-      },
-      {
-        heading: "Guarding Also Protects the Next Worker",
-        sub: "Temporary shortcuts become permanent hazards if not corrected immediately.",
-        body: "A tied-back interlock, removed panel, or improvised opening may help one task finish, but it leaves the next operator exposed to the same hazard with less warning. Inspect guards at startup, after maintenance, and after any upset condition. Escalate defects immediately instead of normalizing them.",
-        callout: { label: "REMEMBER", text: "You are not clearing a nuisance. You are controlling a machine hazard with injury potential measured in fractions of a second." }
-      },
-    ],
-    quiz: [
-      { q: "When is it acceptable to run a conveyor with a missing guard?", options: ["When production is behind", "Only during daylight", "Never during normal operation", "Only if gloves are worn"], answer: 2 },
-      { q: "How should a jam be handled?", options: ["Reach in quickly before it worsens", "Treat it as an energy-control event and clear it safely", "Ask another operator to hold the guard", "Restart repeatedly until it clears"], answer: 1 },
-      { q: "What should you do with an interlock that keeps stopping production?", options: ["Tie it back", "Report and correct the issue, do not bypass it", "Tape over the sensor", "Run slower without reporting it"], answer: 1 },
-    ],
-  },
-  {
-    path: "/foundry-heat-stress-burn-prevention",
-    label: "Foundry Heat Stress & Burn Prevention",
-    short: "Radiant Heat, Dehydration, and Thermal Injury Control",
-    icon: "🌡️",
-    color: "#FF6B00",
-    regulation: "Heat illness prevention and thermal hazard control",
-    audience: "Melt deck crews, foundry operators, maintenance, and contractors in hot zones",
-    minutes: 16,
-    slides: [
-      {
-        heading: "Heat Load Builds Before Symptoms Feel Serious",
-        sub: "Radiant heat, heavy PPE, and physical work can quietly drive a worker into distress.",
-        body: "Foundry work combines ambient heat, hot surfaces, molten metal operations, long walking distances, and task urgency. A worker may still be functioning while dehydration and heat strain are already reducing judgment and reaction time. Control starts with water, rest, recovery, monitoring, and realistic pacing—not with toughness.",
-        list: [
-          "Hydrate before the shift and continue during the work period.",
-          "Use planned recovery breaks in cooler areas before symptoms escalate.",
-          "Watch for headache, dizziness, confusion, cramping, and unusual fatigue.",
-        ],
-        callout: { label: "RULE", text: "Heat symptoms are reportable conditions. Do not hide them to finish the task." }
-      },
-      {
-        heading: "Burn Prevention Is About Distance and Control",
-        sub: "Most serious burns happen when workers drift too close to a heat source or hot object without realizing the exposure path.",
-        body: "Hot metal, hot tooling, ladles, furnace doors, heated castings, and even recently shut-down equipment can cause instant injury. Respect marked boundaries, use tools with adequate reach, and verify that surfaces are cool enough to handle before contact. Gloves help, but they do not make hot objects safe to touch indefinitely.",
-        list: [
-          "Do not assume dark surfaces are cool.",
-          "Use face shields, sleeves, and task-specific thermal PPE where required.",
-          "Plan travel routes to avoid brushing past hot equipment or containers.",
-        ],
-      },
-      {
-        heading: "Buddy Awareness Prevents Late Recognition",
-        sub: "The worker in heat stress may be the last person to notice it.",
-        body: "Confusion, slowed speech, irritability, poor coordination, and poor decisions are warning signs that must trigger intervention. If a worker becomes symptomatic, move them to a cooler area, notify supervision, and follow the site response plan promptly. Waiting for collapse is failure, not toughness.",
-        callout: { label: "EMERGENCY", text: "Heat stroke is a medical emergency. Act immediately if confusion, collapse, or loss of responsiveness appears." }
-      },
-    ],
-    quiz: [
-      { q: "What is the best first defense against heat stress?", options: ["Waiting until you feel faint", "Hydration, recovery breaks, and monitoring", "Working faster to finish sooner", "Removing all PPE near hot work"], answer: 1 },
-      { q: "What should you assume about a recently used metal surface?", options: ["It is cool if it looks dark", "It may still be hot enough to burn", "It is safe if someone else touched it earlier", "It is safe after one minute"], answer: 1 },
-      { q: "What should happen if a worker shows confusion in a hot zone?", options: ["Tell them to push through", "Treat it as a possible heat emergency and respond immediately", "Wait until break time", "Move them closer to fresh air only if production allows"], answer: 1 },
-    ],
-  },
-  {
-    path: "/core-room-binder-ventilation",
-    label: "Core Room / Binder / Ventilation Safety",
-    short: "Resins, Vapors, Mixing Areas, and Airflow Control",
-    icon: "🧴",
-    color: "#22CC66",
-    regulation: "Hazard communication, ventilation, and exposure control",
-    audience: "Core room operators, foundry technicians, maintenance, and supervisors",
-    minutes: 17,
-    slides: [
-      {
-        heading: "Binder Systems Create Exposure Without Visible Warning",
-        sub: "Resins, catalysts, and additives can expose workers through vapor, splash, and contact.",
-        body: "In core rooms and sand preparation areas, chemical systems may be transferred, mixed, metered, or cleaned down during routine work. The exposure path is not limited to dramatic spills. Small leaks, open lids, poor housekeeping, and reduced airflow can create repeated low-level exposure that workers normalize over time.",
-        list: [
-          "Keep containers closed when not actively in use.",
-          "Check transfer connections and hoses before starting the task.",
-          "Know the required gloves, eye protection, and ventilation controls for the specific chemical system.",
-        ],
-        callout: { label: "RULE", text: "Never bypass local exhaust or disable ventilation to reduce noise or drafts." }
-      },
-      {
-        heading: "Ventilation Is Part of the Process",
-        sub: "Air movement is an engineered control, not an optional comfort setting.",
-        body: "If local exhaust, enclosure flow, or room ventilation is reduced, vapors may accumulate at the operator position or spread into adjacent work areas. Report airflow problems immediately, especially after maintenance, filter changes, or process adjustments. A room that smells stronger than normal is giving you useful information.",
-        list: [
-          "Do not assume a fan pointed across the room replaces designed exhaust.",
-          "Maintain clear access around intakes, exhaust points, and control panels.",
-          "Escalate repeated odors, eye irritation, or headaches tied to the process area.",
-        ],
-      },
-      {
-        heading: "Cleanup and Container Handling Need the Same Discipline",
-        sub: "Exposure often spikes during end-of-task activities.",
-        body: "Wiping, draining, container changeout, pump servicing, and residue removal often happen when attention is lower and production pressure is high. Slow down during these transitions. Use the right absorbents, label waste correctly, and keep incompatible chemicals segregated.",
-        callout: { label: "REMEMBER", text: "A quick wipe-up without PPE can create more exposure than the original task." }
-      },
-    ],
-    quiz: [
-      { q: "Why is ventilation important in the core room?", options: ["Only for temperature comfort", "It controls airborne exposure from process chemicals", "It keeps machines cleaner", "It replaces PPE completely"], answer: 1 },
-      { q: "What should you do if process odors are suddenly stronger than normal?", options: ["Ignore them if production is running", "Report and investigate the airflow or process condition", "Open random doors for cross breeze", "Mask the odor with another product"], answer: 1 },
-      { q: "When can container lids be left open?", options: ["Any time the room is quiet", "Only while actively using the chemical as required by the task", "Whenever ventilation is running", "Whenever supervisors are absent"], answer: 1 },
-    ],
-  },
-  {
-    path: "/shakeout-cleaning-grinding",
-    label: "Shakeout / Cleaning / Grinding Area Safety",
-    short: "Dust, Flying Debris, Noise, Sparks, and Tool Control",
-    icon: "⚙️",
-    color: "#A855F7",
-    regulation: "Machine, abrasive tool, and airborne hazard controls",
-    audience: "Cleaning room operators, grinders, shakeout personnel, and maintenance teams",
-    minutes: 18,
-    slides: [
-      {
-        heading: "The Cleaning Area Has Multiple Hazards at Once",
-        sub: "Noise, dust, vibration, flying particles, and movement overlap in one workspace.",
-        body: "Shakeout and cleaning operations expose workers to hot castings, abrasive wheels, chipping tools, rough edges, dust clouds, and striking hazards from parts or fixtures. Because the work is repetitive, it can feel routine, but the energy level stays high. Control starts with clear zones, good housekeeping, correct PPE, and tool inspection before each use.",
-        list: [
-          "Use face, eye, hand, and hearing protection matched to the task.",
-          "Keep bystanders outside the debris and spark zone.",
-          "Inspect abrasive wheels, guards, hoses, and fittings before use.",
-        ],
-        callout: { label: "RULE", text: "Do not use cracked wheels, missing guards, or damaged pneumatic tools." }
-      },
-      {
-        heading: "Part Stability Matters Before Tool Contact",
-        sub: "A stable casting is easier to clean and far less likely to injure the operator.",
-        body: "Grinding or chipping a part that can roll, rock, shift, or kick out is a setup failure. Secure the work, confirm footing, and maintain a stance that protects you if the tool binds or the part moves unexpectedly. A hurried first contact often creates the worst reaction.",
-        list: [
-          "Brace or fixture parts before aggressive cleaning work.",
-          "Keep cords and hoses routed away from your feet and the wheel path.",
-          "Approach the work gradually to feel tool behavior before full force is applied.",
-        ],
-      },
-      {
-        heading: "Dust and Noise Build Risk Over Time",
-        sub: "The absence of immediate pain does not mean the exposure is harmless.",
-        body: "Repeated exposure to particulate and high noise levels can create lasting injury even when the task seems controlled. Use assigned respiratory and hearing protection, keep dust systems functioning, and report weak airflow or unusual dust accumulation. Do not remove protection to improve communication—use planned signals and safe pauses instead.",
-        callout: { label: "REMEMBER", text: "Long-term harm often comes from exposures that feel ordinary in the moment." }
-      },
-    ],
-    quiz: [
-      { q: "What should happen before grinding begins?", options: ["Start first and adjust your stance later", "Inspect the tool, guard, wheel, and work stability", "Remove hearing protection for better awareness", "Let bystanders stand close for communication"], answer: 1 },
-      { q: "Why must bystanders stay out of the area?", options: ["To reduce conversation", "Because sparks, debris, and part movement create strike hazards", "Only to avoid dust on clothing", "It is only for visitors"], answer: 1 },
-      { q: "What should you do if dust collection seems weak?", options: ["Keep working and finish quickly", "Report and correct the condition instead of normalizing the exposure", "Use water on electrical tools", "Open your face shield"], answer: 1 },
-    ],
-  },
-  {
-    path: "/beam-mill-rolling-line",
-    label: "Beam Mill Rolling Line Safety",
-    short: "Hot Steel Flow, Pinch Zones, and Runout Awareness",
-    icon: "🏗️",
-    color: "#FF3300",
-    regulation: "Hot metal handling and rolling line hazard control",
-    audience: "Beam mill operators, maintenance, utilities, and line support personnel",
-    minutes: 18,
-    slides: [
-      {
-        heading: "The Rolling Line Owns the Travel Path",
-        sub: "Once steel moves, workers must already be outside the hazard envelope.",
-        body: "Beam mill operations involve hot moving product, guides, rollers, pinch points, scale, noise, and restricted escape time. A worker cannot outrun steel or react faster than the line changes. Safe work starts with designated travel routes, protected operator locations, and strict respect for exclusion zones around moving stock and runout tables.",
-        list: [
-          "Stay outside marked runout and transfer zones unless the task is controlled.",
-          "Do not cross active line paths because the product appears distant or slow.",
-          "Maintain constant awareness of where the next piece can travel if conditions shift.",
-        ],
-        callout: { label: "RULE", text: "Never enter a rolling or runout area on assumption alone. Verify the line state and authorization first." }
-      },
-      {
-        heading: "Scale, Heat, and Motion Create Combined Exposure",
-        sub: "The hazard is not just the steel. It is the environment around it.",
-        body: "Hot scale, radiant heat, rotating equipment, and reduced visibility can turn a simple inspection into a high-risk task. Use the designated observation points, keep PPE complete, and avoid stepping into cleanup or access areas while the line remains active. Communication must be confirmed, not assumed over noise.",
-        list: [
-          "Use hand signals or radios that crews understand in the noise environment.",
-          "Respect barriers even when the obstruction feels temporary.",
-          "Treat falling scale and hot debris as strike and burn hazards.",
-        ],
-      },
-      {
-        heading: "Upsets Require Discipline, Not Curiosity",
-        sub: "Misfeeds and line disturbances attract workers into the danger zone.",
-        body: "When material twists, stalls, or misaligns, the line can release force unpredictably. The safest response is controlled shutdown, isolation, and supervised correction using the approved procedure. Walking in for a quick look or quick shove is how severe injuries occur.",
-        callout: { label: "REMEMBER", text: "Production urgency is never a reason to enter a hot rolling hazard zone without control." }
-      },
-    ],
-    quiz: [
-      { q: "When should you enter an active runout area?", options: ["When the steel looks far enough away", "Only after the line state is verified and the task is controlled", "Whenever you are wearing a hard hat", "During shift change"], answer: 1 },
-      { q: "What makes the rolling line hazardous?", options: ["Only hot steel temperature", "Motion, pinch points, heat, scale, and limited reaction time", "Only noise", "Only slippery floors"], answer: 1 },
-      { q: "How should line upsets be handled?", options: ["Approach immediately and kick material into line", "Use controlled shutdown and the approved correction process", "Ignore them unless a supervisor sees them", "Stand closer for a better look"], answer: 1 },
-    ],
-  },
-  {
-    path: "/overhead-crane-rigging",
-    label: "Overhead Crane & Rigging",
-    short: "Suspended Loads, Travel Paths, and Attachment Control",
-    icon: "🏗️",
-    color: "#FFD100",
-    regulation: "Crane operation, rigging inspection, and suspended load control",
-    audience: "Crane operators, riggers, foundry teams, mill crews, and maintenance personnel",
-    minutes: 17,
-    slides: [
-      {
-        heading: "The Load Path Must Stay Clear",
-        sub: "A suspended load can injure even without dropping.",
-        body: "Crane work creates strike, crush, and caught-between hazards wherever the load can travel, swing, or land. Nobody should stand under a suspended load, walk beside it in a pinch zone, or place body parts between the load and a fixed object. The safest path is planned before the hook rises.",
-        list: [
-          "Clear the route before lifting, not while the load is moving.",
-          "Use tag lines where appropriate to control rotation and drift.",
-          "Keep non-essential personnel outside the lift area.",
-        ],
-        callout: { label: "RULE", text: "Hands off pinch zones. Guide loads from safe positions only." }
-      },
-      {
-        heading: "Rigging Is a Pre-Lift Decision",
-        sub: "Most lift failures start before the crane moves.",
-        body: "Slings, hooks, shackles, magnets, grabs, and custom devices must match the load shape, center of gravity, and condition. Inspect rigging before use and reject damaged gear. If the load is unstable, poorly balanced, or not positively engaged, the lift is not ready.",
-        list: [
-          "Verify attachment points and capacity before tensioning.",
-          "Use softeners or edge protection where sharp corners can damage slings.",
-          "Conduct a short test lift to confirm balance and control.",
-        ],
-      },
-      {
-        heading: "Communication Has to Be Deliberate",
-        sub: "One misunderstood signal can move several tons the wrong direction.",
-        body: "Crane and rigging teams should know who is directing the lift and what signal system is in use. Mixed signals, obstructed views, and rushed verbal commands create avoidable load movement. If the signal is unclear, the safe response is to stop.",
-        callout: { label: "REMEMBER", text: "When communication breaks down, stop the hook until direction is clear again." }
-      },
-    ],
-    quiz: [
-      { q: "Where should workers be during a lift?", options: ["Under the load for better visibility", "Outside the load path and pinch zones", "Beside the load with one hand on it", "On the hook side for balance"], answer: 1 },
-      { q: "When should rigging be inspected?", options: ["After a dropped load only", "Before use and whenever condition is in doubt", "Only once per year", "Only by the crane operator after the lift"], answer: 1 },
-      { q: "What should happen if the signal to move is unclear?", options: ["Proceed slowly anyway", "Stop until direction is clear", "Ask the nearest person to guess", "Move the load lower without warning"], answer: 1 },
-    ],
-  },
-  {
-    path: "/hydraulic-stored-energy",
-    label: "Hydraulic Stored Energy Safety",
-    short: "Pressure, Blocking, Bleeding, and Unexpected Motion",
-    icon: "💧",
-    color: "#00BFFF",
-    regulation: "Stored energy isolation and maintenance protection",
-    audience: "Maintenance technicians, mill crews, utility teams, and equipment mechanics",
-    minutes: 16,
-    slides: [
-      {
-        heading: "Pressure Can Remain After Power Is Off",
-        sub: "A de-energized machine may still have force waiting inside it.",
-        body: "Hydraulic systems store energy in accumulators, cylinders, elevated members, hoses, and trapped pressure zones. Turning off a motor or opening a disconnect does not automatically make the machine safe. Before work begins, isolate the source, relieve or block stored energy, and verify the equipment cannot move unexpectedly.",
-        list: [
-          "Identify accumulators, gravity loads, and pressure-retaining components.",
-          "Use blocking, cribbing, or pins where raised equipment could descend.",
-          "Bleed residual pressure using the approved procedure—not improvised loosening.",
-        ],
-        callout: { label: "RULE", text: "If stored energy remains, the job is not yet under control." }
-      },
-      {
-        heading: "Line Opening Is a High-Risk Moment",
-        sub: "Pressure release can inject fluid, whip hoses, or move equipment.",
-        body: "Fittings, valves, test ports, and cylinders can release suddenly if pressure remains trapped. Never crack a fitting to 'see if it is live.' Confirm zero-energy state first, position the body out of the release path, and use the correct tools and barriers. Hydraulic injection injuries can look minor at first but are medical emergencies.",
-        list: [
-          "Keep hands and skin away from suspected leak streams.",
-          "Do not use fingers to search for hydraulic leaks.",
-          "Escalate any injection concern immediately for medical evaluation.",
-        ],
-      },
-      {
-        heading: "Verification Beats Assumption",
-        sub: "Machines with multiple energy sources require full-system thinking.",
-        body: "A press, transfer, mill stand, or utility package may combine electrical, hydraulic, pneumatic, thermal, and gravity hazards. Verify all relevant energy states before the work starts and again before hands enter the danger zone. Partial isolation creates false confidence.",
-        callout: { label: "REMEMBER", text: "Unexpected motion is often the result of one energy source that someone forgot to include." }
-      },
-    ],
-    quiz: [
-      { q: "Does shutting off electrical power make a hydraulic system safe to open?", options: ["Always", "Only if the machine is small", "Not necessarily; stored pressure may remain", "Yes if a supervisor is nearby"], answer: 2 },
-      { q: "How should a suspected hydraulic leak be checked?", options: ["With your hand", "With the approved safe method, never bare skin", "By tightening fittings while running", "By standing in front of the hose"], answer: 1 },
-      { q: "Why are raised members blocked during service?", options: ["To make access easier", "To prevent descent from gravity or pressure loss", "To improve visibility only", "Because it looks more professional"], answer: 1 },
-    ],
-  },
-  {
-    path: "/pinch-crush-steel-handling",
-    label: "Pinch Point / Crush Zone / Steel Handling",
-    short: "Body Position, Material Control, and Line-of-Fire Awareness",
-    icon: "⚠️",
-    color: "#FF3300",
-    regulation: "Material handling and struck-by / caught-between control",
-    audience: "Mill operators, riggers, forklift crews, foundry teams, and warehouse workers",
-    minutes: 15,
-    slides: [
-      {
-        heading: "Crush Injuries Start With Body Position",
-        sub: "Where you stand matters as much as what you touch.",
-        body: "Loads, beams, castings, pallets, dies, and equipment components create crush zones wherever movement can narrow the space to zero. Never place your body between moving material and a wall, trailer, rack, another load, or powered equipment. A few inches of movement can become unsurvivable force.",
-        list: [
-          "Stay out of line-of-fire positions while loads are being placed or adjusted.",
-          "Keep feet, hands, and knees out of the landing zone.",
-          "Plan escape routes before guiding heavy material.",
-        ],
-        callout: { label: "RULE", text: "If the space can close, do not occupy it." }
-      },
-      {
-        heading: "Loads Shift Even When They Look Stable",
-        sub: "Round, long, or irregular material can roll, slide, or settle unexpectedly.",
-        body: "Steel products and heavy parts may react to slight slope, vibration, sling tension changes, or contact from tools. Chocks, spacers, dunnage, and controlled placement reduce that risk, but they do not justify placing hands beneath or between loads. Use tools and safe guiding methods that preserve distance.",
-        list: [
-          "Treat first set-down as temporary until the load is confirmed stable.",
-          "Do not straddle material that can move or rotate.",
-          "Re-center and re-rig unstable loads instead of trying to muscle them into position.",
-        ],
-      },
-      {
-        heading: "Team Coordination Prevents Line-of-Fire Errors",
-        sub: "One worker's movement can expose another if the plan is not shared.",
-        body: "Forklift operators, crane crews, spotters, and ground personnel should agree on who is signaling and where each person will stand. Surprise movements create the worst crush exposures. If the plan changes mid-task, stop and reset positions before the load moves again.",
-        callout: { label: "REMEMBER", text: "Most crush events happen during routine moves that everyone thought were under control." }
-      },
-    ],
-    quiz: [
-      { q: "Where should your body be when a load is being set down?", options: ["Between the load and the rack to guide it", "Outside pinch points and landing zones", "With one foot under the load for control", "Anywhere the operator can see you"], answer: 1 },
-      { q: "What should you assume about long or round material?", options: ["It will stay where it is set", "It may roll, slide, or settle unexpectedly", "It is safe if it is rusty", "It only moves on sloped floors"], answer: 1 },
-      { q: "What should happen if load-handling positions change mid-task?", options: ["Keep moving to maintain momentum", "Stop and reset the plan before continuing", "Let the nearest worker improvise", "Use shouting instead of signals"], answer: 1 },
-    ],
-  },
-];
+{
+  path:"/machine-guarding-molding-line",
+  label:"Machine Guarding — Molding Line & Conveyors",
+  short:"Guards, Nip Points, Interlocks, and Jam Response",
+  icon:"🛡️",
+  color:"#00BFFF",
+  regulation:"OSHA 29 CFR 1910 Subpart O",
+  audience:"Foundry operators, conveyor attendants, maintenance, and line leads",
+  minutes:20,
+  slides:[
+    {
+      heading:"A Guard Exists Because Contact Happens Fast",
+      sub:"Rotating, reciprocating, and in-running hazards close the gap before a worker can react.",
+      body:"On the Dingfelder molding line, conveyors, drive chains, rollers, transfer points, and powered mechanisms create predictable contact zones. Guards, covers, barriers, and interlocks are not optional accessories. They are part of the machine. If a worker can reach a nip point, pinch point, rotating shaft, or driven belt during normal work, the machine is not adequately guarded.",
+      list:[
+        "Do not operate with missing, loose, or opened guards.",
+        "Treat access doors and interlocks as safety devices, not convenience features.",
+        "Keep hands, tools, and clothing outside moving equipment envelopes."
+      ],
+      callout:{label:"RULE",text:"If a guard is removed for service, the equipment stays under controlled energy isolation until the guard is restored."}
+    },
+    {
+      heading:"Jam Clearing Is Not Production Work",
+      sub:"Most line contact incidents occur during cleanup, alignment, or unplanned intervention.",
+      body:"When sand, molds, scrap, or product shift out of position, workers are tempted to reach into the line because the problem looks minor. That is exactly when serious injury happens. A jam must be treated as an energy-control event. Stop the line, isolate energy where required, verify motion has stopped, and clear the condition using approved tools and procedures.",
+      list:[
+        "Never reach through a guard opening while motion exists.",
+        "Use designated tools for clearing buildup or stuck material.",
+        "Restart only after the area is clear and all workers are accounted for."
+      ]
+    },
+    {
+      heading:"Interlocks and Access Doors Are Safety Functions",
+      sub:"A bypassed safety device turns the next task into a surprise hazard.",
+      body:"A tied-back interlock, removed panel, or improvised opening may help one task finish, but it leaves the next operator exposed with less warning. Inspect guards at startup, after maintenance, and after upset conditions. Escalate defects immediately instead of normalizing them.",
+      callout:{label:"NEVER DO",text:"Do not tape, tie back, block, or defeat an interlock to keep production moving."}
+    },
+    {
+      heading:"Line Restart Requires Full Clear Accountability",
+      sub:"The machine should not restart until people, tools, and material are out of the hazard envelope.",
+      body:"After jam clearing, maintenance, or upset response, the restart decision must include a deliberate clear check. Confirm that guards are back in place, workers are accounted for, tools are removed, and communication is complete before motion is restored.",
+      list:[
+        "Do not assume a coworker has already cleared the far side.",
+        "Use the site restart sequence every time.",
+        "Treat unexpected motion as a reportable serious hazard."
+      ]
+    },
+    {
+      heading:"Machine Guarding Key Review",
+      sub:"Guards, interlocks, controlled jam response, and restart accountability prevent fraction-of-a-second injuries.",
+      body:"Machine guarding protects the operator, the maintainer, and the next worker who approaches the line. Never normalize missing guards, never reach into moving equipment, and never restart until the full machine envelope is confirmed clear.",
+      callout:{label:"REMEMBER",text:"You are not clearing a nuisance. You are controlling a machine hazard."}
+    }
+  ],
+  quiz:[
+    {q:"When is it acceptable to run a conveyor with a missing guard?",options:["When production is behind","Only during daylight","Never during normal operation","Only if gloves are worn"],answer:2},
+    {q:"How should a jam be handled?",options:["Reach in quickly before it worsens","Treat it as an energy-control event and clear it safely","Ask another operator to hold the guard","Restart repeatedly until it clears"],answer:1},
+    {q:"What should you do with an interlock that keeps stopping production?",options:["Tie it back","Report and correct the issue, do not bypass it","Tape over the sensor","Run slower without reporting it"],answer:1},
+    {q:"Why is a guard considered part of the machine?",options:["It improves appearance","It prevents contact with predictable hazard points","It only protects inspectors","It can be removed whenever output drops"],answer:1},
+    {q:"What is the safest rule for reaching through a guard opening?",options:["It is fine if the line is slow","Never do it while motion exists","Do it with gloves only","Only maintenance can do it without stopping"],answer:1},
+    {q:"What must be confirmed before restarting after jam clearing?",options:["Only that production wants the line back","That guards are restored, tools are clear, and all workers are accounted for","Only that the operator is ready","That the nearest side looks clear"],answer:1},
+    {q:"Why are tied-back interlocks so dangerous?",options:["They make the machine quieter","They leave the next worker exposed to unexpected access to moving hazards","They increase visibility","They only affect maintenance"],answer:1},
+    {q:"What kind of tools should be used for stuck material or buildup?",options:["Hands whenever possible","Approved designated tools and procedures","Loose scrap metal","Any object close at hand"],answer:1},
+    {q:"A worker says the jam is minor and wants to clear it without stopping the line. What is the correct response?",options:["Allow it if the line is nearly empty","Stop and treat it as a machine hazard intervention","Stand nearby and watch","Only reduce the speed"],answer:1},
+    {q:"What does restart accountability mean?",options:["Only the operator decides","Everyone, tools, and access points must be confirmed clear before motion returns","The machine can restart if the alarm sounds","Production schedule controls the timing"],answer:1},
+    {q:"Which condition should be reported immediately?",options:["A guard defect or unexpected motion","A clean floor","A completed shift log","A painted barrier"],answer:0},
+    {q:"What is the strongest summary of guarding discipline?",options:["Guards can be temporary if the line is watched","Missing guards, bypassed interlocks, and casual jam clearing are unacceptable","Only new workers need guarding reminders","Guarding matters only during maintenance"],answer:1}
+  ]
+},
+{path:"/foundry-heat-stress-burn-prevention",label:"Foundry Heat Stress & Burn Prevention",short:"Radiant Heat, Dehydration, and Thermal Injury Control",icon:"🌡️",color:"#FF6B00",regulation:"Heat illness prevention and thermal hazard control",audience:"Melt deck crews, foundry operators, maintenance, and contractors in hot zones",minutes:16,slides:[{heading:"Heat Load Builds Before Symptoms Feel Serious",sub:"Radiant heat, heavy PPE, and physical work can quietly drive a worker into distress.",body:"Foundry work combines ambient heat, hot surfaces, molten metal operations, long walking distances, and task urgency. A worker may still be functioning while dehydration and heat strain are already reducing judgment and reaction time. Control starts with water, rest, recovery, monitoring, and realistic pacing—not with toughness.",list:["Hydrate before the shift and continue during the work period.","Use planned recovery breaks in cooler areas before symptoms escalate.","Watch for headache, dizziness, confusion, cramping, and unusual fatigue."],callout:{label:"RULE",text:"Heat symptoms are reportable conditions. Do not hide them to finish the task."}},{heading:"Burn Prevention Is About Distance and Control",sub:"Most serious burns happen when workers drift too close to a heat source or hot object without realizing the exposure path.",body:"Hot metal, hot tooling, ladles, furnace doors, heated castings, and even recently shut-down equipment can cause instant injury. Respect marked boundaries, use tools with adequate reach, and verify that surfaces are cool enough to handle before contact. Gloves help, but they do not make hot objects safe to touch indefinitely.",list:["Do not assume dark surfaces are cool.","Use face shields, sleeves, and task-specific thermal PPE where required.","Plan travel routes to avoid brushing past hot equipment or containers."]},{heading:"Buddy Awareness Prevents Late Recognition",sub:"The worker in heat stress may be the last person to notice it.",body:"Confusion, slowed speech, irritability, poor coordination, and poor decisions are warning signs that must trigger intervention. If a worker becomes symptomatic, move them to a cooler area, notify supervision, and follow the site response plan promptly. Waiting for collapse is failure, not toughness.",callout:{label:"EMERGENCY",text:"Heat stroke is a medical emergency. Act immediately if confusion, collapse, or loss of responsiveness appears."}}],quiz:[{q:"What is the best first defense against heat stress?",options:["Waiting until you feel faint","Hydration, recovery breaks, and monitoring","Working faster to finish sooner","Removing all PPE near hot work"],answer:1},{q:"What should you assume about a recently used metal surface?",options:["It is cool if it looks dark","It may still be hot enough to burn","It is safe if someone else touched it earlier","It is safe after one minute"],answer:1},{q:"What should happen if a worker shows confusion in a hot zone?",options:["Tell them to push through","Treat it as a possible heat emergency and respond immediately","Wait until break time","Move them closer to fresh air only if production allows"],answer:1}]},
+{path:"/core-room-binder-ventilation",label:"Core Room / Binder / Ventilation Safety",short:"Resins, Vapors, Mixing Areas, and Airflow Control",icon:"🧴",color:"#22CC66",regulation:"Hazard communication, ventilation, and exposure control",audience:"Core room operators, foundry technicians, maintenance, and supervisors",minutes:17,slides:[{heading:"Binder Systems Create Exposure Without Visible Warning",sub:"Resins, catalysts, and additives can expose workers through vapor, splash, and contact.",body:"In core rooms and sand preparation areas, chemical systems may be transferred, mixed, metered, or cleaned down during routine work. The exposure path is not limited to dramatic spills. Small leaks, open lids, poor housekeeping, and reduced airflow can create repeated low-level exposure that workers normalize over time.",list:["Keep containers closed when not actively in use.","Check transfer connections and hoses before starting the task.","Know the required gloves, eye protection, and ventilation controls for the specific chemical system."],callout:{label:"RULE",text:"Never bypass local exhaust or disable ventilation to reduce noise or drafts."}},{heading:"Ventilation Is Part of the Process",sub:"Air movement is an engineered control, not an optional comfort setting.",body:"If local exhaust, enclosure flow, or room ventilation is reduced, vapors may accumulate at the operator position or spread into adjacent work areas. Report airflow problems immediately, especially after maintenance, filter changes, or process adjustments. A room that smells stronger than normal is giving you useful information.",list:["Do not assume a fan pointed across the room replaces designed exhaust.","Maintain clear access around intakes, exhaust points, and control panels.","Escalate repeated odors, eye irritation, or headaches tied to the process area."]},{heading:"Cleanup and Container Handling Need the Same Discipline",sub:"Exposure often spikes during end-of-task activities.",body:"Wiping, draining, container changeout, pump servicing, and residue removal often happen when attention is lower and production pressure is high. Slow down during these transitions. Use the right absorbents, label waste correctly, and keep incompatible chemicals segregated.",callout:{label:"REMEMBER",text:"A quick wipe-up without PPE can create more exposure than the original task."}}],quiz:[{q:"Why is ventilation important in the core room?",options:["Only for temperature comfort","It controls airborne exposure from process chemicals","It keeps machines cleaner","It replaces PPE completely"],answer:1},{q:"What should you do if process odors are suddenly stronger than normal?",options:["Ignore them if production is running","Report and investigate the airflow or process condition","Open random doors for cross breeze","Mask the odor with another product"],answer:1},{q:"When can container lids be left open?",options:["Any time the room is quiet","Only while actively using the chemical as required by the task","Whenever ventilation is running","Whenever supervisors are absent"],answer:1}]},
+{path:"/shakeout-cleaning-grinding",label:"Shakeout / Cleaning / Grinding Area Safety",short:"Dust, Flying Debris, Noise, Sparks, and Tool Control",icon:"⚙️",color:"#A855F7",regulation:"Machine, abrasive tool, and airborne hazard controls",audience:"Cleaning room operators, grinders, shakeout personnel, and maintenance teams",minutes:18,slides:[{heading:"The Cleaning Area Has Multiple Hazards at Once",sub:"Noise, dust, vibration, flying particles, and movement overlap in one workspace.",body:"Shakeout and cleaning operations expose workers to hot castings, abrasive wheels, chipping tools, rough edges, dust clouds, and striking hazards from parts or fixtures. Because the work is repetitive, it can feel routine, but the energy level stays high. Control starts with clear zones, good housekeeping, correct PPE, and tool inspection before each use.",list:["Use face, eye, hand, and hearing protection matched to the task.","Keep bystanders outside the debris and spark zone.","Inspect abrasive wheels, guards, hoses, and fittings before use."],callout:{label:"RULE",text:"Do not use cracked wheels, missing guards, or damaged pneumatic tools."}},{heading:"Part Stability Matters Before Tool Contact",sub:"A stable casting is easier to clean and far less likely to injure the operator.",body:"Grinding or chipping a part that can roll, rock, shift, or kick out is a setup failure. Secure the work, confirm footing, and maintain a stance that protects you if the tool binds or the part moves unexpectedly. A hurried first contact often creates the worst reaction.",list:["Brace or fixture parts before aggressive cleaning work.","Keep cords and hoses routed away from your feet and the wheel path.","Approach the work gradually to feel tool behavior before full force is applied."]},{heading:"Dust and Noise Build Risk Over Time",sub:"The absence of immediate pain does not mean the exposure is harmless.",body:"Repeated exposure to particulate and high noise levels can create lasting injury even when the task seems controlled. Use assigned respiratory and hearing protection, keep dust systems functioning, and report weak airflow or unusual dust accumulation. Do not remove protection to improve communication—use planned signals and safe pauses instead.",callout:{label:"REMEMBER",text:"Long-term harm often comes from exposures that feel ordinary in the moment."}}],quiz:[{q:"What should happen before grinding begins?",options:["Start first and adjust your stance later","Inspect the tool, guard, wheel, and work stability","Remove hearing protection for better awareness","Let bystanders stand close for communication"],answer:1},{q:"Why must bystanders stay out of the area?",options:["To reduce conversation","Because sparks, debris, and part movement create strike hazards","Only to avoid dust on clothing","It is only for visitors"],answer:1},{q:"What should you do if dust collection seems weak?",options:["Keep working and finish quickly","Report and correct the condition instead of normalizing the exposure","Use water on electrical tools","Open your face shield"],answer:1}]},
+{path:"/beam-mill-rolling-line",label:"Beam Mill Rolling Line Safety",short:"Hot Steel Flow, Pinch Zones, and Runout Awareness",icon:"🏗️",color:"#FF3300",regulation:"Hot metal handling and rolling line hazard control",audience:"Beam mill operators, maintenance, utilities, and line support personnel",minutes:18,slides:[{heading:"The Rolling Line Owns the Travel Path",sub:"Once steel moves, workers must already be outside the hazard envelope.",body:"Beam mill operations involve hot moving product, guides, rollers, pinch points, scale, noise, and restricted escape time. A worker cannot outrun steel or react faster than the line changes. Safe work starts with designated travel routes, protected operator locations, and strict respect for exclusion zones around moving stock and runout tables.",list:["Stay outside marked runout and transfer zones unless the task is controlled.","Do not cross active line paths because the product appears distant or slow.","Maintain constant awareness of where the next piece can travel if conditions shift."],callout:{label:"RULE",text:"Never enter a rolling or runout area on assumption alone. Verify the line state and authorization first."}},{heading:"Scale, Heat, and Motion Create Combined Exposure",sub:"The hazard is not just the steel. It is the environment around it.",body:"Hot scale, radiant heat, rotating equipment, and reduced visibility can turn a simple inspection into a high-risk task. Use the designated observation points, keep PPE complete, and avoid stepping into cleanup or access areas while the line remains active. Communication must be confirmed, not assumed over noise.",list:["Use hand signals or radios that crews understand in the noise environment.","Respect barriers even when the obstruction feels temporary.","Treat falling scale and hot debris as strike and burn hazards."]},{heading:"Upsets Require Discipline, Not Curiosity",sub:"Misfeeds and line disturbances attract workers into the danger zone.",body:"When material twists, stalls, or misaligns, the line can release force unpredictably. The safest response is controlled shutdown, isolation, and supervised correction using the approved procedure. Walking in for a quick look or quick shove is how severe injuries occur.",callout:{label:"REMEMBER",text:"Production urgency is never a reason to enter a hot rolling hazard zone without control."}}],quiz:[{q:"When should you enter an active runout area?",options:["When the steel looks far enough away","Only after the line state is verified and the task is controlled","Whenever you are wearing a hard hat","During shift change"],answer:1},{q:"What makes the rolling line hazardous?",options:["Only hot steel temperature","Motion, pinch points, heat, scale, and limited reaction time","Only noise","Only slippery floors"],answer:1},{q:"How should line upsets be handled?",options:["Approach immediately and kick material into line","Use controlled shutdown and the approved correction process","Ignore them unless a supervisor sees them","Stand closer for a better look"],answer:1}]},
+{path:"/overhead-crane-rigging",label:"Overhead Crane & Rigging",short:"Suspended Loads, Travel Paths, and Attachment Control",icon:"🏗️",color:"#FFD100",regulation:"Crane operation, rigging inspection, and suspended load control",audience:"Crane operators, riggers, foundry teams, mill crews, and maintenance personnel",minutes:17,slides:[{heading:"The Load Path Must Stay Clear",sub:"A suspended load can injure even without dropping.",body:"Crane work creates strike, crush, and caught-between hazards wherever the load can travel, swing, or land. Nobody should stand under a suspended load, walk beside it in a pinch zone, or place body parts between the load and a fixed object. The safest path is planned before the hook rises.",list:["Clear the route before lifting, not while the load is moving.","Use tag lines where appropriate to control rotation and drift.","Keep non-essential personnel outside the lift area."],callout:{label:"RULE",text:"Hands off pinch zones. Guide loads from safe positions only."}},{heading:"Rigging Is a Pre-Lift Decision",sub:"Most lift failures start before the crane moves.",body:"Slings, hooks, shackles, magnets, grabs, and custom devices must match the load shape, center of gravity, and condition. Inspect rigging before use and reject damaged gear. If the load is unstable, poorly balanced, or not positively engaged, the lift is not ready.",list:["Verify attachment points and capacity before tensioning.","Use softeners or edge protection where sharp corners can damage slings.","Conduct a short test lift to confirm balance and control."]},{heading:"Communication Has to Be Deliberate",sub:"One misunderstood signal can move several tons the wrong direction.",body:"Crane and rigging teams should know who is directing the lift and what signal system is in use. Mixed signals, obstructed views, and rushed verbal commands create avoidable load movement. If the signal is unclear, the safe response is to stop.",callout:{label:"REMEMBER",text:"When communication breaks down, stop the hook until direction is clear again."}}],quiz:[{q:"Where should workers be during a lift?",options:["Under the load for better visibility","Outside the load path and pinch zones","Beside the load with one hand on it","On the hook side for balance"],answer:1},{q:"When should rigging be inspected?",options:["After a dropped load only","Before use and whenever condition is in doubt","Only once per year","Only by the crane operator after the lift"],answer:1},{q:"What should happen if the signal to move is unclear?",options:["Proceed slowly anyway","Stop until direction is clear","Ask the nearest person to guess","Move the load lower without warning"],answer:1}]},
+{path:"/hydraulic-stored-energy",label:"Hydraulic Stored Energy Safety",short:"Pressure, Blocking, Bleeding, and Unexpected Motion",icon:"💧",color:"#00BFFF",regulation:"Stored energy isolation and maintenance protection",audience:"Maintenance technicians, mill crews, utility teams, and equipment mechanics",minutes:16,slides:[{heading:"Pressure Can Remain After Power Is Off",sub:"A de-energized machine may still have force waiting inside it.",body:"Hydraulic systems store energy in accumulators, cylinders, elevated members, hoses, and trapped pressure zones. Turning off a motor or opening a disconnect does not automatically make the machine safe. Before work begins, isolate the source, relieve or block stored energy, and verify the equipment cannot move unexpectedly.",list:["Identify accumulators, gravity loads, and pressure-retaining components.","Use blocking, cribbing, or pins where raised equipment could descend.","Bleed residual pressure using the approved procedure—not improvised loosening."],callout:{label:"RULE",text:"If stored energy remains, the job is not yet under control."}},{heading:"Line Opening Is a High-Risk Moment",sub:"Pressure release can inject fluid, whip hoses, or move equipment.",body:"Fittings, valves, test ports, and cylinders can release suddenly if pressure remains trapped. Never crack a fitting to 'see if it is live.' Confirm zero-energy state first, position the body out of the release path, and use the correct tools and barriers. Hydraulic injection injuries can look minor at first but are medical emergencies.",list:["Keep hands and skin away from suspected leak streams.","Do not use fingers to search for hydraulic leaks.","Escalate any injection concern immediately for medical evaluation."]},{heading:"Verification Beats Assumption",sub:"Machines with multiple energy sources require full-system thinking.",body:"A press, transfer, mill stand, or utility package may combine electrical, hydraulic, pneumatic, thermal, and gravity hazards. Verify all relevant energy states before the work starts and again before hands enter the danger zone. Partial isolation creates false confidence.",callout:{label:"REMEMBER",text:"Unexpected motion is often the result of one energy source that someone forgot to include."}}],quiz:[{q:"Does shutting off electrical power make a hydraulic system safe to open?",options:["Always","Only if the machine is small","Not necessarily; stored pressure may remain","Yes if a supervisor is nearby"],answer:2},{q:"How should a suspected hydraulic leak be checked?",options:["With your hand","With the approved safe method, never bare skin","By tightening fittings while running","By standing in front of the hose"],answer:1},{q:"Why are raised members blocked during service?",options:["To make access easier","To prevent descent from gravity or pressure loss","To improve visibility only","Because it looks more professional"],answer:1}]},
+{path:"/pinch-crush-steel-handling",label:"Pinch Point / Crush Zone / Steel Handling",short:"Body Position, Material Control, and Line-of-Fire Awareness",icon:"⚠️",color:"#FF3300",regulation:"Material handling and struck-by / caught-between control",audience:"Mill operators, riggers, forklift crews, foundry teams, and warehouse workers",minutes:15,slides:[{heading:"Crush Injuries Start With Body Position",sub:"Where you stand matters as much as what you touch.",body:"Loads, beams, castings, pallets, dies, and equipment components create crush zones wherever movement can narrow the space to zero. Never place your body between moving material and a wall, trailer, rack, another load, or powered equipment. A few inches of movement can become unsurvivable force.",list:["Stay out of line-of-fire positions while loads are being placed or adjusted.","Keep feet, hands, and knees out of the landing zone.","Plan escape routes before guiding heavy material."],callout:{label:"RULE",text:"If the space can close, do not occupy it."}},{heading:"Loads Shift Even When They Look Stable",sub:"Round, long, or irregular material can roll, slide, or settle unexpectedly.",body:"Steel products and heavy parts may react to slight slope, vibration, sling tension changes, or contact from tools. Chocks, spacers, dunnage, and controlled placement reduce that risk, but they do not justify placing hands beneath or between loads. Use tools and safe guiding methods that preserve distance.",list:["Treat first set-down as temporary until the load is confirmed stable.","Do not straddle material that can move or rotate.","Re-center and re-rig unstable loads instead of trying to muscle them into position."]},{heading:"Team Coordination Prevents Line-of-Fire Errors",sub:"One worker's movement can expose another if the plan is not shared.",body:"Forklift operators, crane crews, spotters, and ground personnel should agree on who is signaling and where each person will stand. Surprise movements create the worst crush exposures. If the plan changes mid-task, stop and reset positions before the load moves again.",callout:{label:"REMEMBER",text:"Most crush events happen during routine moves that everyone thought were under control."}}],quiz:[{q:"Where should your body be when a load is being set down?",options:["Between the load and the rack to guide it","Outside pinch points and landing zones","With one foot under the load for control","Anywhere the operator can see you"],answer:1},{q:"What should you assume about long or round material?",options:["It will stay where it is set","It may roll, slide, or settle unexpectedly","It is safe if it is rusty","It only moves on sloped floors"],answer:1},{q:"What should happen if load-handling positions change mid-task?",options:["Keep moving to maintain momentum","Stop and reset the plan before continuing","Let the nearest worker improvise","Use shouting instead of signals"],answer:1}]}
+]
 
-function makeModule(module) {
-  return function ModulePage() {
-    return <TrainingModuleShell module={module} />;
-  };
-}
-
-export const MachineGuardingTraining = makeModule(PHASE2B_MODULES[0]);
-export const FoundryHeatStressTraining = makeModule(PHASE2B_MODULES[1]);
-export const CoreRoomVentilationTraining = makeModule(PHASE2B_MODULES[2]);
-export const ShakeoutGrindingTraining = makeModule(PHASE2B_MODULES[3]);
-export const BeamMillRollingLineTraining = makeModule(PHASE2B_MODULES[4]);
-export const OverheadCraneRiggingTraining = makeModule(PHASE2B_MODULES[5]);
-export const HydraulicStoredEnergyTraining = makeModule(PHASE2B_MODULES[6]);
-export const PinchCrushSteelHandlingTraining = makeModule(PHASE2B_MODULES[7]);
+export const MachineGuardingTraining = () => <TrainingModuleShell module={PHASE2B_MODULES[0]} />
+export const FoundryHeatStressTraining = () => <TrainingModuleShell module={PHASE2B_MODULES[1]} />
+export const CoreRoomVentilationTraining = () => <TrainingModuleShell module={PHASE2B_MODULES[2]} />
+export const ShakeoutGrindingTraining = () => <TrainingModuleShell module={PHASE2B_MODULES[3]} />
+export const BeamMillRollingLineTraining = () => <TrainingModuleShell module={PHASE2B_MODULES[4]} />
+export const OverheadCraneRiggingTraining = () => <TrainingModuleShell module={PHASE2B_MODULES[5]} />
+export const HydraulicStoredEnergyTraining = () => <TrainingModuleShell module={PHASE2B_MODULES[6]} />
+export const PinchCrushSteelHandlingTraining = () => <TrainingModuleShell module={PHASE2B_MODULES[7]} />

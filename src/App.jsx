@@ -48,6 +48,15 @@ import {
   PinchCrushSteelHandlingTraining,
 } from './programs/Phase2BModules.jsx'
 
+import {
+  MedicalEmergencyBasicsTraining,
+  AEDAwarenessTraining,
+  AdultCPRAwarenessTraining,
+  PulseCheckAwarenessTraining,
+  SevereBleedingControlTraining,
+  ChokingResponseTraining,
+} from './programs/MedicalResponseModules.jsx'
+
 // ─── Route map ───────────────────────────────────────────────────────────────
 const PROGRAMS = [
   {
@@ -116,6 +125,74 @@ const PROGRAMS = [
     minutes:    20,
     Component:  EvacuationTraining,
   },
+
+  {
+    path:       '/medical-emergency-basics',
+    label:      'Medical Emergency Response Basics',
+    short:      'Scene Safety, EMS Activation, and First Actions',
+    icon:       '🩺',
+    color:      '#00C2FF',
+    regulation: 'Awareness Only — Emergency response orientation, not certification',
+    audience:   'All Campus Personnel, Visitors, Contractors, Public-Facing Teams',
+    minutes:    18,
+    Component:  MedicalEmergencyBasicsTraining,
+  },
+  {
+    path:       '/aed-awareness',
+    label:      'AED Awareness & Use',
+    short:      'Automated External Defibrillator Awareness',
+    icon:       '⚕️',
+    color:      '#00E0B8',
+    regulation: 'Awareness Only — Follow trained responder procedures and device prompts',
+    audience:   'All Campus Personnel, Front Office, Food Plant, Retail, Public Teams',
+    minutes:    20,
+    Component:  AEDAwarenessTraining,
+  },
+  {
+    path:       '/adult-cpr-awareness',
+    label:      'Adult CPR Awareness',
+    short:      'Recognition, Compression Readiness, and Team Response',
+    icon:       '❤️',
+    color:      '#FF4D6D',
+    regulation: 'Awareness Only — Not a CPR certification course',
+    audience:   'All Campus Personnel and Public-Facing Teams',
+    minutes:    22,
+    Component:  AdultCPRAwarenessTraining,
+  },
+  {
+    path:       '/pulse-check-awareness',
+    label:      'Pulse Check & Unresponsiveness Assessment',
+    short:      'Awareness of Responsiveness, Breathing, and Escalation',
+    icon:       '🫀',
+    color:      '#B86CFF',
+    regulation: 'Awareness Only — Follow employer policy and trained responder procedures',
+    audience:   'All Campus Personnel, Security, Leads, Response-Support Staff',
+    minutes:    20,
+    Component:  PulseCheckAwarenessTraining,
+  },
+  {
+    path:       '/severe-bleeding-control',
+    label:      'Severe Bleeding Control',
+    short:      'Recognition, Direct Pressure Awareness, and Escalation',
+    icon:       '🩸',
+    color:      '#FF0033',
+    regulation: 'Awareness Only — Immediate escalation and approved response resources',
+    audience:   'All Campus Personnel, Shop Workers, Food Plant Staff, Maintenance, Public Teams',
+    minutes:    18,
+    Component:  SevereBleedingControlTraining,
+  },
+  {
+    path:       '/choking-response',
+    label:      'Choking Response',
+    short:      'Airway Obstruction Recognition and Rapid Escalation',
+    icon:       '🫁',
+    color:      '#FFA726',
+    regulation: 'Awareness Only — Recognize obstruction and activate emergency response',
+    audience:   'Restaurants, Food Plants, Offices, Retail, Campus Services, All Staff',
+    minutes:    16,
+    Component:  ChokingResponseTraining,
+  },
+
   {
     path:       '/hazcom',
     label:      'Hazard Communication / SDS / GHS',

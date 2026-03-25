@@ -91,3 +91,13 @@ export const PHASE2B_COMPLETED = [
   "Hydraulic Stored Energy Safety",
   "Pinch Point / Crush Zone / Steel Handling",
 ]
+
+
+export const MEDICAL_CORE_READY = [
+  "Medical Emergency Response Basics",
+  "AED Awareness & Use",
+  "Adult CPR Awareness",
+  "Pulse Check & Unresponsiveness Assessment",
+  "Severe Bleeding Control",
+  "Choking Response",
+]

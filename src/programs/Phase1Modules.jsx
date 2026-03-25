@@ -169,7 +169,7 @@ export const PHASE1_MODULES = [
     color: "#FF5A1F",
     regulation: "Foundry hot metal awareness — treat all melt zones as severe hazard areas",
     audience: "Foundry operators, maintenance, contractors, escorts, and authorized visitors near hot metal areas",
-    minutes: 20,
+    minutes: 28,
     slides: [
       {
         heading: "Molten Metal Has No Safe Casual Distance",
@@ -192,10 +192,37 @@ export const PHASE1_MODULES = [
         sub: "Hot metal movement depends on disciplined spacing and communication.",
         body: "When ladles, transfer vessels, or furnace operations are active, everyone in the zone must understand travel paths, no-go areas, PPE expectations, and who has control of the move. Visitors and non-essential personnel should remain fully clear unless specifically authorized and escorted.",
       },
+{
+  heading: "Critical Errors That Turn Heat Into Catastrophe",
+  sub: "Most severe hot-metal events start with a casual shortcut, a wet condition, or a bad position.",
+  body: "The fastest way to lose control around molten metal is to treat the area like normal production space. Workers get hurt when they cross active travel lanes, bring damp tools or materials too close to hot metal, ignore barricades, or assume a vessel or path is inactive because nothing is moving right this second.",
+  list: [
+    "Never introduce unknown, damp, or recently washed materials into hot-metal operations.",
+    "Never stand in a splash zone, travel lane, or restricted crossing point for a better view.",
+    "Never assume a recently used ladle, furnace area, or transfer path is safe without confirmation.",
+    "Visitors and escorts stay out unless the move is authorized, controlled, and communicated.",
+  ],
+},
+{
+  heading: "Molten Metal Key Review",
+  sub: "Distance, dryness, discipline, and communication are controls — not suggestions.",
+  body: "Treat every melt deck, ladle route, and hot-metal handling area as a severe hazard zone. Keep the work area dry, respect exclusion lines, stay out of transfer paths, and stop the job if conditions are unclear. PPE matters, but spacing, route control, and moisture discipline prevent the event in the first place.",
+  callout: { label: "REMEMBER", text: "Moisture + molten metal, casual crossings, and unclear travel paths are never acceptable conditions." }
+},
     ],
     quiz: [
       { q: "Why is moisture dangerous around molten metal?", options: ["It cools the area too fast", "It can create explosive steam expansion", "It makes floors easier to clean", "It reduces splash risk"], answer: 1 },
       { q: "Who should be in the area during active hot-metal movement?", options: ["Anyone who wants a closer look", "Only authorized and controlled personnel", "Only the newest worker", "Visitors without escorts"], answer: 1 },
+{ q: "What should you assume about a ladle route during an active transfer?", options: ["It is safe to cross if you move quickly", "It is a restricted no-go path unless released by control of the move", "Only visitors must avoid it", "It is safe if no alarm is sounding"], answer: 1 },
+{ q: "Which condition is most likely to create a steam explosion hazard?", options: ["Dry refractory in controlled service", "A damp tool or wet charge material contacting molten metal", "A posted barricade line", "An empty aisle near the melt deck"], answer: 1 },
+{ q: "Why is distance considered a control around hot metal?", options: ["Because PPE is optional at long distance", "Because reducing exposure to splash, radiant heat, and travel paths lowers injury risk", "Because only supervisors need PPE", "Because distance removes the need for communication"], answer: 1 },
+{ q: "A visitor stops near a barricade to watch a pour. What is the correct action?", options: ["Allow it if they stay quiet", "Escort them out of the restricted zone immediately", "Let them stay if they wear safety glasses", "Ask them to stand closer to hear instructions"], answer: 1 },
+{ q: "What is the best response if you are unsure whether a vessel or path is still active?", options: ["Assume it is idle until proven otherwise", "Treat it as active and verify before approaching", "Tap the vessel to check temperature", "Wait for someone else to cross first"], answer: 1 },
+{ q: "Which statement is correct about PPE around molten metal?", options: ["PPE replaces distance and route control", "PPE helps, but spacing, dryness, and communication still control the event", "PPE is only for maintenance staff", "PPE removes splash-zone risk"], answer: 1 },
+{ q: "What is the right action if moisture is found on the floor or tools near hot-metal operations?", options: ["Continue carefully if production is behind", "Stop and correct the condition before work continues", "Cover it with dry sand and proceed without notice", "Move the moisture closer to the furnace so it dries faster"], answer: 1 },
+{ q: "Why should non-essential personnel stay clear during active hot-metal movement?", options: ["They slow down communication and can enter restricted paths unexpectedly", "They need less training time", "They can help by standing nearby", "They are only at risk during spills, not normal moves"], answer: 0 },
+{ q: "What is the most accurate rule for crossing a hot-metal path?", options: ["Cross whenever the vessel appears far enough away", "Cross only after the path is positively released and controlled", "Cross if you are wearing gloves", "Cross behind the vessel if you stay low"], answer: 1 },
+{ q: "A recently washed tool looks mostly dry. What should you do?", options: ["Use it if production needs it", "Keep it out of hot-metal service until it is confirmed dry and suitable", "Use it only for a short contact", "Warm it near the metal and then use it"], answer: 1 },
     ],
   },
   {

@@ -173,7 +173,7 @@ export const PHASE2A_MODULES = [
     color: "#FF3300",
     regulation: "OSHA 29 CFR 1910.146",
     audience: "Maintenance technicians, sanitation crews, utility teams, and authorized entrants or attendants",
-    minutes: 22,
+    minutes: 30,
     slides: [
       {
         heading: "A Confined Space Is a Special Condition, Not a Small Room",
@@ -196,6 +196,23 @@ export const PHASE2A_MODULES = [
         sub: "The hazard picture can change while the work is underway.",
         body: "Welding, cleaning chemicals, line opening, sludge movement, or adjacent process changes can turn a stable space into a deadly one. The attendant must stay engaged, the permit must remain current, and entrants must exit immediately if alarms, symptoms, or unexpected conditions develop.",
       },
+{
+  heading: "Critical Errors That Create Second Victims",
+  sub: "Most confined-space disasters grow when people treat permits, attendants, and testing as optional.",
+  body: "A worker entering 'just for a second,' an attendant leaving the post, stale atmospheric testing, poor isolation, or an emotional rescue attempt can escalate a manageable job into multiple serious injuries or fatalities. Permit-required space entry is about role discipline, not paperwork theater.",
+  list: [
+    "Never enter because the space looks familiar or was safe yesterday.",
+    "Never leave an entry unattended because 'nothing is happening.'",
+    "Never rely on an old gas test or yesterday's ventilation setup.",
+    "Never perform an unplanned rescue unless you are trained, equipped, and the rescue plan allows it.",
+  ],
+},
+{
+  heading: "Confined Space Key Review",
+  sub: "Entry is controlled by permit, atmosphere, isolation, roles, and rescue readiness.",
+  body: "Before anyone enters, confirm the space classification, isolate hazards, test the atmosphere, verify ventilation, assign entrant-attendant-supervisor roles, and make sure rescue/retrieval provisions are ready. If one control fails, the entry pauses until the space is made safe again.",
+  callout: { label: "REMEMBER", text: "No permit, no test, no attendant, no rescue plan = no entry." }
+},
     ],
     quiz: [
       { q: "What should be confirmed before entering a confined space?", options: ["Only that the opening is large enough", "Whether the space is permit-required and what hazards exist", "Only whether a ladder is present", "Whether the job is behind schedule"], answer: 1 },

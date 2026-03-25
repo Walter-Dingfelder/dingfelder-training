@@ -360,15 +360,15 @@ function AIRONSplash({ onDone }) {
         width: '100%',
         height: '100%',
         display: 'flex',
-        alignItems: 'center',
+        alignItems: 'flex-start',
         justifyContent: 'center',
-        padding: '18px 14px 176px',
+        padding: '20px 14px 196px',
         boxSizing: 'border-box',
       }}>
         <div style={{
           position: 'relative',
-          width: 'min(88vw, 700px)',
-          height: 'min(78vh, 900px)',
+          width: 'min(86vw, 680px)',
+          height: 'min(66vh, 820px)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
@@ -388,25 +388,32 @@ function AIRONSplash({ onDone }) {
               pointerEvents: 'none',
             }}
           />
+          </div>
+        </div>
 
+        <div style={{
+          position: 'fixed',
+          left: 0,
+          right: 0,
+          bottom: '10px',
+          display: 'flex',
+          justifyContent: 'center',
+          pointerEvents: 'none',
+          zIndex: 40,
+        }}>
           <div style={{
-            position: 'fixed',
-            left: '50%',
-            right: 'auto',
-            bottom: '18px',
-            transform: 'translateX(-50%)',
-            width: 'min(78vw, 360px)',
-            maxWidth: 360,
+            width: 'min(72vw, 320px)',
+            maxWidth: 320,
             minWidth: 0,
             margin: 0,
-            padding: '6px 10px 8px',
+            padding: '5px 8px 6px',
             borderRadius: 12,
             background: 'linear-gradient(180deg, rgba(8,8,8,0.78), rgba(8,8,8,0.92))',
             border: '1px solid rgba(255,255,255,0.08)',
             boxShadow: '0 16px 40px rgba(0,0,0,0.34)',
             backdropFilter: 'blur(4px)',
-            zIndex: 30,
             animation: 'aironFadeUp 0.6s ease-out both',
+            pointerEvents: 'auto',
           }}>
             <div style={{
               display: 'flex',
@@ -493,6 +500,7 @@ function AIRONSplash({ onDone }) {
     </div>
   )
 }
+
 
 function AIRONLanding() {
   const navigate = useNavigate()

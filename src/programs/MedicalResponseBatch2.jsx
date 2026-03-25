@@ -60,7 +60,7 @@ export const MEDICAL_RESPONSE_BATCH2_MODULES = [
         ],
       },
     ],
-    questions: [
+    quiz: [
       { q: "What information should be included in the first emergency call?", options: ["Only the victim's name", "What happened, exact location, and current condition", "A long history of prior incidents", "Only the building name"], answer: 1 },
       { q: "Why is an exact door, aisle, or landmark important?", options: ["It reduces responder delay on a large campus", "It is only for recordkeeping", "It keeps supervisors happy", "It is optional if EMS is experienced"], answer: 0 },
       { q: "If the area around the patient is unsafe, what should you do?", options: ["Ignore it so help arrives faster", "Report the hazard and control access", "Wait to call until the hazard is gone", "Send EMS in and explain later"], answer: 1 },
@@ -122,7 +122,7 @@ export const MEDICAL_RESPONSE_BATCH2_MODULES = [
         ],
       },
     ],
-    questions: [
+    quiz: [
       { q: "Which group of symptoms is consistent with early heat illness?", options: ["Heavy sweating, weakness, dizziness, nausea", "Perfect coordination and focus", "Cold hands only", "No symptoms at all"], answer: 0 },
       { q: "What is the best first action when heat illness is suspected?", options: ["Tell the worker to finish the task first", "Move them to a cooler area and begin response steps", "Wait one hour", "Send them home alone"], answer: 1 },
       { q: "Why is confusion a serious warning sign?", options: ["It may indicate severe heat illness requiring escalation", "It means the person is probably joking", "It only matters after lunch", "It is not related to heat"], answer: 0 },
@@ -175,7 +175,7 @@ export const MEDICAL_RESPONSE_BATCH2_MODULES = [
         ],
       },
     ],
-    questions: [
+    quiz: [
       { q: "What does the 'F' in FAST refer to?", options: ["Food intake", "Face droop or uneven smile", "Facility access", "Fever"], answer: 1 },
       { q: "What is the best response to suspected stroke symptoms?", options: ["Wait 30 minutes to confirm", "Activate EMS immediately", "Have the person drive home", "Only notify a coworker"], answer: 1 },
       { q: "Why is time important in stroke response?", options: ["Because some treatments are time-sensitive", "Because managers need a schedule", "Because the person may miss lunch", "It is not important"], answer: 0 },
@@ -226,7 +226,7 @@ export const MEDICAL_RESPONSE_BATCH2_MODULES = [
         ],
       },
     ],
-    questions: [
+    quiz: [
       { q: "Which symptom may be a heart attack warning sign?", options: ["Chest pressure with shortness of breath", "Only a paper cut", "Normal appetite", "Mild boredom"], answer: 0 },
       { q: "What is a dangerous response to possible heart-attack symptoms?", options: ["Calling EMS", "Telling the person to drive themselves home", "Keeping them at rest", "Monitoring them until responders arrive"], answer: 1 },
       { q: "Why should warning signs be taken seriously before collapse occurs?", options: ["Because cardiac emergencies can worsen quickly", "Because it increases paperwork", "Because symptoms always disappear on their own", "Because managers prefer drama"], answer: 0 },
@@ -277,7 +277,7 @@ export const MEDICAL_RESPONSE_BATCH2_MODULES = [
         ],
       },
     ],
-    questions: [
+    quiz: [
       { q: "Which burn type may involve hidden internal injury?", options: ["Electrical burn", "Only sunburn", "Paper friction", "None"], answer: 0 },
       { q: "What is a key concern in chemical burn response?", options: ["Immediate flushing and contamination control", "Waiting to see if it dries", "Ignoring eyewash systems", "Only changing shoes"], answer: 0 },
       { q: "What must come first in any burn response?", options: ["Scene safety", "Taking photos", "Completing a report before acting", "Moving everyone closer"], answer: 0 },
@@ -328,7 +328,7 @@ export const MEDICAL_RESPONSE_BATCH2_MODULES = [
         ],
       },
     ],
-    questions: [
+    quiz: [
       { q: "What is the correct first action in a chemical eye splash emergency?", options: ["Immediate flushing at an approved eyewash station", "Wait for a manager to inspect", "Finish the task first", "Rub the eye and walk away"], answer: 0 },
       { q: "Why is delay dangerous in an eye exposure event?", options: ["Because injury severity can increase quickly", "Because reports take longer later", "Because the station may close", "It is not dangerous"], answer: 0 },
       { q: "When should supervision or emergency response be notified?", options: ["Only after the shift ends", "While flushing continues or immediately after it begins", "Only if the person asks", "Never for small splashes"], answer: 1 },

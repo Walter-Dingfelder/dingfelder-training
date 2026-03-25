@@ -293,10 +293,10 @@ function GlobalFonts() {
 }
 
 
-
 function AIRONSplash({ onDone }) {
   const [messageIndex, setMessageIndex] = useState(0)
   const [canContinue, setCanContinue] = useState(false)
+
   const loadingMessages = [
     'Initializing training environment...',
     'Synchronizing A.I.R.O.N. systems...',
@@ -306,11 +306,15 @@ function AIRONSplash({ onDone }) {
   useEffect(() => {
     const interval = setInterval(() => {
       setMessageIndex(index => (index + 1) % loadingMessages.length)
-    }, 1200)
-    const revealContinue = setTimeout(() => setCanContinue(true), 10000)
+    }, 900)
+
+    const gate = setTimeout(() => {
+      setCanContinue(true)
+    }, 10000)
+
     return () => {
       clearInterval(interval)
-      clearTimeout(revealContinue)
+      clearTimeout(gate)
     }
   }, [])
 
@@ -328,30 +332,32 @@ function AIRONSplash({ onDone }) {
       fontFamily: "'IBM Plex Sans', sans-serif",
     }}>
       <GlobalFonts />
+
       <style>{`
+        @keyframes aironPulse {
+          0% { opacity: 0.72; transform: scaleX(0.88); }
+          50% { opacity: 1; transform: scaleX(1); }
+          100% { opacity: 0.72; transform: scaleX(0.88); }
+        }
         @keyframes aironSpin {
           from { transform: rotate(0deg); }
           to { transform: rotate(360deg); }
         }
-        @keyframes aironGlow {
-          0% { opacity: 0.82; transform: scaleX(0.42); }
-          50% { opacity: 1; transform: scaleX(0.56); }
-          100% { opacity: 0.82; transform: scaleX(0.42); }
-        }
         @keyframes aironFadeUp {
-          0% { opacity: 0; transform: translateY(10px); }
+          0% { opacity: 0; transform: translateY(12px); }
           100% { opacity: 1; transform: translateY(0); }
         }
         @keyframes aironPosterIn {
-          0% { opacity: 0; transform: scale(0.985); }
-          100% { opacity: 1; transform: scale(1); }
+          0% { opacity: 0; transform: translateY(10px) scale(0.985); }
+          100% { opacity: 1; transform: translateY(0) scale(1); }
         }
       `}</style>
 
       <div style={{
         position: 'absolute',
         inset: 0,
-        background: 'radial-gradient(circle at top, rgba(255,107,0,0.16), transparent 32%), radial-gradient(circle at bottom, rgba(255,209,0,0.10), transparent 42%), #000',
+        background:
+          'radial-gradient(circle at center top, rgba(255,107,0,0.16), transparent 32%), radial-gradient(circle at center bottom, rgba(255,209,0,0.10), transparent 42%), rgb(0,0,0)',
       }} />
 
       <div style={{
@@ -360,19 +366,21 @@ function AIRONSplash({ onDone }) {
         width: '100%',
         height: '100%',
         display: 'flex',
-        alignItems: 'flex-start',
+        flexDirection: 'column',
+        alignItems: 'center',
         justifyContent: 'center',
-        padding: '20px 14px 196px',
+        padding: '18px 14px',
         boxSizing: 'border-box',
       }}>
         <div style={{
           position: 'relative',
-          width: 'min(86vw, 680px)',
-          height: 'min(66vh, 820px)',
+          width: 'min(88vw, 700px)',
+          height: 'min(74vh, 900px)',
           display: 'flex',
+          flexDirection: 'column',
           alignItems: 'center',
           justifyContent: 'center',
-          animation: 'aironPosterIn 0.5s ease-out both',
+          animation: '0.55s ease-out 0s 1 normal both running aironPosterIn',
         }}>
           <img
             src={aironSplash}
@@ -383,56 +391,40 @@ function AIRONSplash({ onDone }) {
               objectFit: 'contain',
               objectPosition: 'center center',
               borderRadius: 18,
-              boxShadow: '0 28px 90px rgba(0,0,0,0.52)',
+              boxShadow: 'rgba(0, 0, 0, 0.52) 0px 28px 90px',
               userSelect: 'none',
               pointerEvents: 'none',
             }}
           />
-          </div>
-        </div>
 
-        <div style={{
-          position: 'fixed',
-          left: 0,
-          right: 0,
-          bottom: '10px',
-          display: 'flex',
-          justifyContent: 'center',
-          pointerEvents: 'none',
-          zIndex: 40,
-        }}>
           <div style={{
-            width: 'min(72vw, 320px)',
-            maxWidth: 320,
+            width: 'min(88vw, 360px)',
+            maxWidth: 360,
             minWidth: 0,
-            margin: 0,
-            padding: '5px 8px 6px',
+            marginTop: 14,
+            padding: '6px 10px 8px',
             borderRadius: 12,
             background: 'linear-gradient(180deg, rgba(8,8,8,0.78), rgba(8,8,8,0.92))',
             border: '1px solid rgba(255,255,255,0.08)',
             boxShadow: '0 16px 40px rgba(0,0,0,0.34)',
             backdropFilter: 'blur(4px)',
-            animation: 'aironFadeUp 0.6s ease-out both',
-            pointerEvents: 'auto',
+            animation: '0.6s ease-out 0s 1 normal both running aironFadeUp',
           }}>
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: 8,
-            }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <div style={{
                 width: 14,
                 height: 14,
                 borderRadius: '50%',
-                border: '2px solid rgba(255,255,255,0.18)',
-                borderTopColor: '#FF6B00',
-                borderRightColor: '#FFD100',
-                animation: 'aironSpin 1.1s linear infinite',
+                borderWidth: 2,
+                borderStyle: 'solid',
+                borderColor: 'rgba(255,255,255,0.18) rgba(255,255,255,0.18) rgb(255, 209, 0) rgb(255, 107, 0)',
+                borderImage: 'initial',
+                animation: '1.1s linear 0s infinite normal none running aironSpin',
                 flexShrink: 0,
               }} />
-              <div style={{ flex: 1 }}>
+              <div style={{ flex: '1 0 0%' }}>
                 <div style={{
-                  color: '#FFF',
+                  color: '#fff',
                   fontFamily: "'IBM Plex Mono', monospace",
                   fontSize: 8,
                   letterSpacing: 1.3,
@@ -445,15 +437,15 @@ function AIRONSplash({ onDone }) {
                   height: 2,
                   overflow: 'hidden',
                   borderRadius: 999,
-                  background: 'rgba(255,255,255,0.10)',
+                  background: 'rgba(255,255,255,0.08)',
                 }}>
                   <div style={{
                     width: '42%',
                     height: '100%',
                     borderRadius: 999,
                     background: 'linear-gradient(90deg, #FF6B00, #FFD100)',
-                    transformOrigin: 'left center',
-                    animation: 'aironGlow 1.8s ease-in-out infinite',
+                    animation: 'aironPulse 1.6s ease-in-out infinite',
+                    transformOrigin: 'center',
                   }} />
                 </div>
               </div>
@@ -461,7 +453,7 @@ function AIRONSplash({ onDone }) {
 
             <div style={{
               marginTop: 5,
-              color: '#C8C8C8',
+              color: 'rgb(200, 200, 200)',
               fontSize: 8,
               lineHeight: 1.35,
               fontFamily: "'IBM Plex Mono', monospace",
@@ -473,14 +465,15 @@ function AIRONSplash({ onDone }) {
 
             {canContinue && (
               <button
+                type="button"
                 onClick={onDone}
                 style={{
                   marginTop: 8,
                   width: '100%',
                   appearance: 'none',
                   border: '1px solid rgba(255,255,255,0.18)',
-                  background: 'linear-gradient(180deg, rgba(255,209,0,0.95), rgba(255,107,0,0.92))',
-                  color: '#050505',
+                  background: 'linear-gradient(rgba(255, 209, 0, 0.95), rgba(255, 107, 0, 0.92))',
+                  color: 'rgb(5, 5, 5)',
                   padding: '6px 10px',
                   borderRadius: 8,
                   fontFamily: "'Barlow Condensed', sans-serif",
@@ -488,7 +481,7 @@ function AIRONSplash({ onDone }) {
                   fontWeight: 800,
                   letterSpacing: 1.2,
                   cursor: 'pointer',
-                  boxShadow: '0 12px 28px rgba(255,107,0,0.22)',
+                  boxShadow: 'rgba(255, 107, 0, 0.22) 0px 12px 28px',
                 }}
               >
                 CONTINUE
@@ -548,7 +541,7 @@ function AIRONLanding() {
             <div style={{
               color: '#FFD100',
               fontFamily: "'IBM Plex Mono', monospace",
-              fontSize: 8,
+              fontSize: 11,
               letterSpacing: 2,
               marginBottom: 4,
             }}>
@@ -566,7 +559,7 @@ function AIRONLanding() {
           <div style={{
             color: '#DDD',
             fontFamily: "'IBM Plex Mono', monospace",
-            fontSize: 8,
+            fontSize: 11,
             letterSpacing: 1.5,
             textAlign: 'right',
           }}>
@@ -681,7 +674,7 @@ function AIRONLanding() {
               <div style={{
                 color: '#FFD100',
                 fontFamily: "'IBM Plex Mono', monospace",
-                fontSize: 8,
+                fontSize: 11,
                 letterSpacing: 2,
                 marginBottom: 10,
               }}>
@@ -775,7 +768,7 @@ function AIRONLanding() {
                 <div style={{
                   color: '#FFD100',
                   fontFamily: "'IBM Plex Mono', monospace",
-                  fontSize: 8,
+                  fontSize: 11,
                   letterSpacing: 2,
                   marginBottom: 10,
                 }}>{card.title}</div>
@@ -802,7 +795,7 @@ function AIRONLanding() {
           borderTop: '1px solid rgba(255,255,255,0.08)',
           padding: '16px 24px',
           color: '#A0A0A0',
-          fontSize: 8,
+          fontSize: 11,
           fontFamily: "'IBM Plex Mono', monospace",
           letterSpacing: 1.1,
           background: 'rgba(0,0,0,0.24)',
@@ -870,7 +863,7 @@ function PortalHome() {
           <span style={{
             color: '#22CC66',
             fontFamily: "'IBM Plex Mono', monospace",
-            fontSize: 8, letterSpacing: 2,
+            fontSize: 11, letterSpacing: 2,
           }}>PORTAL ONLINE</span>
         </div>
       </div>
@@ -919,7 +912,7 @@ function PortalHome() {
         <div style={{
           color: '#444',
           fontFamily: "'Barlow Condensed', sans-serif",
-          fontSize: 8, letterSpacing: 3,
+          fontSize: 11, letterSpacing: 3,
           marginBottom: 16,
         }}>AVAILABLE TRAINING PROGRAMS — {PROGRAMS.length} PROGRAMS</div>
 
@@ -972,7 +965,7 @@ function PortalHome() {
                     lineHeight: 1.2,
                   }}>{prog.label}</div>
                   <div style={{
-                    color: '#666', fontSize: 8,
+                    color: '#666', fontSize: 11,
                     fontFamily: "'Barlow Condensed', sans-serif",
                     letterSpacing: 0.5, marginTop: 2,
                   }}>{prog.short}</div>
@@ -986,7 +979,7 @@ function PortalHome() {
                 display: 'flex', flexDirection: 'column', gap: 4,
               }}>
                 <div style={{
-                  color: '#777', fontSize: 8,
+                  color: '#777', fontSize: 11,
                   fontFamily: "'IBM Plex Mono', monospace",
                 }}>{prog.regulation}</div>
                 <div style={{ color: '#989898', fontSize: 11 }}>
@@ -1001,7 +994,7 @@ function PortalHome() {
                 marginTop: 'auto',
               }}>
                 <span style={{
-                  color: '#666', fontSize: 8,
+                  color: '#666', fontSize: 11,
                   fontFamily: "'IBM Plex Mono', monospace",
                 }}>~{prog.minutes} min</span>
                 <span style={{
@@ -1027,12 +1020,12 @@ function PortalHome() {
         <span style={{
           color: '#444',
           fontFamily: "'IBM Plex Mono', monospace",
-          fontSize: 8, letterSpacing: 1,
+          fontSize: 11, letterSpacing: 1,
         }}>A.I.R.O.N. SAFETY TRAINING · DINGFELDER ENTERPRISES</span>
         <span style={{
           color: '#444',
           fontFamily: "'IBM Plex Mono', monospace",
-          fontSize: 8, letterSpacing: 1,
+          fontSize: 11, letterSpacing: 1,
         }}>{new Date().getFullYear()} · TRAINING ENVIRONMENTS INCLUDE THE DINGFELDER INDUSTRIAL CAMPUS</span>
       </div>
     </div>

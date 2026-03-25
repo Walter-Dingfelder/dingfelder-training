@@ -57,6 +57,15 @@ import {
   ChokingResponseTraining,
 } from './programs/MedicalResponseModules.jsx'
 
+import {
+  EMSActivationTraining,
+  HeatIllnessTraining,
+  StrokeFASTTraining,
+  HeartAttackWarningTraining,
+  BurnFirstAidTraining,
+  EyeExposureTraining,
+} from './programs/MedicalResponseBatch2.jsx'
+
 // ─── Route map ───────────────────────────────────────────────────────────────
 const PROGRAMS = [
   {
@@ -383,7 +392,7 @@ function getProgramCategory(path) {
   const beamMill = new Set(['/arcflash', '/beam-mill-rolling-line', '/overhead-crane-rigging', '/hydraulic-stored-energy', '/pinch-crush-steel-handling'])
   const processGas = new Set(['/h2s', '/loto-campus', '/propane-farm', '/confined-space', '/respiratory'])
   const foodRetail = new Set(['/food-chemical', '/ammonia', '/retail-backroom', '/forklift'])
-  const medical = new Set(['/medical-emergency-basics', '/aed-awareness', '/adult-cpr-awareness', '/pulse-check-awareness', '/severe-bleeding-control', '/choking-response'])
+  const medical = new Set(['/medical-emergency-basics', '/aed-awareness', '/adult-cpr-awareness', '/pulse-check-awareness', '/severe-bleeding-control', '/choking-response', '/ems-activation', '/heat-illness', '/stroke-fast', '/heart-attack-warning', '/burn-first-aid', '/eye-exposure'])
 
   if (medical.has(path)) return 'medical'
   if (foundry.has(path)) return 'foundry'
@@ -395,7 +404,7 @@ function getProgramCategory(path) {
 
 function getProgramType(path) {
   const core = new Set(['/sat', '/hazcom', '/ppe', '/evacuation', '/contractor-safety', '/walking-working-surfaces', '/incident-reporting', '/severe-weather'])
-  const highRisk = new Set(['/loto', '/loto-campus', '/h2s', '/arcflash', '/molten-metal', '/furnace-melt-deck', '/crane-ladle', '/propane-farm', '/confined-space', '/hot-work', '/machine-guarding', '/adult-cpr-awareness', '/aed-awareness', '/pulse-check-awareness', '/severe-bleeding-control'])
+  const highRisk = new Set(['/loto', '/loto-campus', '/h2s', '/arcflash', '/molten-metal', '/furnace-melt-deck', '/crane-ladle', '/propane-farm', '/confined-space', '/hot-work', '/machine-guarding', '/adult-cpr-awareness', '/aed-awareness', '/pulse-check-awareness', '/severe-bleeding-control', '/heat-illness'])
   if (core.has(path)) return 'core'
   if (highRisk.has(path)) return 'high-risk'
   return 'awareness'

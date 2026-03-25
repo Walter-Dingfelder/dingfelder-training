@@ -444,6 +444,73 @@ const MODULES = [
       { q: "Emergency lock removal may be authorized when:", options: ["The supervisor needs to restart production quickly", "An employee left without removing their lock AND the documented procedure is followed after verifying the employee is not near the equipment", "No one else is available to unlock", "The work has been done for more than 8 hours"], answer: 1 }
     ]
   }
+,
+{
+  id: "review",
+  title: "Campus Control Review",
+  subtitle: "Critical Errors, Verification & Restart Discipline",
+  icon: "🧠",
+  color: "#22CC66",
+  category: "REVIEW",
+  slides: [
+    {
+      heading: "The Five Things That Get People Hurt",
+      body: "Across the Dingfelder campus, the same five errors show up again and again: assuming power is off because the machine stopped, locking only electrical energy while leaving pneumatic or hydraulic pressure behind, letting someone else remove your lock, failing to verify zero energy before touching the machine, and restoring equipment before everyone is clear. These are not paperwork mistakes. They are fatal-energy mistakes.",
+      visual: "🧠",
+      list: [
+        "Never trust a stop button, selector switch, or HMI screen as proof of isolation.",
+        "Every energy source must be isolated — electrical, hydraulic, pneumatic, thermal, gravity, and pressure.",
+        "Only the employee who applied the lock removes that lock, except under documented emergency-removal procedure.",
+        "Verification is a separate step. Isolation is not complete until zero energy is proven.",
+        "Restoration requires a final area-clear check, communication, and controlled restart.",
+      ],
+      fact: "The most credible LOTO programs are not the ones with the thickest binders — they are the ones that stop people from taking shortcuts when production pressure rises."
+    },
+    {
+      heading: "Verification Means Proving a Negative",
+      body: "A safe zero-energy state must be proven. That means trying the normal start control, checking for stored pressure, confirming blocked motion cannot fall or roll, and making sure residual heat or trapped product cannot suddenly release. On the Dingfelder campus, this matters in every environment: furnaces and conveyors in the foundry, pressure vessels and well equipment in oil and gas, mixers and pumps in food process, and compressors and HVAC units in restaurants and retail.",
+      visual: "✅",
+      list: [
+        "Try-start after lockout where procedure allows.",
+        "Bleed, vent, block, or drain stored energy sources.",
+        "Treat any remaining movement, pressure, or temperature as hazardous until eliminated.",
+        "Repeat verification after interruptions, shift changes, or temporary re-energization.",
+      ],
+      fact: "A machine that cannot start electrically may still contain enough stored pressure, gravity, or heat to kill a technician."
+    },
+    {
+      heading: "Restart Is Part of the Procedure",
+      body: "Restart is not an afterthought. Before re-energizing, the job must be complete, guards restored, tools removed, affected employees notified, and all personnel accounted for. The final step is a deliberate controlled restart — not a casual handoff to production. This is where discipline protects maintenance teams, operators, contractors, and anyone walking the area.",
+      visual: "🔁",
+      list: [
+        "Confirm work is complete and the machine is ready for operation.",
+        "Verify guards, panels, doors, and covers are back in place.",
+        "Account for every person and every lockout device.",
+        "Communicate that lockout is ending before re-energization.",
+        "Restore energy in a controlled sequence and watch the first restart carefully.",
+      ],
+      fact: "A clean restoration sequence is what separates a professional energy-control program from a near miss waiting to happen."
+    }
+  ],
+  quiz: [
+    { q: "A conveyor is stopped and silent. What is the correct assumption?", options: ["It is safe because it is not moving", "It is de-energized if the HMI is dark", "It remains hazardous until all energy sources are isolated and verified", "It is safe if production says maintenance can enter"], answer: 2 },
+    { q: "Which action is part of verification, not just isolation?", options: ["Applying a tag", "Trying the start control and checking for stored energy", "Telling the operator the machine is down", "Putting tools on the floor nearby"], answer: 1 },
+    { q: "A contractor and a Dingfelder technician are working on the same asset. Which is correct?", options: ["Only the contractor needs a lock", "Only Dingfelder applies locks because it is the host site", "Both parties coordinate and follow the site energy-control program", "Whichever party arrives first controls the lockout"], answer: 2 },
+    { q: "What is the biggest error when dealing with hydraulic or pneumatic systems?", options: ["Using orange locks instead of red locks", "Assuming shutdown removed all stored pressure", "Using too many tags", "Calling the supervisor before maintenance starts"], answer: 1 },
+    { q: "Who should remove a personal lock under normal conditions?", options: ["Any supervisor on duty", "The operator who wants the line restarted", "The employee who applied the lock", "The safety office after the work order closes"], answer: 2 },
+    { q: "A line must be briefly energized for testing. What is required next?", options: ["Leave it energized if the test looked good", "Reapply full lockout before continuing work", "Remove only electrical locks", "Finish the task quickly while the line is available"], answer: 1 },
+    { q: "Which statement about restart is correct?", options: ["Restart is production's responsibility, not maintenance's", "Once locks come off, the procedure is over", "Restart requires area clear, communication, and controlled re-energization", "Restart should be immediate so downtime stays low"], answer: 2 },
+    { q: "A well technician says there is no danger because the breaker is open. What else may still be hazardous?", options: ["Only lighting circuits", "Stored pressure, gravity, trapped product, or thermal energy", "Nothing else matters once electricity is isolated", "Only computer controls"], answer: 1 },
+    { q: "What should happen before any lock is removed at shift change?", options: ["Nothing special if the next shift is already here", "A documented transfer that keeps protection continuous", "The area should be left unlocked until the next shift decides", "Production should test the equipment first"], answer: 1 },
+    { q: "Which is a critical warning sign of a weak LOTO culture?", options: ["Employees verify zero energy every time", "People say 'we only need this for a minute'", "Contractors ask about the site procedure", "Operators wait for maintenance signoff"], answer: 1 },
+    { q: "Why is a stop button not a control of hazardous energy?", options: ["Because OSHA only recognizes breaker switches", "Because it may stop motion without isolating all energy sources", "Because operators are not allowed to touch it", "Because it only works on conveyors"], answer: 1 },
+    { q: "Before restoration, which check belongs on every facility?", options: ["Verify the work order number matches accounting", "Count tools, restore guards, notify affected employees, and clear personnel", "Ask production if they are in a hurry", "Test run without telling anyone"], answer: 1 },
+    { q: "Which response best matches campus-wide LOTO discipline?", options: ["Every building can improvise its own restart process", "The same verification and restoration discipline applies across all facilities", "Only the foundry requires full LOTO discipline", "Retail and food process equipment are too small to require it"], answer: 1 },
+    { q: "A technician isolates electrical power but leaves a suspended load unsupported. What was missed?", options: ["Color coding", "Affecting employees notification", "Gravity energy control", "The paperwork signature"], answer: 2 },
+    { q: "What is the safest summary of LOTO?", options: ["Stop the machine and get to work", "Control every energy source, verify zero energy, and restore deliberately", "Tag the machine and rely on coworkers", "Let experienced workers decide case by case"], answer: 1 }
+  ]
+}
+
 ];
 
 // ─── UI HELPERS ───────────────────────────────────────────────────────────────

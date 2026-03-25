@@ -228,6 +228,66 @@ const MODULES = [
       { q:"At your assigned muster point, you notice one coworker is missing. You should:", options:["Assume they drove home","Report the missing person to the incident commander immediately","Go back in to find them","Wait 10 minutes before reporting"], answer:1 }
     ]
   }
+,
+{
+  id:"review",
+  icon:"🧠",
+  label:"Critical Review & Decision Drills",
+  color:"#22CC66",
+  slides:[
+    {
+      heading:"The Four Rules That Matter Most",
+      body:"If H₂S is involved, the rules must already be in your head before the alarm sounds. Do not trust your sense of smell. Treat every monitor alarm as real. Move upwind or crosswind immediately. Never attempt a rescue unless you are trained, equipped, and directed to do so. These are the rules that prevent one victim from becoming two or three.",
+      icon:"🧠",
+      list:[
+        "Smell is not a detector. A calibrated monitor is.",
+        "An alarm is a command to act, not a suggestion to investigate casually.",
+        "Wind direction determines where you live and where gas travels.",
+        "Unprotected rescue is one of the deadliest decisions in gas work.",
+      ],
+      fact:"The most common pattern in fatal H₂S events is hesitation, followed by an unprotected rescue attempt."
+    },
+    {
+      heading:"SCBA Is Emergency Life Support — Not Casual PPE",
+      body:"SCBA is for trained, fit-tested, ready responders who understand cylinder time, low-air alarms, partner checks, and emergency egress. It is not a substitute for good planning, and it does not turn an untrained worker into a rescuer. On the Dingfelder campus, SCBA awareness means knowing when it is required, what it does, and when you must stay out instead of trying to help.",
+      icon:"🫁",
+      list:[
+        "SCBA supplies breathable air from the cylinder. It does not filter H₂S from the atmosphere.",
+        "Cylinder duration is limited and decreases with stress or heavy work.",
+        "A low-air alarm is an exit signal, not permission to keep working.",
+        "If you are not trained and equipped, your role is evacuation, accountability, and emergency notification.",
+      ],
+      fact:"Knowing that you are not the rescuer can be the decision that saves everyone."
+    },
+    {
+      heading:"What Good Response Looks Like",
+      body:"Strong H₂S response is fast, boring, and disciplined. Alarm sounds. Personnel alert others. Everyone evacuates in the correct direction. No one starts engines or makes ignition hazards in the zone. Accountability happens at muster. Missing persons are reported to command. Re-entry waits for formal clearance. When every step is boring and automatic, the response is working.",
+      icon:"🚨",
+      list:[
+        "Alert others immediately and clearly.",
+        "Evacuate without debate or delay.",
+        "Report location, headcount, and any missing persons from a safe zone.",
+        "Do not re-enter until the incident commander or safety officer declares all-clear.",
+      ],
+      fact:"The safest emergency response is the one that removes improvisation."
+    }
+  ],
+  quiz:[
+    { q:"Why is 'I don't smell anything' never an acceptable reason to stay in an H₂S risk area?", options:["Because H₂S has no smell at any concentration", "Because odor can disappear due to olfactory fatigue even in deadly atmospheres", "Because H₂S only smells inside tanks", "Because smell is blocked by hard hats"], answer:1 },
+    { q:"Your monitor alarms high while you are checking a separator. What is your first action?", options:["Finish the reading before leaving", "Move upwind/crosswind and evacuate immediately", "Silence the monitor and call maintenance from the same spot", "Look for the leak source first"], answer:1 },
+    { q:"A coworker collapses in a suspected H₂S area and you have no SCBA training. What should you do?", options:["Run in and drag them out quickly", "Hold your breath and attempt rescue", "Stay out, alarm the emergency response system, and report the victim location", "Wait silently to avoid panic"], answer:2 },
+    { q:"What is the safest statement about SCBA?", options:["It filters H₂S out of the air like a cartridge respirator", "It supplies breathable air and requires trained users", "Anyone can use it in an emergency without practice", "It is only for fire departments"], answer:1 },
+    { q:"Why does wind direction matter during an H₂S release?", options:["Because wind makes monitors stop working", "Because H₂S always rises with the wind", "Because gas movement determines the safe evacuation path", "Because responders only approach from the south"], answer:2 },
+    { q:"What is the correct role of a standby person during H₂S entry?", options:["Enter immediately if the entrant goes down", "Maintain communication and summon trained rescue rather than becoming another victim", "Turn off the entrant's monitor to reduce alarms", "Wait until production authorizes an exit"], answer:1 },
+    { q:"Which statement shows poor H₂S discipline?", options:["We evacuate when the monitor alarms", "We trust the detector more than our sense of smell", "It is probably a false alarm, so let's just check one more valve", "We report missing personnel at muster"], answer:2 },
+    { q:"A low-air alarm sounds on SCBA. What does that mean?", options:["You can keep working for a few extra minutes", "Switch to a dust mask", "Begin immediate exit from the hazard area", "Remove the facepiece and breathe faster"], answer:2 },
+    { q:"What is the safest summary of H₂S rescue awareness?", options:["The closest worker should always try first", "Rescue is a trained, equipped, controlled operation — not an impulse", "If you are brave enough, you can ignore procedure", "Gas response is mainly about speed, not discipline"], answer:1 },
+    { q:"Why should re-entry wait for formal clearance even after alarms stop?", options:["Because gas can remain or re-accumulate in low areas and equipment voids", "Because alarms are legally required to sound for one hour", "Because all monitors must cool down first", "Because H₂S disappears only after sunrise"], answer:0 },
+    { q:"What does a strong H₂S culture look like?", options:["People improvise based on experience", "The team treats alarms, evacuation, accountability, and re-entry control as automatic disciplines", "Only supervisors carry monitors", "Workers rely on smell unless levels are obviously high"], answer:1 },
+    { q:"Which choice best protects both you and your coworkers?", options:["Never trust smell, obey alarms, evacuate correctly, and leave rescue to trained responders", "Move closer to confirm the smell before leaving", "Silence alarms to avoid confusion", "Return once the area seems calm"], answer:0 }
+  ]
+}
+
 ];
 
 // ─── SHARED COMPONENTS ────────────────────────────────────────────────────────

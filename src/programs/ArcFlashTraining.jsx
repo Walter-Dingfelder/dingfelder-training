@@ -237,6 +237,66 @@ const MODULES = [
       { q:"A coworker receives an electrical shock. The circuit may still be energized. You should:", options:["Grab them and pull them away from the equipment","Do NOT touch them — de-energize the circuit first, then call 911","Begin CPR immediately while they are still in contact","Push them away with your rubber-soled boot"], answer:1 }
     ]
   }
+,
+{
+  id:"review",
+  icon:"🧠",
+  label:"Critical Review & Boundary Decisions",
+  color:"#22CC66",
+  slides:[
+    {
+      heading:"The Mistakes That Turn Routine Work Into Arc Flash Events",
+      body:"Arc flash incidents rarely begin with dramatic intent. They begin with ordinary shortcuts: opening a panel without confirming qualification, assuming a closed cabinet is harmless, ignoring missing labels, bringing conductive tools into a live boundary, or treating a quick task as an exception to electrical discipline. At Dingfelder, that is how routine maintenance becomes a burn, blast, or fatality event.",
+      icon:"🧠",
+      list:[
+        "Unqualified workers do not enter restricted or arc-flash boundaries.",
+        "A missing label is a stop sign, not permission to guess.",
+        "De-energized whenever possible is the default — not a best-case idea.",
+        "Conductive tools, ladders, jewelry, and clutter multiply risk in energized spaces.",
+      ],
+      fact:"The most dangerous electrical shortcut is the one that feels normal because nothing bad happened the last time."
+    },
+    {
+      heading:"Distance, Labels, and Boundaries Are Controls",
+      body:"Electrical safety is not only about PPE. It is also about staying out of exposure zones. Arc-flash labels communicate incident energy, PPE category, and working distance. Shock boundaries identify who may approach. These controls matter even when no one is touching a conductor. Proximity alone can be enough to kill or permanently injure.",
+      icon:"📏",
+      list:[
+        "Read and obey the label before the task begins.",
+        "Qualified and unqualified personnel do not share the same approach rules.",
+        "A panel can be dangerous to open even when the job sounds small.",
+        "LOTO coordination is part of electrical discipline, not a separate topic.",
+      ],
+      fact:"A person can suffer life-changing burns from an electrical event without ever touching the source."
+    },
+    {
+      heading:"What Good Electrical Discipline Looks Like",
+      body:"The strongest electrical programs feel deliberate: qualified people plan the job, the equipment is de-energized whenever feasible, boundaries are respected, labels are treated as instructions, and the work area stays clean and controlled. When something is missing — a label, a permit decision, a lockout step, a qualified worker — the task stops until the gap is resolved.",
+      icon:"⚡",
+      list:[
+        "Pause when information is missing.",
+        "Coordinate electrical LOTO before cabinet or equipment access.",
+        "Keep metal tools, ladders, and jewelry out of energized work zones.",
+        "Treat 'quick' electrical tasks as seriously as large ones.",
+      ],
+      fact:"Professional electrical safety looks slower at the front end so nobody pays for haste at the back end."
+    }
+  ],
+  quiz:[
+    { q:"Which statement about arc flash is correct?", options:["It only injures workers who touch live conductors", "It can injure by heat, pressure, light, and shrapnel even without direct contact", "It is mainly a low-voltage nuisance", "It is a shock hazard only"], answer:1 },
+    { q:"A panel has no arc-flash label. What is the right decision?", options:["Open it carefully and estimate the risk", "Treat the missing information as a stop condition and involve a qualified electrician", "Use heavier gloves and proceed", "Assume it is low energy because there is no label"], answer:1 },
+    { q:"Why do approach boundaries matter for unqualified workers?", options:["Because boundaries only apply to managers", "Because proximity to energized equipment can be hazardous even without contact", "Because boundaries are only for utility lines", "Because boundaries mainly protect the equipment"], answer:1 },
+    { q:"What does good electrical discipline usually start with?", options:["Working live to save downtime", "De-energizing whenever feasible and coordinating LOTO", "Opening the cabinet to see what is inside", "Borrowing tools from nearby mechanics"], answer:1 },
+    { q:"Which item creates avoidable electrical risk near energized equipment?", options:["Nonconductive planning boards", "Metal ladders and loose conductive items", "Written permits", "Qualified supervision"], answer:1 },
+    { q:"Why is 'it's just a quick task' a dangerous phrase around electrical work?", options:["Because quick tasks use more voltage", "Because shortcuts erase planning, boundary, and lockout discipline", "Because quick tasks are not allowed by OSHA", "Because quick tasks always require SCBA"], answer:1 },
+    { q:"What is the best interpretation of an 18 cal/cm² incident-energy label?", options:["The panel output is 18 volts", "Only 18 people may work nearby", "The task requires protection and working-distance discipline matched to that energy level", "The panel was inspected 18 times"], answer:2 },
+    { q:"Who should cross an electrical boundary to open or work inside equipment?", options:["Any experienced operator", "Only a qualified person with the appropriate controls and task justification", "Anyone wearing leather gloves", "Any contractor with tools"], answer:1 },
+    { q:"What is the safest response to a cluttered or uncontrolled energized work area?", options:["Work faster before conditions worsen", "Pause, clean/control the area, and re-evaluate the task", "Ignore the clutter if the panel door opens fully", "Use a flashlight and continue"], answer:1 },
+    { q:"Why is electrical LOTO part of arc-flash prevention?", options:["Because de-energized equipment removes or reduces the exposure that creates arc-flash risk", "Because LOTO is only needed for paperwork", "Because arc flash and shock have nothing to do with lockout", "Because labels replace lockout"], answer:0 },
+    { q:"A maintenance worker is not qualified but says they will only stand close and watch. What is the issue?", options:["Watching is never allowed near any equipment", "Proximity inside restricted boundaries can still expose them to electrical hazards", "Watching is safe if the worker is calm", "Only touching conductors is restricted"], answer:1 },
+    { q:"Which summary best matches a credible electrical safety culture?", options:["Move quickly, trust experience, and solve labels later", "Respect boundaries, stop when information is missing, de-energize when possible, and keep the zone controlled", "Rely on PPE first and planning second", "Only the voltage rating matters"], answer:1 }
+  ]
+}
+
 ];
 
 function useAnim(dep) {

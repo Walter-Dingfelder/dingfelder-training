@@ -306,7 +306,7 @@ function AIRONSplash({ onDone }) {
     const interval = setInterval(() => {
       setMessageIndex(index => (index + 1) % loadingMessages.length)
     }, 1200)
-    const timer = setTimeout(onDone, 4000)
+    const timer = setTimeout(onDone, 10000)
     return () => {
       clearInterval(interval)
       clearTimeout(timer)
@@ -361,7 +361,7 @@ function AIRONSplash({ onDone }) {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        padding: '18px 14px 20px',
+        padding: '18px 14px 96px',
         boxSizing: 'border-box',
       }}>
         <div style={{
@@ -389,29 +389,29 @@ function AIRONSplash({ onDone }) {
           />
 
           <div style={{
-            position: 'absolute',
+            position: 'fixed',
             left: '50%',
-            bottom: 'max(18px, 3vh)',
+            bottom: 'max(20px, env(safe-area-inset-bottom, 0px) + 12px)',
             transform: 'translateX(-50%)',
-            width: 'min(88%, 760px)',
-            padding: '14px 18px 16px',
-            borderRadius: 18,
-            background: 'linear-gradient(180deg, rgba(8,8,8,0.72), rgba(8,8,8,0.88))',
+            width: 'min(92vw, 520px)',
+            padding: '10px 14px 12px',
+            borderRadius: 16,
+            background: 'linear-gradient(180deg, rgba(8,8,8,0.78), rgba(8,8,8,0.92))',
             border: '1px solid rgba(255,255,255,0.08)',
-            boxShadow: '0 20px 60px rgba(0,0,0,0.35)',
+            boxShadow: '0 16px 40px rgba(0,0,0,0.34)',
             backdropFilter: 'blur(4px)',
             animation: 'aironFadeUp 0.6s ease-out both',
           }}>
             <div style={{
               display: 'flex',
               alignItems: 'center',
-              gap: 14,
+              gap: 10,
             }}>
               <div style={{
-                width: 30,
-                height: 30,
+                width: 22,
+                height: 22,
                 borderRadius: '50%',
-                border: '3px solid rgba(255,255,255,0.18)',
+                border: '2px solid rgba(255,255,255,0.18)',
                 borderTopColor: '#FF6B00',
                 borderRightColor: '#FFD100',
                 animation: 'aironSpin 1.1s linear infinite',
@@ -421,21 +421,21 @@ function AIRONSplash({ onDone }) {
                 <div style={{
                   color: '#FFF',
                   fontFamily: "'IBM Plex Mono', monospace",
-                  fontSize: 12,
+                  fontSize: 10,
                   letterSpacing: 1.6,
-                  marginBottom: 8,
+                  marginBottom: 6,
                   textTransform: 'uppercase',
                 }}>
                   {loadingMessages[messageIndex]}
                 </div>
                 <div style={{
-                  height: 5,
+                  height: 4,
                   overflow: 'hidden',
                   borderRadius: 999,
                   background: 'rgba(255,255,255,0.10)',
                 }}>
                   <div style={{
-                    width: '48%',
+                    width: '42%',
                     height: '100%',
                     borderRadius: 999,
                     background: 'linear-gradient(90deg, #FF6B00, #FFD100)',
@@ -447,10 +447,10 @@ function AIRONSplash({ onDone }) {
             </div>
 
             <div style={{
-              marginTop: 12,
+              marginTop: 8,
               color: '#C8C8C8',
               fontSize: 11,
-              lineHeight: 1.5,
+              lineHeight: 1.45,
               fontFamily: "'IBM Plex Mono', monospace",
               letterSpacing: 0.7,
               textTransform: 'uppercase',

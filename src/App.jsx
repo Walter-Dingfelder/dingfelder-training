@@ -293,6 +293,7 @@ function GlobalFonts() {
 }
 
 
+
 function AIRONSplash({ onDone }) {
   const [messageIndex, setMessageIndex] = useState(0)
   const loadingMessages = [
@@ -314,10 +315,11 @@ function AIRONSplash({ onDone }) {
 
   return (
     <div style={{
-      minHeight: '100vh',
-      position: 'relative',
+      position: 'fixed',
+      inset: 0,
+      zIndex: 999999,
       overflow: 'hidden',
-      background: '#050505',
+      background: '#000',
       color: '#fff',
       display: 'flex',
       alignItems: 'center',
@@ -325,20 +327,6 @@ function AIRONSplash({ onDone }) {
       fontFamily: "'IBM Plex Sans', sans-serif",
     }}>
       <GlobalFonts />
-      <div style={{
-        position: 'absolute',
-        inset: 0,
-        backgroundImage: `linear-gradient(180deg, rgba(0,0,0,0.18), rgba(0,0,0,0.38)), url(${aironSplash})`,
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        filter: 'saturate(1.05)',
-        transform: 'scale(1.02)',
-      }} />
-      <div style={{
-        position: 'absolute',
-        inset: 0,
-        background: 'radial-gradient(circle at top, rgba(255,107,0,0.10), transparent 42%), radial-gradient(circle at bottom, rgba(255,209,0,0.08), transparent 48%)',
-      }} />
       <style>{`
         @keyframes aironSpin {
           from { transform: rotate(0deg); }
@@ -353,81 +341,122 @@ function AIRONSplash({ onDone }) {
           0% { opacity: 0; transform: translateY(10px); }
           100% { opacity: 1; transform: translateY(0); }
         }
+        @keyframes aironPosterIn {
+          0% { opacity: 0; transform: scale(0.985); }
+          100% { opacity: 1; transform: scale(1); }
+        }
       `}</style>
+
+      <div style={{
+        position: 'absolute',
+        inset: 0,
+        background: 'radial-gradient(circle at top, rgba(255,107,0,0.16), transparent 32%), radial-gradient(circle at bottom, rgba(255,209,0,0.10), transparent 42%), #000',
+      }} />
 
       <div style={{
         position: 'relative',
         zIndex: 1,
-        width: 'min(92vw, 760px)',
-        padding: 'min(68vh, 560px) 0 24px',
+        width: '100%',
+        height: '100%',
         display: 'flex',
+        alignItems: 'center',
         justifyContent: 'center',
-        alignItems: 'flex-end',
+        padding: '18px 14px 20px',
+        boxSizing: 'border-box',
       }}>
         <div style={{
-          width: 'min(92vw, 720px)',
-          padding: '14px 18px 16px',
-          borderRadius: 18,
-          background: 'linear-gradient(180deg, rgba(8,8,8,0.58), rgba(8,8,8,0.82))',
-          border: '1px solid rgba(255,255,255,0.08)',
-          boxShadow: '0 20px 60px rgba(0,0,0,0.35)',
-          backdropFilter: 'blur(4px)',
-          animation: 'aironFadeUp 0.6s ease-out both',
+          position: 'relative',
+          width: 'min(94vw, 760px)',
+          height: 'min(94vh, 1060px)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          animation: 'aironPosterIn 0.5s ease-out both',
         }}>
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 14,
-          }}>
-            <div style={{
-              width: 30,
-              height: 30,
-              borderRadius: '50%',
-              border: '3px solid rgba(255,255,255,0.18)',
-              borderTopColor: '#FF6B00',
-              borderRightColor: '#FFD100',
-              animation: 'aironSpin 1.1s linear infinite',
-              flexShrink: 0,
-            }} />
-            <div style={{ flex: 1 }}>
-              <div style={{
-                color: '#FFF',
-                fontFamily: "'IBM Plex Mono', monospace",
-                fontSize: 12,
-                letterSpacing: 1.6,
-                marginBottom: 8,
-                textTransform: 'uppercase',
-              }}>
-                {loadingMessages[messageIndex]}
-              </div>
-              <div style={{
-                height: 5,
-                overflow: 'hidden',
-                borderRadius: 999,
-                background: 'rgba(255,255,255,0.10)',
-              }}>
-                <div style={{
-                  width: '48%',
-                  height: '100%',
-                  borderRadius: 999,
-                  background: 'linear-gradient(90deg, #FF6B00, #FFD100)',
-                  transformOrigin: 'left center',
-                  animation: 'aironGlow 1.8s ease-in-out infinite',
-                }} />
-              </div>
-            </div>
-          </div>
+          <img
+            src={aironSplash}
+            alt="A.I.R.O.N. splash"
+            style={{
+              width: '100%',
+              height: '100%',
+              objectFit: 'contain',
+              objectPosition: 'center center',
+              borderRadius: 18,
+              boxShadow: '0 28px 90px rgba(0,0,0,0.52)',
+              userSelect: 'none',
+              pointerEvents: 'none',
+            }}
+          />
 
           <div style={{
-            marginTop: 12,
-            color: '#C8C8C8',
-            fontSize: 11,
-            lineHeight: 1.5,
-            fontFamily: "'IBM Plex Mono', monospace",
-            letterSpacing: 0.7,
-            textTransform: 'uppercase',
+            position: 'absolute',
+            left: '50%',
+            bottom: 'max(18px, 3vh)',
+            transform: 'translateX(-50%)',
+            width: 'min(88%, 760px)',
+            padding: '14px 18px 16px',
+            borderRadius: 18,
+            background: 'linear-gradient(180deg, rgba(8,8,8,0.72), rgba(8,8,8,0.88))',
+            border: '1px solid rgba(255,255,255,0.08)',
+            boxShadow: '0 20px 60px rgba(0,0,0,0.35)',
+            backdropFilter: 'blur(4px)',
+            animation: 'aironFadeUp 0.6s ease-out both',
           }}>
-            THE DINGFELDER ENTERPRISES TRIANGLE · YOU'RE GETTING VALUE AT ZERO COST · GOOD THINGS TAKE TIME
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 14,
+            }}>
+              <div style={{
+                width: 30,
+                height: 30,
+                borderRadius: '50%',
+                border: '3px solid rgba(255,255,255,0.18)',
+                borderTopColor: '#FF6B00',
+                borderRightColor: '#FFD100',
+                animation: 'aironSpin 1.1s linear infinite',
+                flexShrink: 0,
+              }} />
+              <div style={{ flex: 1 }}>
+                <div style={{
+                  color: '#FFF',
+                  fontFamily: "'IBM Plex Mono', monospace",
+                  fontSize: 12,
+                  letterSpacing: 1.6,
+                  marginBottom: 8,
+                  textTransform: 'uppercase',
+                }}>
+                  {loadingMessages[messageIndex]}
+                </div>
+                <div style={{
+                  height: 5,
+                  overflow: 'hidden',
+                  borderRadius: 999,
+                  background: 'rgba(255,255,255,0.10)',
+                }}>
+                  <div style={{
+                    width: '48%',
+                    height: '100%',
+                    borderRadius: 999,
+                    background: 'linear-gradient(90deg, #FF6B00, #FFD100)',
+                    transformOrigin: 'left center',
+                    animation: 'aironGlow 1.8s ease-in-out infinite',
+                  }} />
+                </div>
+              </div>
+            </div>
+
+            <div style={{
+              marginTop: 12,
+              color: '#C8C8C8',
+              fontSize: 11,
+              lineHeight: 1.5,
+              fontFamily: "'IBM Plex Mono', monospace",
+              letterSpacing: 0.7,
+              textTransform: 'uppercase',
+            }}>
+              THE DINGFELDER ENTERPRISES TRIANGLE · YOU'RE GETTING VALUE AT ZERO COST · GOOD THINGS TAKE TIME
+            </div>
           </div>
         </div>
       </div>

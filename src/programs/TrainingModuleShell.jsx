@@ -1,5 +1,5 @@
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 
 const PAGE_BG = "#080808";
@@ -12,6 +12,21 @@ const DIM = "#555";
 const MONO = "'IBM Plex Mono', monospace";
 const CONDENSED = "'Barlow Condensed', sans-serif";
 const SANS = "'IBM Plex Sans', sans-serif";
+
+
+function forceScrollTop() {
+  if (typeof window === "undefined") return;
+  const apply = () => {
+    window.scrollTo(0, 0);
+    const root = document.scrollingElement || document.documentElement || document.body;
+    if (root) root.scrollTop = 0;
+    if (document.body) document.body.scrollTop = 0;
+  };
+  apply();
+  requestAnimationFrame(apply);
+  setTimeout(apply, 0);
+}
+
 
 function DetailList({ items, color }) {
   if (!items?.length) return null;
@@ -133,6 +148,10 @@ export default function TrainingModuleShell({ module }) {
   const [answers, setAnswers] = useState({});
   const [submitted, setSubmitted] = useState(false);
 
+  useEffect(() => {
+    forceScrollTop();
+  }, [slideIndex, submitted]);
+
   const slides = module.slides || [];
   const progress = Math.round(((slideIndex + 1) / slides.length) * 100);
   const allAnswered = module.quiz.every((_, idx) => answers[idx] !== undefined);
@@ -225,6 +244,7 @@ export default function TrainingModuleShell({ module }) {
             <div style={{ display: "flex", gap: 12, marginTop: 22, flexWrap: "wrap" }}>
               <Link
                 to="/"
+                onClick={forceScrollTop}
                 style={{
                   background: module.color,
                   color: "#0b0b0b",
@@ -244,6 +264,7 @@ export default function TrainingModuleShell({ module }) {
                     setAnswers({});
                     setSubmitted(false);
                     setSlideIndex(0);
+                    forceScrollTop();
                   }}
                   style={{
                     background: "#121212",
@@ -284,7 +305,7 @@ export default function TrainingModuleShell({ module }) {
         />
         <div style={{ maxWidth: 820, margin: "0 auto" }}>
           <div style={{ marginBottom: 18, display: "flex", justifyContent: "space-between", gap: 12, alignItems: "center", flexWrap: "wrap" }}>
-            <Link to="/" style={{ color: "#888", textDecoration: "none", fontFamily: MONO, fontSize: 12 }}>
+            <Link to="/" onClick={forceScrollTop} style={{ color: "#888", textDecoration: "none", fontFamily: MONO, fontSize: 12 }}>
               ← BACK TO PORTAL
             </Link>
             <div style={{ color: module.color, fontFamily: MONO, fontSize: 12 }}>
@@ -323,7 +344,10 @@ export default function TrainingModuleShell({ module }) {
             </div>
             <div style={{ display: "flex", gap: 12, marginTop: 22, flexWrap: "wrap" }}>
               <button
-                onClick={() => setSlideIndex(slides.length - 1)}
+                onClick={() => {
+                  setSlideIndex(slides.length - 1);
+                  forceScrollTop();
+                }}
                 style={{
                   background: "#121212",
                   color: "#fff",
@@ -339,7 +363,10 @@ export default function TrainingModuleShell({ module }) {
               </button>
               <button
                 disabled={!allAnswered}
-                onClick={() => setSubmitted(true)}
+                onClick={() => {
+                  setSubmitted(true)
+                  forceScrollTop()
+                }}
                 style={{
                   background: allAnswered ? module.color : "#252525",
                   color: allAnswered ? "#0b0b0b" : "#777",
@@ -389,7 +416,7 @@ export default function TrainingModuleShell({ module }) {
             marginBottom: 16,
           }}
         >
-          <Link to="/" style={{ color: "#888", textDecoration: "none", fontFamily: MONO, fontSize: 12 }}>
+          <Link to="/" onClick={forceScrollTop} style={{ color: "#888", textDecoration: "none", fontFamily: MONO, fontSize: 12 }}>
             ← BACK TO PORTAL
           </Link>
           <div style={{ color: module.color, fontFamily: MONO, fontSize: 12 }}>
@@ -487,7 +514,10 @@ export default function TrainingModuleShell({ module }) {
 
           <div style={{ display: "flex", gap: 12, marginTop: 24, flexWrap: "wrap" }}>
             <button
-              onClick={() => setSlideIndex((x) => Math.max(0, x - 1))}
+              onClick={() => {
+                setSlideIndex((x) => Math.max(0, x - 1));
+                forceScrollTop();
+              }}
               disabled={slideIndex === 0}
               style={{
                 background: slideIndex === 0 ? "#171717" : "#121212",
@@ -503,7 +533,10 @@ export default function TrainingModuleShell({ module }) {
               PREVIOUS
             </button>
             <button
-              onClick={() => setSlideIndex((x) => x + 1)}
+              onClick={() => {
+                setSlideIndex((x) => x + 1);
+                forceScrollTop();
+              }}
               style={{
                 background: module.color,
                 color: "#0b0b0b",

@@ -1251,6 +1251,19 @@ function PortalHome() {
   )
 }
 
+const forceScrollTop = () => {
+  if (typeof window === 'undefined') return;
+  const apply = () => {
+    window.scrollTo(0, 0);
+    const root = document.scrollingElement || document.documentElement || document.body;
+    if (root) root.scrollTop = 0;
+    if (document.body) document.body.scrollTop = 0;
+  };
+  apply();
+  requestAnimationFrame(apply);
+  setTimeout(apply, 0);
+};
+
 function AppRoutes() {
   return (
     <Routes>
@@ -1280,8 +1293,13 @@ export default function App() {
     }
   }, [location.pathname])
 
+  useEffect(() => {
+    forceScrollTop()
+  }, [location.pathname])
+
   const handleSplashDone = () => {
     setShowSplash(false)
+    forceScrollTop()
     if (mode === 'airon') {
       navigate('/landing', { replace: true })
     } else {

@@ -296,6 +296,7 @@ function GlobalFonts() {
 
 function AIRONSplash({ onDone }) {
   const [messageIndex, setMessageIndex] = useState(0)
+  const [canContinue, setCanContinue] = useState(false)
   const loadingMessages = [
     'Initializing training environment...',
     'Synchronizing A.I.R.O.N. systems...',
@@ -306,12 +307,12 @@ function AIRONSplash({ onDone }) {
     const interval = setInterval(() => {
       setMessageIndex(index => (index + 1) % loadingMessages.length)
     }, 1200)
-    const timer = setTimeout(onDone, 10000)
+    const revealContinue = setTimeout(() => setCanContinue(true), 10000)
     return () => {
       clearInterval(interval)
-      clearTimeout(timer)
+      clearTimeout(revealContinue)
     }
-  }, [onDone])
+  }, [])
 
   return (
     <div style={{
@@ -393,7 +394,7 @@ function AIRONSplash({ onDone }) {
             left: '50%',
             bottom: 'max(20px, env(safe-area-inset-bottom, 0px) + 12px)',
             transform: 'translateX(-50%)',
-            width: 'min(92vw, 520px)',
+            width: 'min(92vw, 560px)',
             padding: '10px 14px 12px',
             borderRadius: 16,
             background: 'linear-gradient(180deg, rgba(8,8,8,0.78), rgba(8,8,8,0.92))',
@@ -457,6 +458,30 @@ function AIRONSplash({ onDone }) {
             }}>
               THE DINGFELDER ENTERPRISES TRIANGLE · YOU'RE GETTING VALUE AT ZERO COST · GOOD THINGS TAKE TIME
             </div>
+
+            {canContinue && (
+              <button
+                onClick={onDone}
+                style={{
+                  marginTop: 12,
+                  width: '100%',
+                  appearance: 'none',
+                  border: '1px solid rgba(255,255,255,0.18)',
+                  background: 'linear-gradient(180deg, rgba(255,209,0,0.95), rgba(255,107,0,0.92))',
+                  color: '#050505',
+                  padding: '10px 14px',
+                  borderRadius: 12,
+                  fontFamily: "'Barlow Condensed', sans-serif",
+                  fontSize: 20,
+                  fontWeight: 800,
+                  letterSpacing: 1.2,
+                  cursor: 'pointer',
+                  boxShadow: '0 12px 28px rgba(255,107,0,0.22)',
+                }}
+              >
+                CONTINUE
+              </button>
+            )}
           </div>
         </div>
       </div>

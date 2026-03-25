@@ -360,6 +360,51 @@ function getSiteMode(hostname) {
   return 'training'
 }
 
+
+const CATEGORY_FILTERS = [
+  { key: 'all', label: 'All' },
+  { key: 'campus', label: 'Campus' },
+  { key: 'foundry', label: 'Foundry' },
+  { key: 'beam-mill', label: 'Beam Mill' },
+  { key: 'process-gas', label: 'Process / Gas' },
+  { key: 'food-retail', label: 'Food / Retail' },
+  { key: 'medical', label: 'Medical' },
+]
+
+const TYPE_FILTERS = [
+  { key: 'all', label: 'All Types' },
+  { key: 'awareness', label: 'Awareness' },
+  { key: 'core', label: 'Core' },
+  { key: 'high-risk', label: 'High-Risk' },
+]
+
+function getProgramCategory(path) {
+  const foundry = new Set(['/loto', '/molten-metal', '/furnace-melt-deck', '/silica-sand', '/crane-ladle'])
+  const beamMill = new Set(['/arcflash', '/beam-mill-rolling-line', '/overhead-crane-rigging', '/hydraulic-stored-energy', '/pinch-crush-steel-handling'])
+  const processGas = new Set(['/h2s', '/loto-campus', '/propane-farm', '/confined-space', '/respiratory'])
+  const foodRetail = new Set(['/food-chemical', '/ammonia', '/retail-backroom', '/forklift'])
+  const medical = new Set(['/medical-emergency-basics', '/aed-awareness', '/adult-cpr-awareness', '/pulse-check-awareness', '/severe-bleeding-control', '/choking-response'])
+
+  if (medical.has(path)) return 'medical'
+  if (foundry.has(path)) return 'foundry'
+  if (beamMill.has(path)) return 'beam-mill'
+  if (processGas.has(path)) return 'process-gas'
+  if (foodRetail.has(path)) return 'food-retail'
+  return 'campus'
+}
+
+function getProgramType(path) {
+  const core = new Set(['/sat', '/hazcom', '/ppe', '/evacuation', '/contractor-safety', '/walking-working-surfaces', '/incident-reporting', '/severe-weather'])
+  const highRisk = new Set(['/loto', '/loto-campus', '/h2s', '/arcflash', '/molten-metal', '/furnace-melt-deck', '/crane-ladle', '/propane-farm', '/confined-space', '/hot-work', '/machine-guarding', '/adult-cpr-awareness', '/aed-awareness', '/pulse-check-awareness', '/severe-bleeding-control'])
+  if (core.has(path)) return 'core'
+  if (highRisk.has(path)) return 'high-risk'
+  return 'awareness'
+}
+
+function matchesFilter(value, active) {
+  return active === 'all' || value === active
+}
+
 function GlobalFonts() {
   return (
     <link
@@ -892,6 +937,16 @@ function PortalHome() {
     return () => clearInterval(t)
   }, [])
   const blink = tick % 2 === 0
+  const [categoryFilter, setCategoryFilter] = useState('all')
+  const [typeFilter, setTypeFilter] = useState('all')
+
+  const filteredPrograms = useMemo(() => {
+    return PROGRAMS.filter(prog => {
+      const category = getProgramCategory(prog.path)
+      const type = getProgramType(prog.path)
+      return matchesFilter(category, categoryFilter) && matchesFilter(type, typeFilter)
+    })
+  }, [categoryFilter, typeFilter])
 
   return (
     <div style={{
@@ -991,14 +1046,87 @@ function PortalHome() {
           fontFamily: "'Barlow Condensed', sans-serif",
           fontSize: 11, letterSpacing: 3,
           marginBottom: 16,
-        }}>AVAILABLE TRAINING PROGRAMS — {PROGRAMS.length} PROGRAMS</div>
+        }}>AVAILABLE TRAINING PROGRAMS — {filteredPrograms.length} OF {PROGRAMS.length}</div>
+
+        <div style={{
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 10,
+          marginBottom: 18,
+        }}>
+          <div style={{
+            display: 'flex',
+            gap: 8,
+            overflowX: 'auto',
+            paddingBottom: 4,
+          }}>
+            {CATEGORY_FILTERS.map(filter => {
+              const active = categoryFilter === filter.key
+              return (
+                <button
+                  key={filter.key}
+                  onClick={() => setCategoryFilter(filter.key)}
+                  style={{
+                    appearance: 'none',
+                    border: `1px solid ${active ? '#FF8A00' : '#2b2b2b'}`,
+                    background: active ? 'linear-gradient(180deg, #FFB000, #FF7A00)' : '#0c0c0c',
+                    color: active ? '#080808' : '#8f8f8f',
+                    borderRadius: 999,
+                    padding: '10px 14px',
+                    fontFamily: "'Barlow Condensed', sans-serif",
+                    fontSize: 16,
+                    fontWeight: 800,
+                    letterSpacing: 1,
+                    whiteSpace: 'nowrap',
+                    cursor: 'pointer',
+                  }}
+                >
+                  {filter.label}
+                </button>
+              )
+            })}
+          </div>
+
+          <div style={{
+            display: 'flex',
+            gap: 8,
+            overflowX: 'auto',
+            paddingBottom: 4,
+          }}>
+            {TYPE_FILTERS.map(filter => {
+              const active = typeFilter === filter.key
+              return (
+                <button
+                  key={filter.key}
+                  onClick={() => setTypeFilter(filter.key)}
+                  style={{
+                    appearance: 'none',
+                    border: `1px solid ${active ? '#22CC66' : '#2b2b2b'}`,
+                    background: active ? 'rgba(34, 204, 102, 0.14)' : '#0c0c0c',
+                    color: active ? '#8DFFB4' : '#8f8f8f',
+                    borderRadius: 999,
+                    padding: '8px 12px',
+                    fontFamily: "'IBM Plex Mono', monospace",
+                    fontSize: 11,
+                    letterSpacing: 1.2,
+                    textTransform: 'uppercase',
+                    whiteSpace: 'nowrap',
+                    cursor: 'pointer',
+                  }}
+                >
+                  {filter.label}
+                </button>
+              )
+            })}
+          </div>
+        </div>
 
         <div style={{
           display: 'grid',
           gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))',
           gap: 12,
         }}>
-          {PROGRAMS.map(prog => (
+          {filteredPrograms.map(prog => (
             <div
               key={prog.path}
               onClick={() => navigate(prog.path)}
@@ -1083,6 +1211,20 @@ function PortalHome() {
             </div>
           ))}
         </div>
+
+        {filteredPrograms.length === 0 && (
+          <div style={{
+            marginTop: 14,
+            border: '1px solid #1f1f1f',
+            borderRadius: 8,
+            background: '#0d0d0d',
+            padding: '18px',
+            color: '#7d7d7d',
+            fontSize: 13,
+          }}>
+            No modules match the current filters. Try a different environment or training type.
+          </div>
+        )}
       </div>
 
       <div style={{

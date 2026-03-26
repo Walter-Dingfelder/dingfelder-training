@@ -527,6 +527,37 @@ function matchesFilter(value, active) {
   return active === 'all' || value === active
 }
 
+
+const PORTAL_CONTEXT_KEY = 'airon.portalContext'
+
+function buildPortalSearch(category, type) {
+  const params = new URLSearchParams()
+  if (category && category !== 'all') params.set('category', category)
+  if (type && type !== 'all') params.set('type', type)
+  const query = params.toString()
+  return query ? `?${query}` : ''
+}
+
+function parsePortalSearch(search) {
+  const params = new URLSearchParams(search || '')
+  const category = params.get('category') || 'all'
+  const type = params.get('type') || 'all'
+  return { category, type }
+}
+
+function savePortalContext(portalSearch, seriesPaths) {
+  if (typeof window === 'undefined') return
+  try {
+    window.sessionStorage.setItem(
+      PORTAL_CONTEXT_KEY,
+      JSON.stringify({
+        portalSearch: typeof portalSearch === 'string' ? portalSearch : '',
+        seriesPaths: Array.isArray(seriesPaths) ? seriesPaths : [],
+      })
+    )
+  } catch {}
+}
+
 function GlobalFonts() {
   return (
     <link
@@ -1053,14 +1084,30 @@ function AIRONLanding() {
 
 function PortalHome() {
   const navigate = useNavigate()
+  const location = useLocation()
   const [tick, setTick] = useState(0)
+
   useEffect(() => {
     const t = setInterval(() => setTick(x => x + 1), 1000)
     return () => clearInterval(t)
   }, [])
+
   const blink = tick % 2 === 0
-  const [categoryFilter, setCategoryFilter] = useState('all')
-  const [typeFilter, setTypeFilter] = useState('all')
+  const [categoryFilter, setCategoryFilter] = useState(() => parsePortalSearch(location.search).category)
+  const [typeFilter, setTypeFilter] = useState(() => parsePortalSearch(location.search).type)
+
+  useEffect(() => {
+    const parsed = parsePortalSearch(location.search)
+    setCategoryFilter(parsed.category)
+    setTypeFilter(parsed.type)
+  }, [location.search])
+
+  useEffect(() => {
+    const nextSearch = buildPortalSearch(categoryFilter, typeFilter)
+    if (location.pathname === '/' && location.search !== nextSearch) {
+      navigate({ pathname: '/', search: nextSearch }, { replace: true })
+    }
+  }, [categoryFilter, typeFilter, location.pathname, location.search, navigate])
 
   const filteredPrograms = useMemo(() => {
     return PROGRAMS.filter(prog => {
@@ -1251,7 +1298,17 @@ function PortalHome() {
           {filteredPrograms.map(prog => (
             <div
               key={prog.path}
-              onClick={() => navigate(prog.path)}
+              onClick={() => {
+                const portalSearch = buildPortalSearch(categoryFilter, typeFilter)
+                const seriesPaths = filteredPrograms.map(item => item.path)
+                savePortalContext(portalSearch, seriesPaths)
+                navigate(prog.path, {
+                  state: {
+                    portalSearch,
+                    seriesPaths,
+                  },
+                })
+              }}
               style={{
                 background: '#0f0f0f',
                 border: `1px solid #1e1e1e`,

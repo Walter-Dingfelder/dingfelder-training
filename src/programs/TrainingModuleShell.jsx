@@ -1,6 +1,6 @@
 
 import { useEffect, useMemo, useState } from "react";
-import { Link } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 
 const PAGE_BG = "#080808";
 const PANEL = "#0f0f0f";
@@ -25,6 +25,56 @@ function forceScrollTop() {
   apply();
   requestAnimationFrame(apply);
   setTimeout(apply, 0);
+}
+
+
+const PORTAL_CONTEXT_KEY = "airon.portalContext";
+
+function readStoredPortalContext() {
+  if (typeof window === "undefined") {
+    return { portalSearch: "", seriesPaths: [] };
+  }
+  try {
+    const raw = window.sessionStorage.getItem(PORTAL_CONTEXT_KEY);
+    if (!raw) {
+      return { portalSearch: "", seriesPaths: [] };
+    }
+    const parsed = JSON.parse(raw);
+    return {
+      portalSearch: typeof parsed?.portalSearch === "string" ? parsed.portalSearch : "",
+      seriesPaths: Array.isArray(parsed?.seriesPaths) ? parsed.seriesPaths : [],
+    };
+  } catch {
+    return { portalSearch: "", seriesPaths: [] };
+  }
+}
+
+function writeStoredPortalContext(portalSearch, seriesPaths) {
+  if (typeof window === "undefined") return;
+  try {
+    window.sessionStorage.setItem(
+      PORTAL_CONTEXT_KEY,
+      JSON.stringify({
+        portalSearch: typeof portalSearch === "string" ? portalSearch : "",
+        seriesPaths: Array.isArray(seriesPaths) ? seriesPaths : [],
+      })
+    );
+  } catch {}
+}
+
+function getPortalContext(locationState) {
+  const stored = readStoredPortalContext();
+  const portalSearch =
+    locationState && typeof locationState.portalSearch === "string"
+      ? locationState.portalSearch
+      : stored.portalSearch;
+
+  const seriesPaths =
+    Array.isArray(locationState?.seriesPaths) && locationState.seriesPaths.length > 0
+      ? locationState.seriesPaths
+      : stored.seriesPaths;
+
+  return { portalSearch, seriesPaths };
 }
 
 
@@ -144,9 +194,39 @@ function QuizCard({ question, qIndex, answers, setAnswers, color }) {
 }
 
 export default function TrainingModuleShell({ module }) {
+  const location = useLocation();
+  const navigate = useNavigate();
   const [slideIndex, setSlideIndex] = useState(0);
   const [answers, setAnswers] = useState({});
   const [submitted, setSubmitted] = useState(false);
+
+  const portalContext = useMemo(() => getPortalContext(location.state), [location.state]);
+  const portalSearch = portalContext.portalSearch;
+  const seriesPaths = portalContext.seriesPaths;
+  const currentSeriesIndex = seriesPaths.indexOf(module.path);
+  const nextModulePath = currentSeriesIndex >= 0 ? seriesPaths[currentSeriesIndex + 1] : null;
+
+  const returnToPortal = () => {
+    writeStoredPortalContext(portalSearch, seriesPaths);
+    forceScrollTop();
+    navigate({ pathname: "/", search: portalSearch || "" });
+  };
+
+  const goToNextModule = () => {
+    if (!nextModulePath) return;
+    writeStoredPortalContext(portalSearch, seriesPaths);
+    forceScrollTop();
+    navigate(nextModulePath, {
+      state: {
+        portalSearch,
+        seriesPaths,
+      },
+    });
+  };
+
+  useEffect(() => {
+    writeStoredPortalContext(portalSearch, seriesPaths);
+  }, [portalSearch, seriesPaths]);
 
   useEffect(() => {
     forceScrollTop();
@@ -242,22 +322,38 @@ export default function TrainingModuleShell({ module }) {
             </div>
 
             <div style={{ display: "flex", gap: 12, marginTop: 22, flexWrap: "wrap" }}>
-              <Link
-                to="/"
-                onClick={forceScrollTop}
+              <button
+                onClick={returnToPortal}
                 style={{
                   background: module.color,
                   color: "#0b0b0b",
-                  textDecoration: "none",
+                  border: "none",
                   borderRadius: 8,
                   padding: "12px 16px",
                   fontWeight: 800,
                   fontFamily: CONDENSED,
                   letterSpacing: 1,
+                  cursor: "pointer",
                 }}
               >
-                RETURN TO PORTAL
-              </Link>
+                Return to Portal
+              </button>
+              <button
+                onClick={goToNextModule}
+                disabled={!nextModulePath}
+                style={{
+                  background: nextModulePath ? "#121212" : "#171717",
+                  color: nextModulePath ? "#fff" : "#555",
+                  border: "1px solid #333",
+                  borderRadius: 8,
+                  padding: "12px 16px",
+                  cursor: nextModulePath ? "pointer" : "not-allowed",
+                  fontFamily: CONDENSED,
+                  letterSpacing: 1,
+                }}
+              >
+                Next Card
+              </button>
               {!passed && (
                 <button
                   onClick={() => {
@@ -305,9 +401,21 @@ export default function TrainingModuleShell({ module }) {
         />
         <div style={{ maxWidth: 820, margin: "0 auto" }}>
           <div style={{ marginBottom: 18, display: "flex", justifyContent: "space-between", gap: 12, alignItems: "center", flexWrap: "wrap" }}>
-            <Link to="/" onClick={forceScrollTop} style={{ color: "#888", textDecoration: "none", fontFamily: MONO, fontSize: 12 }}>
+            <button
+              onClick={returnToPortal}
+              style={{
+                color: "#888",
+                background: "transparent",
+                border: "none",
+                padding: 0,
+                textDecoration: "none",
+                fontFamily: MONO,
+                fontSize: 12,
+                cursor: "pointer",
+              }}
+            >
               ← BACK TO PORTAL
-            </Link>
+            </button>
             <div style={{ color: module.color, fontFamily: MONO, fontSize: 12 }}>
               KNOWLEDGE CHECK — {module.quiz.length} QUESTIONS
             </div>
@@ -416,9 +524,21 @@ export default function TrainingModuleShell({ module }) {
             marginBottom: 16,
           }}
         >
-          <Link to="/" onClick={forceScrollTop} style={{ color: "#888", textDecoration: "none", fontFamily: MONO, fontSize: 12 }}>
+          <button
+            onClick={returnToPortal}
+            style={{
+              color: "#888",
+              background: "transparent",
+              border: "none",
+              padding: 0,
+              textDecoration: "none",
+              fontFamily: MONO,
+              fontSize: 12,
+              cursor: "pointer",
+            }}
+          >
             ← BACK TO PORTAL
-          </Link>
+          </button>
           <div style={{ color: module.color, fontFamily: MONO, fontSize: 12 }}>
             SLIDE {slideIndex + 1} / {slides.length} · {progress}% COMPLETE
           </div>

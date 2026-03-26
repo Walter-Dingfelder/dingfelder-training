@@ -42,6 +42,13 @@ export const TRAINING_CATALOG = {
     "Magnetic Stored Energy Safety",
     "Thermal Stored Energy Safety",
     "Nuclear / Radiological Energy Awareness",
+    "Feed Gas Compression & Hydrocarbon Release Awareness",
+    "Cracker Furnace / Pyrolysis Heater Safety",
+    "Quench, Fractionation & Cryogenic Cold-Section Awareness",
+    "Flare, Relief & Upset Vent System Awareness",
+    "Turnaround, Decoke & SIMOPS Safety",
+    "Sampling, Drains & Small-Bore Hydrocarbon Systems",
+    "Cracker Unit Shelter, Muster & Immediate Response",
     "Medical Emergency Response Basics",
     "AED Awareness & Use",
     "Adult CPR Awareness",
@@ -68,8 +75,6 @@ export const TRAINING_CATALOG = {
     "Cut, Abrasion, and Hot Surface Protection",
     "Gas Wells / Wellhead Area Safety",
     "Drying / Stripping Equipment Safety",
-    "Process Safety / Gas Release Control",
-    "Line Opening / Bleeding / Purging Safety",
     "Tank Battery / Separator Area Safety",
     "Station Apparatus Bay Safety",
     "SCBA Inspection & Readiness",
@@ -129,6 +134,18 @@ export const STORED_ENERGY_PHASE1_READY = [
   "Magnetic Stored Energy Safety",
   "Thermal Stored Energy Safety",
   "Nuclear / Radiological Energy Awareness",
+]
+
+export const CRACKER_PLANT_PHASE1_READY = [
+  "Feed Gas Compression & Hydrocarbon Release Awareness",
+  "Cracker Furnace / Pyrolysis Heater Safety",
+  "Quench, Fractionation & Cryogenic Cold-Section Awareness",
+  "Flare, Relief & Upset Vent System Awareness",
+  "Process Safety / Gas Release Control",
+  "Line Opening / Bleeding / Purging Safety",
+  "Turnaround, Decoke & SIMOPS Safety",
+  "Sampling, Drains & Small-Bore Hydrocarbon Systems",
+  "Cracker Unit Shelter, Muster & Immediate Response",
 ]
 
 export const MEDICAL_CORE_READY = [

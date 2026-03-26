@@ -88,6 +88,18 @@ import {
   ThermalStoredEnergyTraining,
   NuclearStoredEnergyTraining,
 } from './programs/StoredEnergyPhase1.jsx'
+import {
+  NATURAL_GAS_CRACKER_PHASE1_MODULES,
+  CrackerFeedGasTraining,
+  CrackerFurnaceTraining,
+  CrackerQuenchFractionationTraining,
+  CrackerFlareReliefTraining,
+  CrackerProcessSafetyTraining,
+  CrackerLineOpeningTraining,
+  CrackerTurnaroundTraining,
+  CrackerSamplingDrainsTraining,
+  CrackerEmergencyShelterTraining,
+} from './programs/NaturalGasCrackerPhase1.jsx'
 
 // ─── Route map ───────────────────────────────────────────────────────────────
 const PROGRAMS = [
@@ -135,6 +147,20 @@ const PROGRAMS = [
     minutes:    20,
     Component:  H2STraining,
   },
+  ...NATURAL_GAS_CRACKER_PHASE1_MODULES.map((module, index) => ({
+    ...module,
+    Component: [
+      CrackerFeedGasTraining,
+      CrackerFurnaceTraining,
+      CrackerQuenchFractionationTraining,
+      CrackerFlareReliefTraining,
+      CrackerProcessSafetyTraining,
+      CrackerLineOpeningTraining,
+      CrackerTurnaroundTraining,
+      CrackerSamplingDrainsTraining,
+      CrackerEmergencyShelterTraining,
+    ][index],
+  })),
   {
     path:       '/arcflash',
     label:      'Arc Flash & Electrical Safety',
@@ -506,6 +532,7 @@ const CATEGORY_FILTERS = [
   { key: 'foundry', label: 'Foundry' },
   { key: 'beam-mill', label: 'Beam Mill' },
   { key: 'process-gas', label: 'Process / Gas' },
+  { key: 'cracker-plant', label: 'Cracker Plant' },
   { key: 'food-retail', label: 'Food / Retail' },
   { key: 'glass-fiberglass', label: 'Glass / Fiberglass' },
   { key: 'stored-energy', label: 'Stored Energy' },
@@ -524,6 +551,7 @@ const INDUSTRIAL_ENVIRONMENTS = [
   'foundry',
   'beam-mill',
   'process-gas',
+  'cracker-plant',
   'food-retail',
   'glass-fiberglass',
 ]
@@ -536,7 +564,16 @@ const PROGRAM_CATEGORY_TAGS = {
 
   '/loto': ['foundry'],
   '/loto-campus': CAMPUS_AND_ALL_ENVIRONMENTS,
-  '/h2s': ['process-gas'],
+  '/h2s': ['process-gas', 'cracker-plant'],
+  '/cracker-feed-gas': ['cracker-plant', 'process-gas'],
+  '/cracker-furnace': ['cracker-plant', 'process-gas'],
+  '/cracker-quench-fractionation': ['cracker-plant', 'process-gas'],
+  '/cracker-flare-relief': ['cracker-plant', 'process-gas'],
+  '/cracker-process-safety-gas-release': ['cracker-plant', 'process-gas'],
+  '/cracker-line-opening': ['cracker-plant', 'process-gas'],
+  '/cracker-turnaround-simops': ['cracker-plant', 'process-gas'],
+  '/cracker-psv-drains-sampling': ['cracker-plant', 'process-gas'],
+  '/cracker-emergency-shelter-muster': ['cracker-plant', 'process-gas'],
   '/arcflash': ['campus', ...INDUSTRIAL_ENVIRONMENTS, 'stored-energy'],
   '/evacuation': CAMPUS_AND_ALL_ENVIRONMENTS,
 
@@ -547,11 +584,11 @@ const PROGRAM_CATEGORY_TAGS = {
   '/severe-bleeding-control': MEDICAL_AND_ALL_ENVIRONMENTS,
   '/choking-response': MEDICAL_AND_ALL_ENVIRONMENTS,
   '/ems-activation': MEDICAL_AND_ALL_ENVIRONMENTS,
-  '/heat-illness': ['medical', 'campus', 'foundry', 'beam-mill', 'process-gas', 'food-retail', 'glass-fiberglass'],
+  '/heat-illness': ['medical', 'campus', 'foundry', 'beam-mill', 'process-gas', 'cracker-plant', 'food-retail', 'glass-fiberglass'],
   '/stroke-fast': MEDICAL_AND_ALL_ENVIRONMENTS,
   '/heart-attack-warning': MEDICAL_AND_ALL_ENVIRONMENTS,
-  '/burn-first-aid': ['medical', 'campus', 'foundry', 'beam-mill', 'process-gas', 'food-retail', 'glass-fiberglass'],
-  '/eye-exposure': ['medical', 'campus', 'foundry', 'process-gas', 'food-retail', 'glass-fiberglass'],
+  '/burn-first-aid': ['medical', 'campus', 'foundry', 'beam-mill', 'process-gas', 'cracker-plant', 'food-retail', 'glass-fiberglass'],
+  '/eye-exposure': ['medical', 'campus', 'foundry', 'process-gas', 'cracker-plant', 'food-retail', 'glass-fiberglass'],
   '/medical-response-final': ['medical'],
 
   '/hazcom': CAMPUS_AND_ALL_ENVIRONMENTS,
@@ -572,8 +609,8 @@ const PROGRAM_CATEGORY_TAGS = {
   '/contractor-safety': CAMPUS_AND_ALL_ENVIRONMENTS,
   '/severe-weather': CAMPUS_AND_ALL_ENVIRONMENTS,
   '/confined-space': ['campus', ...INDUSTRIAL_ENVIRONMENTS],
-  '/respiratory-protection': ['campus', 'foundry', 'process-gas', 'food-retail', 'glass-fiberglass'],
-  '/hearing-conservation': ['campus', 'foundry', 'beam-mill', 'food-retail', 'glass-fiberglass'],
+  '/respiratory-protection': ['campus', 'foundry', 'process-gas', 'cracker-plant', 'food-retail', 'glass-fiberglass'],
+  '/hearing-conservation': ['campus', 'foundry', 'beam-mill', 'cracker-plant', 'food-retail', 'glass-fiberglass'],
   '/hot-work': ['campus', ...INDUSTRIAL_ENVIRONMENTS],
 
   '/machine-guarding-molding-line': ['foundry'],
@@ -584,8 +621,8 @@ const PROGRAM_CATEGORY_TAGS = {
   '/overhead-crane-rigging': ['foundry', 'beam-mill', 'glass-fiberglass'],
   '/pinch-crush-steel-handling': ['foundry', 'beam-mill', 'glass-fiberglass'],
 
-  '/hydraulic-stored-energy': ['stored-energy', 'foundry', 'beam-mill', 'process-gas', 'food-retail', 'glass-fiberglass'],
-  '/pneumatic-stored-energy': ['stored-energy', 'foundry', 'beam-mill', 'process-gas', 'food-retail', 'glass-fiberglass'],
+  '/hydraulic-stored-energy': ['stored-energy', 'foundry', 'beam-mill', 'process-gas', 'cracker-plant', 'food-retail', 'glass-fiberglass'],
+  '/pneumatic-stored-energy': ['stored-energy', 'foundry', 'beam-mill', 'process-gas', 'cracker-plant', 'food-retail', 'glass-fiberglass'],
   '/electrical-stored-energy': ['stored-energy', 'campus', ...INDUSTRIAL_ENVIRONMENTS],
   '/fermentation-stored-energy': ['stored-energy', 'process-gas', 'food-retail'],
   '/gravity-stored-energy': ['stored-energy', 'campus', ...INDUSTRIAL_ENVIRONMENTS],
@@ -619,6 +656,15 @@ const HIGH_RISK_PROGRAMS = new Set([
   '/loto',
   '/loto-campus',
   '/h2s',
+  '/cracker-feed-gas',
+  '/cracker-furnace',
+  '/cracker-quench-fractionation',
+  '/cracker-flare-relief',
+  '/cracker-process-safety-gas-release',
+  '/cracker-line-opening',
+  '/cracker-turnaround-simops',
+  '/cracker-psv-drains-sampling',
+  '/cracker-emergency-shelter-muster',
   '/arcflash',
   '/molten-metal',
   '/furnace-melt-deck',
@@ -1383,9 +1429,9 @@ function PortalHome() {
           marginBottom: 18,
         }}>
           <div style={{
-            display: 'flex',
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))',
             gap: 8,
-            overflowX: 'auto',
             paddingBottom: 4,
           }}>
             {CATEGORY_FILTERS.map(filter => {
@@ -1417,8 +1463,8 @@ function PortalHome() {
 
           <div style={{
             display: 'flex',
+            flexWrap: 'wrap',
             gap: 8,
-            overflowX: 'auto',
             paddingBottom: 4,
           }}>
             {TYPE_FILTERS.map(filter => {

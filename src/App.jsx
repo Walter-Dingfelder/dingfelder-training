@@ -112,6 +112,17 @@ import {
   WasteWaterConfinedSpaceTraining,
   WasteWaterEmergencyResponseTraining,
 } from './programs/WasteWaterTreatmentPhase1.jsx'
+import {
+  CONFINED_SPACES_PHASE1_MODULES,
+  ConfinedSpacePermitRolesTraining,
+  ConfinedSpaceAtmosphericTestingTraining,
+  ConfinedSpaceIsolationBlankingTraining,
+  ConfinedSpaceAttendantCommunicationsTraining,
+  ConfinedSpaceRetrievalRescueTraining,
+  ConfinedSpaceTanksPitsSilosTraining,
+  ConfinedSpaceSewersWetWellsTraining,
+  ConfinedSpaceHotWorkSIMOPSTraining,
+} from './programs/ConfinedSpacesPhase1.jsx'
 
 // ─── Route map ───────────────────────────────────────────────────────────────
 const PROGRAMS = [
@@ -185,6 +196,19 @@ const PROGRAMS = [
       WasteWaterBiosolidsTraining,
       WasteWaterConfinedSpaceTraining,
       WasteWaterEmergencyResponseTraining,
+    ][index],
+  })),
+  ...CONFINED_SPACES_PHASE1_MODULES.map((module, index) => ({
+    ...module,
+    Component: [
+      ConfinedSpacePermitRolesTraining,
+      ConfinedSpaceAtmosphericTestingTraining,
+      ConfinedSpaceIsolationBlankingTraining,
+      ConfinedSpaceAttendantCommunicationsTraining,
+      ConfinedSpaceRetrievalRescueTraining,
+      ConfinedSpaceTanksPitsSilosTraining,
+      ConfinedSpaceSewersWetWellsTraining,
+      ConfinedSpaceHotWorkSIMOPSTraining,
     ][index],
   })),
   {
@@ -563,6 +587,7 @@ const CATEGORY_FILTERS = [
   { key: 'food-retail', label: 'Food / Retail' },
   { key: 'glass-fiberglass', label: 'Glass / Fiberglass' },
   { key: 'stored-energy', label: 'Stored Energy' },
+  { key: 'confined-spaces', label: 'Confined Spaces' },
   { key: 'medical', label: 'Medical' },
 ]
 
@@ -586,13 +611,15 @@ const INDUSTRIAL_ENVIRONMENTS = [
 
 const CAMPUS_AND_ALL_ENVIRONMENTS = ['campus', ...INDUSTRIAL_ENVIRONMENTS]
 const MEDICAL_AND_ALL_ENVIRONMENTS = ['medical', ...CAMPUS_AND_ALL_ENVIRONMENTS]
+const CONFINED_SPACES_ALL_ENVIRONMENTS = ['confined-spaces', ...CAMPUS_AND_ALL_ENVIRONMENTS]
+const CONFINED_SPACES_INDUSTRIAL_ENVIRONMENTS = ['confined-spaces', ...INDUSTRIAL_ENVIRONMENTS]
 
 const PROGRAM_CATEGORY_TAGS = {
   '/sat': ['campus'],
 
   '/loto': ['foundry'],
   '/loto-campus': CAMPUS_AND_ALL_ENVIRONMENTS,
-  '/h2s': ['process-gas', 'cracker-plant', 'waste-water'],
+  '/h2s': ['process-gas', 'cracker-plant', 'waste-water', 'confined-spaces'],
   '/cracker-feed-gas': ['cracker-plant', 'process-gas'],
   '/cracker-furnace': ['cracker-plant', 'process-gas'],
   '/cracker-quench-fractionation': ['cracker-plant', 'process-gas'],
@@ -609,7 +636,7 @@ const PROGRAM_CATEGORY_TAGS = {
   '/wastewater-disinfection-chemicals': ['waste-water'],
   '/wastewater-chemical-feed-polymer': ['waste-water'],
   '/wastewater-biosolids-dewatering': ['waste-water'],
-  '/wastewater-wet-well-confined-space': ['waste-water'],
+  '/wastewater-wet-well-confined-space': ['waste-water', 'confined-spaces'],
   '/wastewater-bypass-overflow-response': ['waste-water'],
   '/arcflash': ['campus', ...INDUSTRIAL_ENVIRONMENTS, 'stored-energy'],
   '/evacuation': CAMPUS_AND_ALL_ENVIRONMENTS,
@@ -645,10 +672,19 @@ const PROGRAM_CATEGORY_TAGS = {
   '/incident-reporting': CAMPUS_AND_ALL_ENVIRONMENTS,
   '/contractor-safety': CAMPUS_AND_ALL_ENVIRONMENTS,
   '/severe-weather': CAMPUS_AND_ALL_ENVIRONMENTS,
-  '/confined-space': ['campus', ...INDUSTRIAL_ENVIRONMENTS],
-  '/respiratory-protection': ['campus', 'foundry', 'process-gas', 'cracker-plant', 'waste-water', 'food-retail', 'glass-fiberglass'],
+  '/confined-space': CONFINED_SPACES_ALL_ENVIRONMENTS,
+  '/respiratory-protection': ['campus', 'foundry', 'process-gas', 'cracker-plant', 'waste-water', 'food-retail', 'glass-fiberglass', 'confined-spaces'],
   '/hearing-conservation': ['campus', 'foundry', 'beam-mill', 'cracker-plant', 'waste-water', 'food-retail', 'glass-fiberglass'],
-  '/hot-work': ['campus', ...INDUSTRIAL_ENVIRONMENTS],
+  '/hot-work': ['campus', ...INDUSTRIAL_ENVIRONMENTS, 'confined-spaces'],
+  '/confined-space-permit-roles': CONFINED_SPACES_ALL_ENVIRONMENTS,
+  '/confined-space-atmospheric-testing': CONFINED_SPACES_ALL_ENVIRONMENTS,
+  '/confined-space-isolation-blanking': CONFINED_SPACES_INDUSTRIAL_ENVIRONMENTS,
+  '/confined-space-attendant-communications': CONFINED_SPACES_ALL_ENVIRONMENTS,
+  '/confined-space-retrieval-rescue': CONFINED_SPACES_ALL_ENVIRONMENTS,
+  '/confined-space-tanks-pits-silos': ['confined-spaces', 'foundry', 'process-gas', 'cracker-plant', 'waste-water', 'food-retail', 'glass-fiberglass'],
+  '/confined-space-sewers-wet-wells': ['confined-spaces', 'campus', 'process-gas', 'waste-water'],
+  '/confined-space-hot-work-simops': ['confined-spaces', 'foundry', 'process-gas', 'cracker-plant', 'waste-water', 'glass-fiberglass'],
+
 
   '/machine-guarding-molding-line': ['foundry'],
   '/foundry-heat-stress-burn-prevention': ['foundry'],
@@ -709,6 +745,14 @@ const HIGH_RISK_PROGRAMS = new Set([
   '/crane-ladle',
   '/propane-farm',
   '/confined-space',
+  '/confined-space-permit-roles',
+  '/confined-space-atmospheric-testing',
+  '/confined-space-isolation-blanking',
+  '/confined-space-attendant-communications',
+  '/confined-space-retrieval-rescue',
+  '/confined-space-tanks-pits-silos',
+  '/confined-space-sewers-wet-wells',
+  '/confined-space-hot-work-simops',
   '/respiratory-protection',
   '/hot-work',
   '/machine-guarding-molding-line',

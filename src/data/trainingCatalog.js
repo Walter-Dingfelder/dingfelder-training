@@ -58,6 +58,14 @@ export const TRAINING_CATALOG = {
     "Biosolids, Dewatering & Sludge Handling Safety",
     "Wet Well, Sewer Entry & Confined Space Coordination",
     "Bypass, Overflow, Power Loss & Immediate Response",
+    "Confined Space Permit Roles & Entry Authorization",
+    "Confined Space Atmospheric Testing & Ventilation",
+    "Confined Space Isolation, Blanking & Line Breaking",
+    "Confined Space Attendant Duties & Communications",
+    "Confined Space Retrieval & Rescue Readiness",
+    "Tank, Pit, Hopper & Silo Interior Work Safety",
+    "Sewer, Wet Well & Utility Vault Confined Space Hazards",
+    "Hot Work, Coatings & SIMOPS in Confined Spaces",
     "Medical Emergency Response Basics",
     "AED Awareness & Use",
     "Adult CPR Awareness",
@@ -187,4 +195,16 @@ export const WASTE_WATER_TREATMENT_PHASE1_READY = [
   "Biosolids, Dewatering & Sludge Handling Safety",
   "Wet Well, Sewer Entry & Confined Space Coordination",
   "Bypass, Overflow, Power Loss & Immediate Response",
+]
+
+
+export const CONFINED_SPACES_PHASE1_READY = [
+  "Confined Space Permit Roles & Entry Authorization",
+  "Confined Space Atmospheric Testing & Ventilation",
+  "Confined Space Isolation, Blanking & Line Breaking",
+  "Confined Space Attendant Duties & Communications",
+  "Confined Space Retrieval & Rescue Readiness",
+  "Tank, Pit, Hopper & Silo Interior Work Safety",
+  "Sewer, Wet Well & Utility Vault Confined Space Hazards",
+  "Hot Work, Coatings & SIMOPS in Confined Spaces",
 ]

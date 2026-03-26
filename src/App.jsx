@@ -2027,21 +2027,29 @@ function AccountPanel({ open, authState, onClose, onOpenSignIn }) {
 
   return (
     <div style={{
-      marginTop: 18,
-      maxWidth: 860,
-      padding: 18,
-      borderRadius: 16,
-      background: 'rgba(255,255,255,0.03)',
-      border: '1px solid rgba(255,255,255,0.08)',
+      position: 'fixed',
+      inset: 0,
+      background: 'rgba(0,0,0,0.74)',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: 24,
+      zIndex: 1900,
     }}>
       <div style={{
-        display: 'flex',
-        gap: 14,
-        alignItems: 'flex-start',
-        justifyContent: 'space-between',
-        flexWrap: 'wrap',
+        width: '100%',
+        maxWidth: 760,
+        borderRadius: 18,
+        border: '1px solid rgba(255,209,0,0.18)',
+        background: '#0D0D0D',
+        boxShadow: '0 18px 60px rgba(0,0,0,0.45)',
+        overflow: 'hidden',
       }}>
-        <div>
+        <div style={{
+          padding: '18px 20px 14px',
+          borderBottom: '1px solid rgba(255,255,255,0.08)',
+          background: 'linear-gradient(180deg, rgba(255,209,0,0.06), rgba(255,209,0,0.00))',
+        }}>
           <div style={{
             color: '#FFD100',
             fontFamily: "'IBM Plex Mono', monospace",
@@ -2066,7 +2074,7 @@ function AccountPanel({ open, authState, onClose, onOpenSignIn }) {
             color: '#A4A4A4',
             fontSize: 14,
             lineHeight: 1.65,
-            maxWidth: 680,
+            maxWidth: 640,
           }}>
             {authState.user
               ? 'You are signed in. This is the path that will hold retained scores, certificates, and training history as the user system comes online.'
@@ -2074,113 +2082,92 @@ function AccountPanel({ open, authState, onClose, onOpenSignIn }) {
           </div>
         </div>
 
-        <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
-          {!authState.user && (
-            <HeaderActionButton accent="primary" onClick={onOpenSignIn}>
-              Sign In
-            </HeaderActionButton>
-          )}
-          <HeaderActionButton onClick={onClose}>
-            Close
-          </HeaderActionButton>
-        </div>
-      </div>
-
-      <div style={{
-        marginTop: 16,
-        display: 'grid',
-        gap: 14,
-        gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
-      }}>
-        <div style={{
-          padding: '14px 15px',
-          borderRadius: 12,
-          background: '#111111',
-          border: '1px solid rgba(255,255,255,0.08)',
-        }}>
+        <div style={{ padding: 20 }}>
           <div style={{
-            color: '#BEBEBE',
-            fontFamily: "'IBM Plex Mono', monospace",
-            fontSize: 11,
-            letterSpacing: 1.5,
-            textTransform: 'uppercase',
-            marginBottom: 8,
+            display: 'grid',
+            gap: 14,
+            gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
           }}>
-            Account status
-          </div>
-          <div style={{ color: '#FFFFFF', fontSize: 15, fontWeight: 700, marginBottom: 8 }}>
-            {authState.user ? 'Signed in' : 'Guest testing mode'}
-          </div>
-          <div style={{ color: '#8C8C8C', fontSize: 13, lineHeight: 1.6 }}>
-            {authState.user?.email || 'No saved identity is attached to this browser session yet.'}
-          </div>
-        </div>
+            <div style={{
+              padding: '14px 15px',
+              borderRadius: 12,
+              background: '#111111',
+              border: '1px solid rgba(255,255,255,0.08)',
+            }}>
+              <div style={{
+                color: '#BEBEBE',
+                fontFamily: "'IBM Plex Mono', monospace",
+                fontSize: 11,
+                letterSpacing: 1.5,
+                textTransform: 'uppercase',
+                marginBottom: 8,
+              }}>
+                Account status
+              </div>
+              <div style={{ color: '#FFFFFF', fontSize: 15, fontWeight: 700, marginBottom: 8 }}>
+                {authState.user ? 'Signed in' : 'Guest testing mode'}
+              </div>
+              <div style={{ color: '#8C8C8C', fontSize: 13, lineHeight: 1.6 }}>
+                {authState.user?.email || 'No saved identity is attached to this browser session yet.'}
+              </div>
+            </div>
 
-        <div style={{
-          padding: '14px 15px',
-          borderRadius: 12,
-          background: '#111111',
-          border: '1px solid rgba(255,255,255,0.08)',
-        }}>
+            <div style={{
+              padding: '14px 15px',
+              borderRadius: 12,
+              background: '#111111',
+              border: '1px solid rgba(255,255,255,0.08)',
+            }}>
+              <div style={{
+                color: '#BEBEBE',
+                fontFamily: "'IBM Plex Mono', monospace",
+                fontSize: 11,
+                letterSpacing: 1.5,
+                textTransform: 'uppercase',
+                marginBottom: 8,
+              }}>
+                Saved record path
+              </div>
+              <div style={{ color: '#FFFFFF', fontSize: 13, lineHeight: 1.7 }}>
+                Logged-in users will be the retained path for scores, certificates, reports, and training history. Guest testing stays open until enforcement is turned on.
+              </div>
+            </div>
+          </div>
+
           <div style={{
-            color: '#BEBEBE',
-            fontFamily: "'IBM Plex Mono', monospace",
-            fontSize: 11,
-            letterSpacing: 1.5,
-            textTransform: 'uppercase',
-            marginBottom: 8,
+            marginTop: 14,
+            padding: '12px 14px',
+            borderRadius: 12,
+            background: 'rgba(34,204,102,0.08)',
+            border: '1px solid rgba(34,204,102,0.18)',
+            color: '#A7F4BE',
+            fontSize: 13,
+            lineHeight: 1.65,
           }}>
-            Saved record path
-          </div>
-          <div style={{ color: '#FFFFFF', fontSize: 13, lineHeight: 1.7 }}>
-            Logged-in users will be the retained path for scores, certificates, reports, and training history. Guest testing stays open until enforcement is turned on.
+            {privacyText}
           </div>
 
-          <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+          <div style={{
+            marginTop: 16,
+            display: 'flex',
+            gap: 10,
+            justifyContent: 'flex-end',
+            flexWrap: 'wrap',
+          }}>
             {!authState.user && (
-              <HeaderActionButton accent="primary" onClick={() => setShowSignIn(true)}>
+              <HeaderActionButton accent="primary" onClick={onOpenSignIn}>
                 Sign In
               </HeaderActionButton>
             )}
-            <HeaderActionButton onClick={() => setShowAccountPanel(prev => !prev)}>
-              Account
+            <HeaderActionButton onClick={onClose}>
+              Close
             </HeaderActionButton>
           </div>
         </div>
-      </div>
-
-      <SignInPanel
-        open={showSignIn}
-        email={loginEmail}
-        password={loginPassword}
-        busy={loginBusy}
-        error={loginError}
-        onEmailChange={setLoginEmail}
-        onPasswordChange={setLoginPassword}
-        onClose={() => {
-          setShowSignIn(false)
-          setLoginError('')
-          setLoginPassword('')
-        }}
-        onSubmit={handleSignInSubmit}
-      />
-
-      <div style={{
-        marginTop: 14,
-        padding: '12px 14px',
-        borderRadius: 12,
-        background: 'rgba(34,204,102,0.08)',
-        border: '1px solid rgba(34,204,102,0.18)',
-        color: '#A7F4BE',
-        fontSize: 13,
-        lineHeight: 1.65,
-      }}>
-        {privacyText}
       </div>
     </div>
   )
 }
-
 
 function PortalHome({ authState, onSignIn, onSignOut }) {
   const navigate = useNavigate()

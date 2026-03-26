@@ -100,6 +100,18 @@ import {
   CrackerSamplingDrainsTraining,
   CrackerEmergencyShelterTraining,
 } from './programs/NaturalGasCrackerPhase1.jsx'
+import {
+  WASTE_WATER_TREATMENT_PHASE1_MODULES,
+  WasteWaterHeadworksTraining,
+  WasteWaterClarifierTraining,
+  WasteWaterAtmospheresTraining,
+  WasteWaterDigesterTraining,
+  WasteWaterDisinfectionTraining,
+  WasteWaterChemicalFeedTraining,
+  WasteWaterBiosolidsTraining,
+  WasteWaterConfinedSpaceTraining,
+  WasteWaterEmergencyResponseTraining,
+} from './programs/WasteWaterTreatmentPhase1.jsx'
 
 // ─── Route map ───────────────────────────────────────────────────────────────
 const PROGRAMS = [
@@ -159,6 +171,20 @@ const PROGRAMS = [
       CrackerTurnaroundTraining,
       CrackerSamplingDrainsTraining,
       CrackerEmergencyShelterTraining,
+    ][index],
+  })),
+  ...WASTE_WATER_TREATMENT_PHASE1_MODULES.map((module, index) => ({
+    ...module,
+    Component: [
+      WasteWaterHeadworksTraining,
+      WasteWaterClarifierTraining,
+      WasteWaterAtmospheresTraining,
+      WasteWaterDigesterTraining,
+      WasteWaterDisinfectionTraining,
+      WasteWaterChemicalFeedTraining,
+      WasteWaterBiosolidsTraining,
+      WasteWaterConfinedSpaceTraining,
+      WasteWaterEmergencyResponseTraining,
     ][index],
   })),
   {
@@ -533,6 +559,7 @@ const CATEGORY_FILTERS = [
   { key: 'beam-mill', label: 'Beam Mill' },
   { key: 'process-gas', label: 'Process / Gas' },
   { key: 'cracker-plant', label: 'Cracker Plant' },
+  { key: 'waste-water', label: 'Waste Water Treatment' },
   { key: 'food-retail', label: 'Food / Retail' },
   { key: 'glass-fiberglass', label: 'Glass / Fiberglass' },
   { key: 'stored-energy', label: 'Stored Energy' },
@@ -552,6 +579,7 @@ const INDUSTRIAL_ENVIRONMENTS = [
   'beam-mill',
   'process-gas',
   'cracker-plant',
+  'waste-water',
   'food-retail',
   'glass-fiberglass',
 ]
@@ -564,7 +592,7 @@ const PROGRAM_CATEGORY_TAGS = {
 
   '/loto': ['foundry'],
   '/loto-campus': CAMPUS_AND_ALL_ENVIRONMENTS,
-  '/h2s': ['process-gas', 'cracker-plant'],
+  '/h2s': ['process-gas', 'cracker-plant', 'waste-water'],
   '/cracker-feed-gas': ['cracker-plant', 'process-gas'],
   '/cracker-furnace': ['cracker-plant', 'process-gas'],
   '/cracker-quench-fractionation': ['cracker-plant', 'process-gas'],
@@ -574,6 +602,15 @@ const PROGRAM_CATEGORY_TAGS = {
   '/cracker-turnaround-simops': ['cracker-plant', 'process-gas'],
   '/cracker-psv-drains-sampling': ['cracker-plant', 'process-gas'],
   '/cracker-emergency-shelter-muster': ['cracker-plant', 'process-gas'],
+  '/wastewater-headworks-influent': ['waste-water'],
+  '/wastewater-open-basins-clarifiers': ['waste-water'],
+  '/wastewater-h2s-gas-detection': ['waste-water'],
+  '/wastewater-digesters-biogas': ['waste-water'],
+  '/wastewater-disinfection-chemicals': ['waste-water'],
+  '/wastewater-chemical-feed-polymer': ['waste-water'],
+  '/wastewater-biosolids-dewatering': ['waste-water'],
+  '/wastewater-wet-well-confined-space': ['waste-water'],
+  '/wastewater-bypass-overflow-response': ['waste-water'],
   '/arcflash': ['campus', ...INDUSTRIAL_ENVIRONMENTS, 'stored-energy'],
   '/evacuation': CAMPUS_AND_ALL_ENVIRONMENTS,
 
@@ -584,11 +621,11 @@ const PROGRAM_CATEGORY_TAGS = {
   '/severe-bleeding-control': MEDICAL_AND_ALL_ENVIRONMENTS,
   '/choking-response': MEDICAL_AND_ALL_ENVIRONMENTS,
   '/ems-activation': MEDICAL_AND_ALL_ENVIRONMENTS,
-  '/heat-illness': ['medical', 'campus', 'foundry', 'beam-mill', 'process-gas', 'cracker-plant', 'food-retail', 'glass-fiberglass'],
+  '/heat-illness': ['medical', 'campus', 'foundry', 'beam-mill', 'process-gas', 'cracker-plant', 'waste-water', 'food-retail', 'glass-fiberglass'],
   '/stroke-fast': MEDICAL_AND_ALL_ENVIRONMENTS,
   '/heart-attack-warning': MEDICAL_AND_ALL_ENVIRONMENTS,
-  '/burn-first-aid': ['medical', 'campus', 'foundry', 'beam-mill', 'process-gas', 'cracker-plant', 'food-retail', 'glass-fiberglass'],
-  '/eye-exposure': ['medical', 'campus', 'foundry', 'process-gas', 'cracker-plant', 'food-retail', 'glass-fiberglass'],
+  '/burn-first-aid': ['medical', 'campus', 'foundry', 'beam-mill', 'process-gas', 'cracker-plant', 'waste-water', 'food-retail', 'glass-fiberglass'],
+  '/eye-exposure': ['medical', 'campus', 'foundry', 'process-gas', 'cracker-plant', 'waste-water', 'food-retail', 'glass-fiberglass'],
   '/medical-response-final': ['medical'],
 
   '/hazcom': CAMPUS_AND_ALL_ENVIRONMENTS,
@@ -609,8 +646,8 @@ const PROGRAM_CATEGORY_TAGS = {
   '/contractor-safety': CAMPUS_AND_ALL_ENVIRONMENTS,
   '/severe-weather': CAMPUS_AND_ALL_ENVIRONMENTS,
   '/confined-space': ['campus', ...INDUSTRIAL_ENVIRONMENTS],
-  '/respiratory-protection': ['campus', 'foundry', 'process-gas', 'cracker-plant', 'food-retail', 'glass-fiberglass'],
-  '/hearing-conservation': ['campus', 'foundry', 'beam-mill', 'cracker-plant', 'food-retail', 'glass-fiberglass'],
+  '/respiratory-protection': ['campus', 'foundry', 'process-gas', 'cracker-plant', 'waste-water', 'food-retail', 'glass-fiberglass'],
+  '/hearing-conservation': ['campus', 'foundry', 'beam-mill', 'cracker-plant', 'waste-water', 'food-retail', 'glass-fiberglass'],
   '/hot-work': ['campus', ...INDUSTRIAL_ENVIRONMENTS],
 
   '/machine-guarding-molding-line': ['foundry'],
@@ -622,9 +659,9 @@ const PROGRAM_CATEGORY_TAGS = {
   '/pinch-crush-steel-handling': ['foundry', 'beam-mill', 'glass-fiberglass'],
 
   '/hydraulic-stored-energy': ['stored-energy', 'foundry', 'beam-mill', 'process-gas', 'cracker-plant', 'food-retail', 'glass-fiberglass'],
-  '/pneumatic-stored-energy': ['stored-energy', 'foundry', 'beam-mill', 'process-gas', 'cracker-plant', 'food-retail', 'glass-fiberglass'],
+  '/pneumatic-stored-energy': ['stored-energy', 'foundry', 'beam-mill', 'process-gas', 'cracker-plant', 'waste-water', 'food-retail', 'glass-fiberglass'],
   '/electrical-stored-energy': ['stored-energy', 'campus', ...INDUSTRIAL_ENVIRONMENTS],
-  '/fermentation-stored-energy': ['stored-energy', 'process-gas', 'food-retail'],
+  '/fermentation-stored-energy': ['stored-energy', 'process-gas', 'waste-water', 'food-retail'],
   '/gravity-stored-energy': ['stored-energy', 'campus', ...INDUSTRIAL_ENVIRONMENTS],
   '/elastic-stored-energy': ['stored-energy', 'campus', 'foundry', 'beam-mill', 'food-retail', 'glass-fiberglass'],
   '/magnetic-stored-energy': ['stored-energy', 'campus', 'foundry', 'beam-mill', 'glass-fiberglass'],

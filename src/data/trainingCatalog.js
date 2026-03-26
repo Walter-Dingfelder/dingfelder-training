@@ -49,6 +49,15 @@ export const TRAINING_CATALOG = {
     "Turnaround, Decoke & SIMOPS Safety",
     "Sampling, Drains & Small-Bore Hydrocarbon Systems",
     "Cracker Unit Shelter, Muster & Immediate Response",
+    "Headworks, Screening & Influent Pump Station Safety",
+    "Open Basin, Clarifier & Fall / Drowning Hazard Awareness",
+    "Wastewater Atmospheres, H₂S & Gas Detection Awareness",
+    "Digester, Biogas & Flammable Gas System Safety",
+    "Disinfection Chemical Safety — Chlorine, Hypochlorite & Dechlorination",
+    "Polymer, Coagulant & Chemical Feed System Safety",
+    "Biosolids, Dewatering & Sludge Handling Safety",
+    "Wet Well, Sewer Entry & Confined Space Coordination",
+    "Bypass, Overflow, Power Loss & Immediate Response",
     "Medical Emergency Response Basics",
     "AED Awareness & Use",
     "Adult CPR Awareness",
@@ -166,4 +175,16 @@ export const GLASS_FIBERGLASS_PHASE1_READY = [
   "Fiberglass Dust & Irritation Awareness",
   "Binder / Resin / Sizing Chemical Safety",
   "Jam Clearing / String-Up / Cleanout LOTO — Glass Mat Line",
+]
+
+export const WASTE_WATER_TREATMENT_PHASE1_READY = [
+  "Headworks, Screening & Influent Pump Station Safety",
+  "Open Basin, Clarifier & Fall / Drowning Hazard Awareness",
+  "Wastewater Atmospheres, H₂S & Gas Detection Awareness",
+  "Digester, Biogas & Flammable Gas System Safety",
+  "Disinfection Chemical Safety — Chlorine, Hypochlorite & Dechlorination",
+  "Polymer, Coagulant & Chemical Feed System Safety",
+  "Biosolids, Dewatering & Sludge Handling Safety",
+  "Wet Well, Sewer Entry & Confined Space Coordination",
+  "Bypass, Overflow, Power Loss & Immediate Response",
 ]

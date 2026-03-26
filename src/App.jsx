@@ -1488,6 +1488,17 @@ function AIRONSplash({ onDone }) {
                 CONTINUE
               </button>
             )}
+          <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+            {!authState.user && (
+              <HeaderActionButton accent="primary" onClick={() => setShowSignIn(true)}>
+                Sign In
+              </HeaderActionButton>
+            )}
+            <HeaderActionButton onClick={() => setShowAccountPanel(prev => !prev)}>
+              Account
+            </HeaderActionButton>
+          </div>
+
           </div>
         </div>
       </div>

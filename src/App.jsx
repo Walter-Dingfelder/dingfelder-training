@@ -44,7 +44,6 @@ import {
   ShakeoutGrindingTraining,
   BeamMillRollingLineTraining,
   OverheadCraneRiggingTraining,
-  HydraulicStoredEnergyTraining,
   PinchCrushSteelHandlingTraining,
 } from './programs/Phase2BModules.jsx'
 
@@ -77,6 +76,18 @@ import {
   BinderResinSizingTraining,
   GlassLineLOTOTraining,
 } from './programs/GlassFiberglassPhase1.jsx'
+import {
+  STORED_ENERGY_PHASE1_MODULES,
+  HydraulicStoredEnergyTraining,
+  PneumaticStoredEnergyTraining,
+  ElectricalStoredEnergyTraining,
+  FermentationStoredEnergyTraining,
+  GravityStoredEnergyTraining,
+  ElasticStoredEnergyTraining,
+  MagneticStoredEnergyTraining,
+  ThermalStoredEnergyTraining,
+  NuclearStoredEnergyTraining,
+} from './programs/StoredEnergyPhase1.jsx'
 
 // ─── Route map ───────────────────────────────────────────────────────────────
 const PROGRAMS = [
@@ -438,7 +449,7 @@ const PROGRAMS = [
       HotWorkTraining,
     ][index],
   })),
-  ...PHASE2B_MODULES.map((module, index) => ({
+  ...PHASE2B_MODULES.filter(module => module.path !== '/hydraulic-stored-energy').map((module, index) => ({
     ...module,
     Component: [
       MachineGuardingTraining,
@@ -447,8 +458,21 @@ const PROGRAMS = [
       ShakeoutGrindingTraining,
       BeamMillRollingLineTraining,
       OverheadCraneRiggingTraining,
-      HydraulicStoredEnergyTraining,
       PinchCrushSteelHandlingTraining,
+    ][index],
+  })),
+  ...STORED_ENERGY_PHASE1_MODULES.map((module, index) => ({
+    ...module,
+    Component: [
+      HydraulicStoredEnergyTraining,
+      PneumaticStoredEnergyTraining,
+      ElectricalStoredEnergyTraining,
+      FermentationStoredEnergyTraining,
+      GravityStoredEnergyTraining,
+      ElasticStoredEnergyTraining,
+      MagneticStoredEnergyTraining,
+      ThermalStoredEnergyTraining,
+      NuclearStoredEnergyTraining,
     ][index],
   })),
 
@@ -480,6 +504,7 @@ const CATEGORY_FILTERS = [
   { key: 'campus', label: 'Campus' },
   { key: 'foundry', label: 'Foundry' },
   { key: 'beam-mill', label: 'Beam Mill' },
+  { key: 'stored-energy', label: 'Stored Energy' },
   { key: 'process-gas', label: 'Process / Gas' },
   { key: 'food-retail', label: 'Food / Retail' },
   { key: 'medical', label: 'Medical' },
@@ -496,15 +521,15 @@ const TYPE_FILTERS = [
 
 function getProgramCategory(path) {
   const foundry = new Set(['/loto', '/molten-metal', '/furnace-melt-deck', '/silica-sand', '/crane-ladle'])
-  const beamMill = new Set(['/arcflash', '/beam-mill-rolling-line', '/overhead-crane-rigging', '/hydraulic-stored-energy', '/pinch-crush-steel-handling'])
+  const beamMill = new Set(['/arcflash', '/beam-mill-rolling-line', '/overhead-crane-rigging', '/pinch-crush-steel-handling'])
+  const storedEnergy = new Set(['/hydraulic-stored-energy', '/pneumatic-stored-energy', '/electrical-stored-energy', '/fermentation-stored-energy', '/gravity-stored-energy', '/elastic-stored-energy', '/magnetic-stored-energy', '/thermal-stored-energy', '/nuclear-stored-energy'])
   const processGas = new Set(['/h2s', '/loto-campus', '/propane-farm', '/confined-space', '/respiratory'])
   const foodRetail = new Set(['/food-chemical', '/ammonia', '/retail-backroom', '/forklift'])
   const medical = new Set(['/medical-emergency-basics', '/aed-awareness', '/adult-cpr-awareness', '/pulse-check-awareness', '/severe-bleeding-control', '/choking-response', '/ems-activation', '/heat-illness', '/stroke-fast', '/heart-attack-warning', '/burn-first-aid', '/eye-exposure', '/medical-response-final'])
+  const glassFiberglass = new Set(['/glass-melt-furnace', '/marble-melt-feed', '/forehearth-transfer', '/fiberizing-spinner', '/mat-forming-line', '/fiberglass-dust', '/binder-resin-sizing', '/glass-line-loto'])
 
-const glassFiberglass = new Set(['/glass-melt-furnace', '/marble-melt-feed', '/forehearth-transfer', '/fiberizing-spinner', '/mat-forming-line', '/fiberglass-dust', '/binder-resin-sizing', '/glass-line-loto'])
-
-if (glassFiberglass.has(path)) return 'glass-fiberglass'
-
+  if (glassFiberglass.has(path)) return 'glass-fiberglass'
+  if (storedEnergy.has(path)) return 'stored-energy'
   if (medical.has(path)) return 'medical'
   if (foundry.has(path)) return 'foundry'
   if (beamMill.has(path)) return 'beam-mill'
@@ -515,7 +540,7 @@ if (glassFiberglass.has(path)) return 'glass-fiberglass'
 
 function getProgramType(path) {
   const core = new Set(['/sat', '/hazcom', '/ppe', '/evacuation', '/contractor-safety', '/walking-working-surfaces', '/incident-reporting', '/severe-weather'])
-  const highRisk = new Set(['/loto', '/loto-campus', '/h2s', '/arcflash', '/molten-metal', '/furnace-melt-deck', '/crane-ladle', '/propane-farm', '/confined-space', '/hot-work', '/machine-guarding', '/adult-cpr-awareness', '/aed-awareness', '/pulse-check-awareness', '/severe-bleeding-control', '/heat-illness', '/glass-melt-furnace', '/forehearth-transfer', '/fiberizing-spinner', '/glass-line-loto'])
+  const highRisk = new Set(['/loto', '/loto-campus', '/h2s', '/arcflash', '/molten-metal', '/furnace-melt-deck', '/crane-ladle', '/propane-farm', '/confined-space', '/hot-work', '/machine-guarding', '/adult-cpr-awareness', '/aed-awareness', '/pulse-check-awareness', '/severe-bleeding-control', '/heat-illness', '/hydraulic-stored-energy', '/pneumatic-stored-energy', '/electrical-stored-energy', '/fermentation-stored-energy', '/gravity-stored-energy', '/elastic-stored-energy', '/magnetic-stored-energy', '/thermal-stored-energy', '/nuclear-stored-energy', '/glass-melt-furnace', '/forehearth-transfer', '/fiberizing-spinner', '/glass-line-loto'])
   const finals = new Set(['/medical-response-final'])
   if (finals.has(path)) return 'final'
   if (core.has(path)) return 'core'

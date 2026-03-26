@@ -26,24 +26,45 @@ export const TRAINING_CATALOG = {
     "Respiratory Protection",
     "Hearing Conservation / Noise Exposure",
     "Hot Work / Welding / Cutting Permit Safety",
-    "Jam Clearing / String-Up / Cleanout LOTO — Glass Mat Line",
-    "Binder / Resin / Sizing Chemical Safety",
-    "Fiberglass Dust & Irritation Awareness",
-    "Mat Forming Line Safety",
-    "Fiberizing Unit / Spinner / Attenuation Area Safety",
-    "Forehearth / Hot Glass Transfer Awareness",
-    "Marble Melt Feed & Furnace Charging Safety",
-    "Glass Melt Furnace Safety",
-  ],
-  remaining: [
     "Machine Guarding — Molding Line & Conveyors",
     "Foundry Heat Stress & Burn Prevention",
     "Core Room / Binder / Ventilation Safety",
     "Shakeout / Cleaning / Grinding Area Safety",
     "Beam Mill Rolling Line Safety",
     "Overhead Crane & Rigging",
-    "Hydraulic Stored Energy Safety",
     "Pinch Point / Crush Zone / Steel Handling",
+    "Hydraulic Stored Energy Safety",
+    "Pneumatic Stored Energy Safety",
+    "Electrical Stored Energy & Discharge Safety",
+    "Fermentation / Vessel Pressure Safety",
+    "Gravity Stored Energy Safety",
+    "Elastic / Spring / Tensioned Component Safety",
+    "Magnetic Stored Energy Safety",
+    "Thermal Stored Energy Safety",
+    "Nuclear / Radiological Energy Awareness",
+    "Medical Emergency Response Basics",
+    "AED Awareness & Use",
+    "Adult CPR Awareness",
+    "Pulse Check & Unresponsiveness Assessment",
+    "Severe Bleeding Control",
+    "Choking Response",
+    "EMS Activation & Campus Access for Responders",
+    "Heat Illness Recognition & First Actions",
+    "Stroke FAST Recognition",
+    "Heart Attack Warning Signs & First Actions",
+    "Burn First Aid Awareness",
+    "Eye Exposure & Flush Response",
+    "Medical Response Final Review",
+    "Glass Melt Furnace Safety",
+    "Marble Melt Feed & Furnace Charging Safety",
+    "Forehearth / Hot Glass Transfer Awareness",
+    "Fiberizing Unit / Spinner / Attenuation Area Safety",
+    "Mat Forming Line Safety",
+    "Fiberglass Dust & Irritation Awareness",
+    "Binder / Resin / Sizing Chemical Safety",
+    "Jam Clearing / String-Up / Cleanout LOTO — Glass Mat Line",
+  ],
+  remaining: [
     "Cut, Abrasion, and Hot Surface Protection",
     "Gas Wells / Wellhead Area Safety",
     "Drying / Stripping Equipment Safety",
@@ -88,7 +109,6 @@ export const PHASE2A_COMPLETED = [
   "Hot Work / Welding / Cutting Permit Safety",
 ]
 
-
 export const PHASE2B_COMPLETED = [
   "Machine Guarding — Molding Line & Conveyors",
   "Foundry Heat Stress & Burn Prevention",
@@ -96,10 +116,20 @@ export const PHASE2B_COMPLETED = [
   "Shakeout / Cleaning / Grinding Area Safety",
   "Beam Mill Rolling Line Safety",
   "Overhead Crane & Rigging",
-  "Hydraulic Stored Energy Safety",
   "Pinch Point / Crush Zone / Steel Handling",
 ]
 
+export const STORED_ENERGY_PHASE1_READY = [
+  "Hydraulic Stored Energy Safety",
+  "Pneumatic Stored Energy Safety",
+  "Electrical Stored Energy & Discharge Safety",
+  "Fermentation / Vessel Pressure Safety",
+  "Gravity Stored Energy Safety",
+  "Elastic / Spring / Tensioned Component Safety",
+  "Magnetic Stored Energy Safety",
+  "Thermal Stored Energy Safety",
+  "Nuclear / Radiological Energy Awareness",
+]
 
 export const MEDICAL_CORE_READY = [
   "Medical Emergency Response Basics",
@@ -108,4 +138,15 @@ export const MEDICAL_CORE_READY = [
   "Pulse Check & Unresponsiveness Assessment",
   "Severe Bleeding Control",
   "Choking Response",
+]
+
+export const GLASS_FIBERGLASS_PHASE1_READY = [
+  "Glass Melt Furnace Safety",
+  "Marble Melt Feed & Furnace Charging Safety",
+  "Forehearth / Hot Glass Transfer Awareness",
+  "Fiberizing Unit / Spinner / Attenuation Area Safety",
+  "Mat Forming Line Safety",
+  "Fiberglass Dust & Irritation Awareness",
+  "Binder / Resin / Sizing Chemical Safety",
+  "Jam Clearing / String-Up / Cleanout LOTO — Glass Mat Line",
 ]

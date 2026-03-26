@@ -2,7 +2,7 @@
 import { Routes, Route, useNavigate, useLocation } from 'react-router-dom'
 import { useState, useEffect, useMemo } from 'react'
 import aironSplash from './assets/airon-splash.png'
-import { bootstrapNetlifyIdentity, signOutNetlifyIdentity } from './auth/netlifyIdentity.js'
+import { bootstrapNetlifyIdentity, signInNetlifyIdentity, signOutNetlifyIdentity } from './auth/netlifyIdentity.js'
 
 // ─── Training Programs ────────────────────────────────────────────────────────
 import LOTOFoundry     from './programs/LOTOFoundry.jsx'
@@ -1808,15 +1808,409 @@ function AIRONLanding() {
   )
 }
 
-function PortalHome({ authState, onSignOut }) {
+
+function HeaderActionButton({ children, onClick, accent = 'neutral', type = 'button' }) {
+  const palette = accent === 'primary'
+    ? {
+        border: '1px solid rgba(255,209,0,0.35)',
+        background: 'rgba(255,209,0,0.08)',
+        color: '#FFD100',
+      }
+    : accent === 'success'
+      ? {
+          border: '1px solid rgba(34,204,102,0.35)',
+          background: 'rgba(34,204,102,0.08)',
+          color: '#9DFFBC',
+        }
+      : {
+          border: '1px solid rgba(255,255,255,0.12)',
+          background: '#101010',
+          color: '#E6E6E6',
+        }
+
+  return (
+    <button
+      type={type}
+      onClick={onClick}
+      style={{
+        appearance: 'none',
+        border: palette.border,
+        background: palette.background,
+        color: palette.color,
+        borderRadius: 10,
+        padding: '9px 12px',
+        fontFamily: "'IBM Plex Mono', monospace",
+        fontSize: 11,
+        letterSpacing: 0.5,
+        cursor: 'pointer',
+        whiteSpace: 'nowrap',
+      }}
+    >
+      {children}
+    </button>
+  )
+}
+
+function SignInPanel({
+  open,
+  email,
+  password,
+  busy,
+  error,
+  onEmailChange,
+  onPasswordChange,
+  onClose,
+  onSubmit,
+}) {
+  if (!open) return null
+
+  return (
+    <div style={{
+      position: 'fixed',
+      inset: 0,
+      background: 'rgba(0,0,0,0.74)',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: 24,
+      zIndex: 2000,
+    }}>
+      <div style={{
+        width: '100%',
+        maxWidth: 460,
+        borderRadius: 18,
+        border: '1px solid rgba(255,209,0,0.22)',
+        background: '#0D0D0D',
+        boxShadow: '0 18px 60px rgba(0,0,0,0.45)',
+        overflow: 'hidden',
+      }}>
+        <div style={{
+          padding: '18px 20px 14px',
+          borderBottom: '1px solid rgba(255,255,255,0.08)',
+          background: 'linear-gradient(180deg, rgba(255,209,0,0.06), rgba(255,209,0,0.00))',
+        }}>
+          <div style={{
+            color: '#FFD100',
+            fontFamily: "'IBM Plex Mono', monospace",
+            fontSize: 11,
+            letterSpacing: 2,
+            textTransform: 'uppercase',
+            marginBottom: 8,
+          }}>
+            Sign in
+          </div>
+          <div style={{
+            color: '#FFFFFF',
+            fontFamily: "'Barlow Condensed', sans-serif",
+            fontSize: 28,
+            lineHeight: 1,
+            fontWeight: 800,
+          }}>
+            Access your training record
+          </div>
+          <div style={{
+            color: '#A0A0A0',
+            fontSize: 13,
+            lineHeight: 1.6,
+            marginTop: 10,
+            maxWidth: 380,
+          }}>
+            Testing remains open without login. Sign in when you want your saved record, certificates, and report delivery tied to your account.
+          </div>
+        </div>
+
+        <form onSubmit={onSubmit} style={{ padding: 20 }}>
+          <label style={{ display: 'block', marginBottom: 14 }}>
+            <div style={{
+              color: '#BEBEBE',
+              fontFamily: "'IBM Plex Mono', monospace",
+              fontSize: 11,
+              letterSpacing: 1.5,
+              textTransform: 'uppercase',
+              marginBottom: 8,
+            }}>
+              Email
+            </div>
+            <input
+              type="email"
+              value={email}
+              onChange={event => onEmailChange(event.target.value)}
+              autoComplete="email"
+              required
+              style={{
+                width: '100%',
+                boxSizing: 'border-box',
+                borderRadius: 10,
+                border: '1px solid rgba(255,255,255,0.12)',
+                background: '#141414',
+                color: '#FFFFFF',
+                padding: '12px 14px',
+                fontSize: 14,
+                outline: 'none',
+              }}
+            />
+          </label>
+
+          <label style={{ display: 'block', marginBottom: 10 }}>
+            <div style={{
+              color: '#BEBEBE',
+              fontFamily: "'IBM Plex Mono', monospace",
+              fontSize: 11,
+              letterSpacing: 1.5,
+              textTransform: 'uppercase',
+              marginBottom: 8,
+            }}>
+              Password
+            </div>
+            <input
+              type="password"
+              value={password}
+              onChange={event => onPasswordChange(event.target.value)}
+              autoComplete="current-password"
+              required
+              style={{
+                width: '100%',
+                boxSizing: 'border-box',
+                borderRadius: 10,
+                border: '1px solid rgba(255,255,255,0.12)',
+                background: '#141414',
+                color: '#FFFFFF',
+                padding: '12px 14px',
+                fontSize: 14,
+                outline: 'none',
+              }}
+            />
+          </label>
+
+          <div style={{
+            color: '#7E7E7E',
+            fontSize: 12,
+            lineHeight: 1.6,
+            marginBottom: 14,
+          }}>
+            Invite-only mode is enabled. Use the email address you invited in Netlify Identity. Password recovery can still be sent from the Netlify Identity user panel until the self-service reset flow is added.
+          </div>
+
+          {error && (
+            <div style={{
+              marginBottom: 14,
+              padding: '10px 12px',
+              borderRadius: 10,
+              background: 'rgba(255,107,0,0.10)',
+              border: '1px solid rgba(255,107,0,0.28)',
+              color: '#FFB48F',
+              fontSize: 13,
+              lineHeight: 1.5,
+            }}>
+              {error}
+            </div>
+          )}
+
+          <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end', marginTop: 18 }}>
+            <HeaderActionButton onClick={onClose}>
+              Cancel
+            </HeaderActionButton>
+            <HeaderActionButton accent="primary" type="submit">
+              {busy ? 'Signing in…' : 'Sign In'}
+            </HeaderActionButton>
+          </div>
+        </form>
+      </div>
+    </div>
+  )
+}
+
+function AccountPanel({ open, authState, onClose, onOpenSignIn }) {
+  if (!open) return null
+
+  const privacyText = 'Your information is used only to create and maintain your training record, save test results, retain certificates, and send training-related notices. We do not sell your data, rent your data, or use it for advertising.'
+
+  return (
+    <div style={{
+      marginTop: 18,
+      maxWidth: 860,
+      padding: 18,
+      borderRadius: 16,
+      background: 'rgba(255,255,255,0.03)',
+      border: '1px solid rgba(255,255,255,0.08)',
+    }}>
+      <div style={{
+        display: 'flex',
+        gap: 14,
+        alignItems: 'flex-start',
+        justifyContent: 'space-between',
+        flexWrap: 'wrap',
+      }}>
+        <div>
+          <div style={{
+            color: '#FFD100',
+            fontFamily: "'IBM Plex Mono', monospace",
+            fontSize: 11,
+            letterSpacing: 2,
+            textTransform: 'uppercase',
+            marginBottom: 8,
+          }}>
+            Account and privacy
+          </div>
+          <div style={{
+            color: '#FFFFFF',
+            fontFamily: "'Barlow Condensed', sans-serif",
+            fontSize: 28,
+            lineHeight: 1,
+            fontWeight: 800,
+            marginBottom: 10,
+          }}>
+            {authState.user ? 'Saved record connected' : 'Testing remains open without login'}
+          </div>
+          <div style={{
+            color: '#A4A4A4',
+            fontSize: 14,
+            lineHeight: 1.65,
+            maxWidth: 680,
+          }}>
+            {authState.user
+              ? 'You are signed in. This is the path that will hold retained scores, certificates, and training history as the user system comes online.'
+              : 'You can keep testing without login while the user system is being built. Sign in when you want the portal to attach your attempts, reports, and future certificates to a saved personal record.'}
+          </div>
+        </div>
+
+        <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+          {!authState.user && (
+            <HeaderActionButton accent="primary" onClick={onOpenSignIn}>
+              Sign In
+            </HeaderActionButton>
+          )}
+          <HeaderActionButton onClick={onClose}>
+            Close
+          </HeaderActionButton>
+        </div>
+      </div>
+
+      <div style={{
+        marginTop: 16,
+        display: 'grid',
+        gap: 14,
+        gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
+      }}>
+        <div style={{
+          padding: '14px 15px',
+          borderRadius: 12,
+          background: '#111111',
+          border: '1px solid rgba(255,255,255,0.08)',
+        }}>
+          <div style={{
+            color: '#BEBEBE',
+            fontFamily: "'IBM Plex Mono', monospace",
+            fontSize: 11,
+            letterSpacing: 1.5,
+            textTransform: 'uppercase',
+            marginBottom: 8,
+          }}>
+            Account status
+          </div>
+          <div style={{ color: '#FFFFFF', fontSize: 15, fontWeight: 700, marginBottom: 8 }}>
+            {authState.user ? 'Signed in' : 'Guest testing mode'}
+          </div>
+          <div style={{ color: '#8C8C8C', fontSize: 13, lineHeight: 1.6 }}>
+            {authState.user?.email || 'No saved identity is attached to this browser session yet.'}
+          </div>
+        </div>
+
+        <div style={{
+          padding: '14px 15px',
+          borderRadius: 12,
+          background: '#111111',
+          border: '1px solid rgba(255,255,255,0.08)',
+        }}>
+          <div style={{
+            color: '#BEBEBE',
+            fontFamily: "'IBM Plex Mono', monospace",
+            fontSize: 11,
+            letterSpacing: 1.5,
+            textTransform: 'uppercase',
+            marginBottom: 8,
+          }}>
+            Saved record path
+          </div>
+          <div style={{ color: '#FFFFFF', fontSize: 13, lineHeight: 1.7 }}>
+            Logged-in users will be the retained path for scores, certificates, reports, and training history. Guest testing stays open until enforcement is turned on.
+          </div>
+
+          <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+            {!authState.user && (
+              <HeaderActionButton accent="primary" onClick={() => setShowSignIn(true)}>
+                Sign In
+              </HeaderActionButton>
+            )}
+            <HeaderActionButton onClick={() => setShowAccountPanel(prev => !prev)}>
+              Account
+            </HeaderActionButton>
+          </div>
+        </div>
+      </div>
+
+      <SignInPanel
+        open={showSignIn}
+        email={loginEmail}
+        password={loginPassword}
+        busy={loginBusy}
+        error={loginError}
+        onEmailChange={setLoginEmail}
+        onPasswordChange={setLoginPassword}
+        onClose={() => {
+          setShowSignIn(false)
+          setLoginError('')
+          setLoginPassword('')
+        }}
+        onSubmit={handleSignInSubmit}
+      />
+
+      <div style={{
+        marginTop: 14,
+        padding: '12px 14px',
+        borderRadius: 12,
+        background: 'rgba(34,204,102,0.08)',
+        border: '1px solid rgba(34,204,102,0.18)',
+        color: '#A7F4BE',
+        fontSize: 13,
+        lineHeight: 1.65,
+      }}>
+        {privacyText}
+      </div>
+    </div>
+  )
+}
+
+
+function PortalHome({ authState, onSignIn, onSignOut }) {
   const navigate = useNavigate()
   const location = useLocation()
   const [tick, setTick] = useState(0)
+  const [showSignIn, setShowSignIn] = useState(false)
+  const [showAccountPanel, setShowAccountPanel] = useState(false)
+  const [loginEmail, setLoginEmail] = useState('')
+  const [loginPassword, setLoginPassword] = useState('')
+  const [loginBusy, setLoginBusy] = useState(false)
+  const [loginError, setLoginError] = useState('')
 
   useEffect(() => {
     const t = setInterval(() => setTick(x => x + 1), 1000)
     return () => clearInterval(t)
   }, [])
+
+  useEffect(() => {
+    if (authState.user?.email) {
+      setLoginEmail(authState.user.email)
+    }
+  }, [authState.user])
+
+  useEffect(() => {
+    if (authState.user) {
+      setShowSignIn(false)
+      setLoginError('')
+      setLoginPassword('')
+    }
+  }, [authState.user])
 
   const blink = tick % 2 === 0
   const [categoryFilter, setCategoryFilter] = useState(() => parsePortalSearch(location.search).category)
@@ -1842,6 +2236,24 @@ function PortalHome({ authState, onSignOut }) {
       return matchesCategoryFilter(categories, categoryFilter) && matchesTypeFilter(type, typeFilter)
     })
   }, [categoryFilter, typeFilter])
+
+  const handleSignInSubmit = async (event) => {
+    event.preventDefault()
+    setLoginBusy(true)
+    setLoginError('')
+
+    const result = await onSignIn(loginEmail, loginPassword)
+
+    if (result.error) {
+      setLoginError(result.error)
+      setLoginBusy(false)
+      return
+    }
+
+    setLoginBusy(false)
+    setLoginPassword('')
+    setShowSignIn(false)
+  }
 
   return (
     <div style={{
@@ -2008,6 +2420,30 @@ function PortalHome({ authState, onSignOut }) {
             {authState.error || authState.message}
           </div>
         )}
+
+        <div style={{
+          marginTop: 18,
+          maxWidth: 860,
+          padding: '14px 16px',
+          borderRadius: 14,
+          background: 'rgba(255,209,0,0.05)',
+          border: '1px solid rgba(255,209,0,0.16)',
+          color: '#E7E0AE',
+          fontSize: 13,
+          lineHeight: 1.7,
+        }}>
+          Guest testing remains open while the user system is being built. When you sign in, your information is used only to create and maintain your training record, save test results, retain certificates, and send training-related notices. We do not sell your data, rent your data, or use it for advertising.
+        </div>
+
+        <AccountPanel
+          open={showAccountPanel}
+          authState={authState}
+          onClose={() => setShowAccountPanel(false)}
+          onOpenSignIn={() => {
+            setShowAccountPanel(false)
+            setShowSignIn(true)
+          }}
+        />
       </div>
 
       <div style={{
@@ -2251,10 +2687,10 @@ const forceScrollTop = () => {
   setTimeout(apply, 0);
 };
 
-function AppRoutes({ authState, onSignOut }) {
+function AppRoutes({ authState, onSignIn, onSignOut }) {
   return (
     <Routes>
-      <Route path="/" element={<PortalHome authState={authState} onSignOut={onSignOut} />} />
+      <Route path="/" element={<PortalHome authState={authState} onSignIn={onSignIn} onSignOut={onSignOut} />} />
       <Route path="/landing" element={<AIRONLanding />} />
       {PROGRAMS.map(prog => (
         <Route
@@ -2263,7 +2699,7 @@ function AppRoutes({ authState, onSignOut }) {
           element={<prog.Component />}
         />
       ))}
-      <Route path="*" element={<PortalHome authState={authState} onSignOut={onSignOut} />} />
+      <Route path="*" element={<PortalHome authState={authState} onSignIn={onSignIn} onSignOut={onSignOut} />} />
     </Routes>
   )
 }
@@ -2335,6 +2771,17 @@ export default function App() {
     }
   }
 
+  const handleSignIn = async (email, password) => {
+    const result = await signInNetlifyIdentity(email, password)
+    setAuthState({
+      ready: true,
+      user: result.user,
+      message: result.message,
+      error: result.error,
+    })
+    return result
+  }
+
   const handleSignOut = async () => {
     const result = await signOutNetlifyIdentity()
     setAuthState({
@@ -2349,5 +2796,5 @@ export default function App() {
     return <AIRONSplash onDone={handleSplashDone} />
   }
 
-  return <AppRoutes authState={authState} onSignOut={handleSignOut} />
+  return <AppRoutes authState={authState} onSignIn={handleSignIn} onSignOut={handleSignOut} />
 }

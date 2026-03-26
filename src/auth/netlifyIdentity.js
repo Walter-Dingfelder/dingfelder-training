@@ -1,4 +1,4 @@
-import { getUser, handleAuthCallback, logout } from '@netlify/identity'
+import { getUser, handleAuthCallback, login, logout } from '@netlify/identity'
 
 function normalizeIdentityError(error) {
   if (!error) return 'Unable to complete the identity action.'
@@ -42,6 +42,24 @@ export async function bootstrapNetlifyIdentity() {
     user,
     message: `Identity callback complete: ${callbackType} for ${callbackEmail}.`,
     error: '',
+  }
+}
+
+export async function signInNetlifyIdentity(email, password) {
+  try {
+    const user = await login(email, password)
+    return {
+      user,
+      message: `Signed in as ${user?.email || email}.`,
+      error: '',
+    }
+  } catch (error) {
+    const currentUser = await getUser().catch(() => null)
+    return {
+      user: currentUser,
+      message: '',
+      error: normalizeIdentityError(error),
+    }
   }
 }
 

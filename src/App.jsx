@@ -2455,6 +2455,22 @@ function PortalHome({ authState, onSignIn, onSignOut }) {
             setShowSignIn(true)
           }}
         />
+
+        <SignInPanel
+          open={showSignIn}
+          email={loginEmail}
+          password={loginPassword}
+          busy={loginBusy}
+          error={loginError}
+          onEmailChange={setLoginEmail}
+          onPasswordChange={setLoginPassword}
+          onClose={() => {
+            setShowSignIn(false)
+            setLoginError('')
+            setLoginPassword('')
+          }}
+          onSubmit={handleSignInSubmit}
+        />
       </div>
 
       <div style={{

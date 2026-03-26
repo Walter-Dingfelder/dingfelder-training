@@ -1,6 +1,4 @@
 import { useState, useEffect } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
-import { getNextCardPath, navigateToNextCard, navigateToPortal } from "./portalNavigation.js";
 
 // ─── ROLE → FACILITY & MUSTER MAP ────────────────────────────────────────────
 const ROLE_MAP = {
@@ -387,9 +385,6 @@ function QuizView({ mod, onComplete }) {
 
 // ─── MAIN ─────────────────────────────────────────────────────────────────────
 export default function EvacuationTraining() {
-  const navigate = useNavigate();
-  const location = useLocation();
-  const nextCardPath = getNextCardPath(location.pathname, location.state);
   const playerRole = "Foundry Operator"; // In Roblox: player:GetAttribute("Role")
   const roleCtx = ROLE_MAP[playerRole] || ROLE_MAP["default"];
 
@@ -456,21 +451,6 @@ export default function EvacuationTraining() {
       </div>
       <p style={{color:"#446644",fontSize:13,fontFamily:"'IBM Plex Sans',sans-serif",marginBottom:20,lineHeight:1.6,maxWidth:440}}>Role: <strong style={{color:"#22CC66"}}>{playerRole}</strong> · Facility: <strong style={{color:"#22CC66"}}>{roleCtx.facility}</strong><br />Annual recertification required. Evacuation drill participation mandatory.</p>
       <div style={{color:"#224422",fontSize:10,fontFamily:"'Barlow Condensed',sans-serif",letterSpacing:2}}>DINGFELDER SAFETY · OSHA 29 CFR 1910.38 · {new Date().toLocaleDateString()}</div>
-      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,width:"100%",maxWidth:420,marginTop:20}}>
-        <button
-          onClick={() => navigateToPortal(navigate, location.state)}
-          style={{padding:"10px 16px",background:"transparent",border:"1px solid #0d1a0d",borderRadius:3,color:"#cfe8cf",cursor:"pointer",fontFamily:"'Barlow Condensed',sans-serif",fontSize:12,letterSpacing:2}}
-        >
-          RETURN TO PORTAL
-        </button>
-        <button
-          onClick={() => navigateToNextCard(navigate, location.pathname, location.state)}
-          disabled={!nextCardPath}
-          style={{padding:"10px 16px",background:nextCardPath ? "#22CC66" : "#081008",border:"1px solid #0d1a0d",borderRadius:3,color:nextCardPath ? "#030a04" : "#224422",cursor:nextCardPath ? "pointer" : "not-allowed",fontFamily:"'Barlow Condensed',sans-serif",fontSize:12,letterSpacing:2,fontWeight:700}}
-        >
-          NEXT CARD
-        </button>
-      </div>
       <button onClick={()=>{setCompleted({});setScreen("home");}} style={{marginTop:20,padding:"10px 24px",background:"transparent",border:"1px solid #0d1a0d",borderRadius:3,color:"#224422",cursor:"pointer",fontFamily:"'Barlow Condensed',sans-serif",fontSize:12,letterSpacing:2}}>RESTART</button>
     </div>
   );

@@ -1,6 +1,4 @@
 import { useState, useEffect, useRef } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
-import { getNextCardPath, navigateToNextCard, navigateToPortal } from "./portalNavigation.js";
 
 // ─── PALETTE & CONSTANTS ──────────────────────────────────────────────────────
 const Y = "#FFD100";      // hazard yellow
@@ -639,9 +637,6 @@ function VisitorPass({ name }) {
 
 // ─── MAIN APP ─────────────────────────────────────────────────────────────────
 export default function SATOrientation() {
-  const navigate = useNavigate();
-  const location = useLocation();
-  const nextCardPath = getNextCardPath(location.pathname, location.state);
   const [screen, setScreen] = useState("welcome"); // welcome | training | complete
   const [name, setName] = useState("");
   const [nameInput, setNameInput] = useState("");
@@ -752,22 +747,6 @@ export default function SATOrientation() {
             <span style={{ color: RED }}>• Evacuation alarm = leave immediately, go to muster point</span><br />
             <span style={{ color: GRN }}>• Never stand under suspended loads or touch any equipment</span>
           </p>
-        </div>
-
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginTop: 18 }}>
-          <button
-            onClick={() => navigateToPortal(navigate, location.state)}
-            style={{ padding: "11px", background: "transparent", border: "1px solid #3a3018", borderRadius: 3, color: "#9a8c5a", cursor: "pointer", fontFamily: "'Oswald', sans-serif", fontSize: 12, letterSpacing: 2 }}
-          >
-            RETURN TO PORTAL
-          </button>
-          <button
-            onClick={() => navigateToNextCard(navigate, location.pathname, location.state)}
-            disabled={!nextCardPath}
-            style={{ padding: "11px", background: nextCardPath ? Y : "#141209", border: `1px solid ${nextCardPath ? Y : "#3a3018"}`, borderRadius: 3, color: nextCardPath ? BK : "#4a4220", cursor: nextCardPath ? "pointer" : "not-allowed", fontFamily: "'Oswald', sans-serif", fontSize: 12, letterSpacing: 2, fontWeight: 700 }}
-          >
-            NEXT CARD
-          </button>
         </div>
 
         <button onClick={() => { setScreen("welcome"); setCleared({}); setSectionIdx(0); setSlideIdx(0); setPhase("slides"); }} style={{ marginTop: 16, width: "100%", padding: "11px", background: "transparent", border: "1px solid #3a3018", borderRadius: 3, color: "#4a4220", cursor: "pointer", fontFamily: "'Oswald', sans-serif", fontSize: 12, letterSpacing: 3 }}>RESTART FOR NEXT VISITOR</button>

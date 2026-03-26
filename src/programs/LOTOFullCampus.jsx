@@ -1,6 +1,4 @@
 import { useState, useEffect } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
-import { getNextCardPath, navigateToNextCard, navigateToPortal } from "./portalNavigation.js";
 
 // ─── FULL MODULE DATA ──────────────────────────────────────────────────────────
 
@@ -635,9 +633,6 @@ function QuizView({ questions, color, moduleName, onComplete }) {
 // ─── MAIN APP ─────────────────────────────────────────────────────────────────
 
 export default function LOTOFullCampus() {
-  const navigate = useNavigate();
-  const location = useLocation();
-  const nextCardPath = getNextCardPath(location.pathname, location.state);
   const [screen, setScreen] = useState("home");
   const [filter, setFilter] = useState("ALL");
   const [modIdx, setModIdx] = useState(0);
@@ -763,21 +758,6 @@ export default function LOTOFullCampus() {
       </div>
       <div style={{ color: "#2a2a2a", fontSize: 11, fontFamily: "'Barlow Condensed',sans-serif", letterSpacing: 2 }}>
         DINGFELDER · OSHA 29 CFR 1910.147 · NFPA 58 · {new Date().toLocaleDateString()}
-      </div>
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, width: "100%", maxWidth: 420, marginTop: 20 }}>
-        <button
-          onClick={() => navigateToPortal(navigate, location.state)}
-          style={{ padding: "10px 16px", background: "transparent", border: "1px solid #333", borderRadius: 6, color: "#ccc", cursor: "pointer", fontFamily: "'Barlow Condensed',sans-serif", fontSize: 12, letterSpacing: 1.5 }}
-        >
-          RETURN TO PORTAL
-        </button>
-        <button
-          onClick={() => navigateToNextCard(navigate, location.pathname, location.state)}
-          disabled={!nextCardPath}
-          style={{ padding: "10px 16px", background: nextCardPath ? "#FF6B00" : "#151515", border: "1px solid #333", borderRadius: 6, color: nextCardPath ? "#080808" : "#444", cursor: nextCardPath ? "pointer" : "not-allowed", fontFamily: "'Barlow Condensed',sans-serif", fontSize: 12, letterSpacing: 1.5, fontWeight: 800 }}
-        >
-          NEXT CARD
-        </button>
       </div>
       <button onClick={() => { setCompleted({}); setScreen("home"); }} style={{ marginTop: 20, padding: "10px 24px", background: "transparent", border: "1px solid #333", borderRadius: 6, color: "#444", cursor: "pointer", fontFamily: "'Barlow Condensed',sans-serif", fontSize: 12, letterSpacing: 2 }}>RESTART TRAINING</button>
     </div>

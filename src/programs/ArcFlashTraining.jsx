@@ -1,6 +1,4 @@
 import { useState, useEffect } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
-import { getNextCardPath, navigateToNextCard, navigateToPortal } from "./portalNavigation.js";
 
 const MODULES = [
   {
@@ -438,9 +436,6 @@ function QuizView({ mod, onComplete }) {
 }
 
 export default function ArcFlashTraining() {
-  const navigate = useNavigate();
-  const location = useLocation();
-  const nextCardPath = getNextCardPath(location.pathname, location.state);
   const [screen, setScreen] = useState("home");
   const [modIdx, setModIdx] = useState(0);
   const [slideIdx, setSlideIdx] = useState(0);
@@ -501,21 +496,6 @@ export default function ArcFlashTraining() {
       <h1 style={{ color:"#00BFFF", fontFamily:"'IBM Plex Mono',monospace", fontSize:28, margin:"0 0 10px" }}>ARC FLASH TRAINING<br />COMPLETE</h1>
       <p style={{ color:"#556", fontSize:14, fontFamily:"'IBM Plex Sans',sans-serif", marginBottom:24, lineHeight:1.6, maxWidth:440 }}>All 4 modules passed. NFPA 70E awareness training complete for the Dingfelder campus.<br />Annual recertification required. Hands-on equipment training required before live electrical work.</p>
       <div style={{ color:"#224", fontSize:10, fontFamily:"'IBM Plex Mono',monospace", letterSpacing:2 }}>DINGFELDER SAFETY · NFPA 70E · OSHA 1910.333 · {new Date().toLocaleDateString()}</div>
-      <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:10, width:"100%", maxWidth:420, marginTop:20 }}>
-        <button
-          onClick={() => navigateToPortal(navigate, location.state)}
-          style={{ padding:"10px 16px", background:"transparent", border:"1px solid #0a1825", borderRadius:3, color:"#c0d8f0", cursor:"pointer", fontFamily:"'IBM Plex Mono',monospace", fontSize:11, letterSpacing:1.5 }}
-        >
-          RETURN TO PORTAL
-        </button>
-        <button
-          onClick={() => navigateToNextCard(navigate, location.pathname, location.state)}
-          disabled={!nextCardPath}
-          style={{ padding:"10px 16px", background:nextCardPath ? "#00BFFF" : "#081018", border:"1px solid #0a1825", borderRadius:3, color:nextCardPath ? "#010408" : "#334", cursor:nextCardPath ? "pointer" : "not-allowed", fontFamily:"'IBM Plex Mono',monospace", fontSize:11, letterSpacing:1.5, fontWeight:700 }}
-        >
-          NEXT CARD
-        </button>
-      </div>
       <button onClick={()=>{setCompleted({});setScreen("home");}} style={{ marginTop:20, padding:"10px 24px", background:"transparent", border:"1px solid #0a1825", borderRadius:3, color:"#334", cursor:"pointer", fontFamily:"'IBM Plex Mono',monospace", fontSize:11, letterSpacing:2 }}>RESTART</button>
     </div>
   );

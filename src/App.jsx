@@ -499,16 +499,17 @@ function getSiteMode(hostname) {
 }
 
 
+
 const CATEGORY_FILTERS = [
   { key: 'all', label: 'All' },
   { key: 'campus', label: 'Campus' },
   { key: 'foundry', label: 'Foundry' },
   { key: 'beam-mill', label: 'Beam Mill' },
-  { key: 'stored-energy', label: 'Stored Energy' },
   { key: 'process-gas', label: 'Process / Gas' },
   { key: 'food-retail', label: 'Food / Retail' },
-  { key: 'medical', label: 'Medical' },
   { key: 'glass-fiberglass', label: 'Glass / Fiberglass' },
+  { key: 'stored-energy', label: 'Stored Energy' },
+  { key: 'medical', label: 'Medical' },
 ]
 
 const TYPE_FILTERS = [
@@ -519,36 +520,167 @@ const TYPE_FILTERS = [
   { key: 'final', label: 'Final' },
 ]
 
-function getProgramCategory(path) {
-  const foundry = new Set(['/loto', '/molten-metal', '/furnace-melt-deck', '/silica-sand', '/crane-ladle'])
-  const beamMill = new Set(['/arcflash', '/beam-mill-rolling-line', '/overhead-crane-rigging', '/pinch-crush-steel-handling'])
-  const storedEnergy = new Set(['/hydraulic-stored-energy', '/pneumatic-stored-energy', '/electrical-stored-energy', '/fermentation-stored-energy', '/gravity-stored-energy', '/elastic-stored-energy', '/magnetic-stored-energy', '/thermal-stored-energy', '/nuclear-stored-energy'])
-  const processGas = new Set(['/h2s', '/loto-campus', '/propane-farm', '/confined-space', '/respiratory'])
-  const foodRetail = new Set(['/food-chemical', '/ammonia', '/retail-backroom', '/forklift'])
-  const medical = new Set(['/medical-emergency-basics', '/aed-awareness', '/adult-cpr-awareness', '/pulse-check-awareness', '/severe-bleeding-control', '/choking-response', '/ems-activation', '/heat-illness', '/stroke-fast', '/heart-attack-warning', '/burn-first-aid', '/eye-exposure', '/medical-response-final'])
-  const glassFiberglass = new Set(['/glass-melt-furnace', '/marble-melt-feed', '/forehearth-transfer', '/fiberizing-spinner', '/mat-forming-line', '/fiberglass-dust', '/binder-resin-sizing', '/glass-line-loto'])
+const INDUSTRIAL_ENVIRONMENTS = [
+  'foundry',
+  'beam-mill',
+  'process-gas',
+  'food-retail',
+  'glass-fiberglass',
+]
 
-  if (glassFiberglass.has(path)) return 'glass-fiberglass'
-  if (storedEnergy.has(path)) return 'stored-energy'
-  if (medical.has(path)) return 'medical'
-  if (foundry.has(path)) return 'foundry'
-  if (beamMill.has(path)) return 'beam-mill'
-  if (processGas.has(path)) return 'process-gas'
-  if (foodRetail.has(path)) return 'food-retail'
-  return 'campus'
+const CAMPUS_AND_ALL_ENVIRONMENTS = ['campus', ...INDUSTRIAL_ENVIRONMENTS]
+const MEDICAL_AND_ALL_ENVIRONMENTS = ['medical', ...CAMPUS_AND_ALL_ENVIRONMENTS]
+
+const PROGRAM_CATEGORY_TAGS = {
+  '/sat': ['campus'],
+
+  '/loto': ['foundry'],
+  '/loto-campus': CAMPUS_AND_ALL_ENVIRONMENTS,
+  '/h2s': ['process-gas'],
+  '/arcflash': ['campus', ...INDUSTRIAL_ENVIRONMENTS, 'stored-energy'],
+  '/evacuation': CAMPUS_AND_ALL_ENVIRONMENTS,
+
+  '/medical-emergency-basics': MEDICAL_AND_ALL_ENVIRONMENTS,
+  '/aed-awareness': MEDICAL_AND_ALL_ENVIRONMENTS,
+  '/adult-cpr-awareness': MEDICAL_AND_ALL_ENVIRONMENTS,
+  '/pulse-check-awareness': MEDICAL_AND_ALL_ENVIRONMENTS,
+  '/severe-bleeding-control': MEDICAL_AND_ALL_ENVIRONMENTS,
+  '/choking-response': MEDICAL_AND_ALL_ENVIRONMENTS,
+  '/ems-activation': MEDICAL_AND_ALL_ENVIRONMENTS,
+  '/heat-illness': ['medical', 'campus', 'foundry', 'beam-mill', 'process-gas', 'food-retail', 'glass-fiberglass'],
+  '/stroke-fast': MEDICAL_AND_ALL_ENVIRONMENTS,
+  '/heart-attack-warning': MEDICAL_AND_ALL_ENVIRONMENTS,
+  '/burn-first-aid': ['medical', 'campus', 'foundry', 'beam-mill', 'process-gas', 'food-retail', 'glass-fiberglass'],
+  '/eye-exposure': ['medical', 'campus', 'foundry', 'process-gas', 'food-retail', 'glass-fiberglass'],
+  '/medical-response-final': ['medical'],
+
+  '/hazcom': CAMPUS_AND_ALL_ENVIRONMENTS,
+  '/ppe': CAMPUS_AND_ALL_ENVIRONMENTS,
+  '/forklift': ['campus', 'foundry', 'food-retail', 'glass-fiberglass'],
+  '/fire-extinguishers': CAMPUS_AND_ALL_ENVIRONMENTS,
+  '/molten-metal': ['foundry'],
+  '/furnace-melt-deck': ['foundry'],
+  '/silica-sand': ['foundry'],
+  '/crane-ladle': ['foundry', 'beam-mill', 'glass-fiberglass'],
+  '/propane-farm': ['campus', 'process-gas'],
+  '/food-chemical': ['campus', 'food-retail'],
+  '/ammonia': ['campus', 'food-retail'],
+  '/retail-backroom': ['campus', 'food-retail'],
+
+  '/walking-working-surfaces': CAMPUS_AND_ALL_ENVIRONMENTS,
+  '/incident-reporting': CAMPUS_AND_ALL_ENVIRONMENTS,
+  '/contractor-safety': CAMPUS_AND_ALL_ENVIRONMENTS,
+  '/severe-weather': CAMPUS_AND_ALL_ENVIRONMENTS,
+  '/confined-space': ['campus', ...INDUSTRIAL_ENVIRONMENTS],
+  '/respiratory-protection': ['campus', 'foundry', 'process-gas', 'food-retail', 'glass-fiberglass'],
+  '/hearing-conservation': ['campus', 'foundry', 'beam-mill', 'food-retail', 'glass-fiberglass'],
+  '/hot-work': ['campus', ...INDUSTRIAL_ENVIRONMENTS],
+
+  '/machine-guarding-molding-line': ['foundry'],
+  '/foundry-heat-stress-burn-prevention': ['foundry'],
+  '/core-room-binder-ventilation': ['foundry'],
+  '/shakeout-cleaning-grinding': ['foundry'],
+  '/beam-mill-rolling-line': ['beam-mill'],
+  '/overhead-crane-rigging': ['foundry', 'beam-mill', 'glass-fiberglass'],
+  '/pinch-crush-steel-handling': ['foundry', 'beam-mill', 'glass-fiberglass'],
+
+  '/hydraulic-stored-energy': ['stored-energy', 'foundry', 'beam-mill', 'process-gas', 'food-retail', 'glass-fiberglass'],
+  '/pneumatic-stored-energy': ['stored-energy', 'foundry', 'beam-mill', 'process-gas', 'food-retail', 'glass-fiberglass'],
+  '/electrical-stored-energy': ['stored-energy', 'campus', ...INDUSTRIAL_ENVIRONMENTS],
+  '/fermentation-stored-energy': ['stored-energy', 'process-gas', 'food-retail'],
+  '/gravity-stored-energy': ['stored-energy', 'campus', ...INDUSTRIAL_ENVIRONMENTS],
+  '/elastic-stored-energy': ['stored-energy', 'campus', 'foundry', 'beam-mill', 'food-retail', 'glass-fiberglass'],
+  '/magnetic-stored-energy': ['stored-energy', 'campus', 'foundry', 'beam-mill', 'glass-fiberglass'],
+  '/thermal-stored-energy': ['stored-energy', 'campus', ...INDUSTRIAL_ENVIRONMENTS],
+  '/nuclear-stored-energy': ['stored-energy', 'campus'],
+
+  '/glass-melt-furnace': ['glass-fiberglass'],
+  '/marble-melt-feed': ['glass-fiberglass'],
+  '/forehearth-transfer': ['glass-fiberglass'],
+  '/fiberizing-spinner': ['glass-fiberglass'],
+  '/mat-forming-line': ['glass-fiberglass'],
+  '/fiberglass-dust': ['glass-fiberglass'],
+  '/binder-resin-sizing': ['glass-fiberglass'],
+  '/glass-line-loto': ['glass-fiberglass'],
+}
+
+const CORE_PROGRAMS = new Set([
+  '/sat',
+  '/hazcom',
+  '/ppe',
+  '/evacuation',
+  '/walking-working-surfaces',
+  '/incident-reporting',
+  '/contractor-safety',
+  '/severe-weather',
+])
+
+const HIGH_RISK_PROGRAMS = new Set([
+  '/loto',
+  '/loto-campus',
+  '/h2s',
+  '/arcflash',
+  '/molten-metal',
+  '/furnace-melt-deck',
+  '/silica-sand',
+  '/crane-ladle',
+  '/propane-farm',
+  '/confined-space',
+  '/respiratory-protection',
+  '/hot-work',
+  '/machine-guarding-molding-line',
+  '/beam-mill-rolling-line',
+  '/overhead-crane-rigging',
+  '/hydraulic-stored-energy',
+  '/pneumatic-stored-energy',
+  '/electrical-stored-energy',
+  '/fermentation-stored-energy',
+  '/gravity-stored-energy',
+  '/elastic-stored-energy',
+  '/magnetic-stored-energy',
+  '/thermal-stored-energy',
+  '/nuclear-stored-energy',
+  '/pinch-crush-steel-handling',
+  '/glass-melt-furnace',
+  '/marble-melt-feed',
+  '/forehearth-transfer',
+  '/fiberizing-spinner',
+  '/glass-line-loto',
+  '/adult-cpr-awareness',
+  '/aed-awareness',
+  '/pulse-check-awareness',
+  '/severe-bleeding-control',
+  '/heat-illness',
+])
+
+const FINAL_PROGRAMS = new Set([
+  '/medical-response-final',
+])
+
+function isValidCategoryKey(key) {
+  return CATEGORY_FILTERS.some(filter => filter.key === key)
+}
+
+function isValidTypeKey(key) {
+  return TYPE_FILTERS.some(filter => filter.key === key)
+}
+
+function getProgramCategories(path) {
+  return PROGRAM_CATEGORY_TAGS[path] || ['campus']
 }
 
 function getProgramType(path) {
-  const core = new Set(['/sat', '/hazcom', '/ppe', '/evacuation', '/contractor-safety', '/walking-working-surfaces', '/incident-reporting', '/severe-weather'])
-  const highRisk = new Set(['/loto', '/loto-campus', '/h2s', '/arcflash', '/molten-metal', '/furnace-melt-deck', '/crane-ladle', '/propane-farm', '/confined-space', '/hot-work', '/machine-guarding', '/adult-cpr-awareness', '/aed-awareness', '/pulse-check-awareness', '/severe-bleeding-control', '/heat-illness', '/hydraulic-stored-energy', '/pneumatic-stored-energy', '/electrical-stored-energy', '/fermentation-stored-energy', '/gravity-stored-energy', '/elastic-stored-energy', '/magnetic-stored-energy', '/thermal-stored-energy', '/nuclear-stored-energy', '/glass-melt-furnace', '/forehearth-transfer', '/fiberizing-spinner', '/glass-line-loto'])
-  const finals = new Set(['/medical-response-final'])
-  if (finals.has(path)) return 'final'
-  if (core.has(path)) return 'core'
-  if (highRisk.has(path)) return 'high-risk'
+  if (FINAL_PROGRAMS.has(path)) return 'final'
+  if (CORE_PROGRAMS.has(path)) return 'core'
+  if (HIGH_RISK_PROGRAMS.has(path)) return 'high-risk'
   return 'awareness'
 }
 
-function matchesFilter(value, active) {
+function matchesCategoryFilter(categories, active) {
+  return active === 'all' || categories.includes(active)
+}
+
+function matchesTypeFilter(value, active) {
   return active === 'all' || value === active
 }
 
@@ -565,8 +697,10 @@ function buildPortalSearch(category, type) {
 
 function parsePortalSearch(search) {
   const params = new URLSearchParams(search || '')
-  const category = params.get('category') || 'all'
-  const type = params.get('type') || 'all'
+  const rawCategory = params.get('category') || 'all'
+  const rawType = params.get('type') || 'all'
+  const category = isValidCategoryKey(rawCategory) ? rawCategory : 'all'
+  const type = isValidTypeKey(rawType) ? rawType : 'all'
   return { category, type }
 }
 
@@ -1136,9 +1270,9 @@ function PortalHome() {
 
   const filteredPrograms = useMemo(() => {
     return PROGRAMS.filter(prog => {
-      const category = getProgramCategory(prog.path)
+      const categories = getProgramCategories(prog.path)
       const type = getProgramType(prog.path)
-      return matchesFilter(category, categoryFilter) && matchesFilter(type, typeFilter)
+      return matchesCategoryFilter(categories, categoryFilter) && matchesTypeFilter(type, typeFilter)
     })
   }, [categoryFilter, typeFilter])
 

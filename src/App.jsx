@@ -123,6 +123,17 @@ import {
   ConfinedSpaceSewersWetWellsTraining,
   ConfinedSpaceHotWorkSIMOPSTraining,
 } from './programs/ConfinedSpacesPhase1.jsx'
+import {
+  ELECTRICAL_SAFETY_PHASE1_MODULES,
+  ShockArcFlashBlastTraining,
+  ElectricallySafeWorkConditionTraining,
+  TestBeforeTouchTraining,
+  MCCSwitchgearPanelAccessTraining,
+  TemporaryPowerCordsPortablesTraining,
+  MotorVFDDisconnectIsolationTraining,
+  BatteryRoomsDCHazardsTraining,
+  QualifiedUnqualifiedBoundariesTraining,
+} from './programs/ElectricalSafetyPhase1.jsx'
 
 // ─── Route map ───────────────────────────────────────────────────────────────
 const PROGRAMS = [
@@ -209,6 +220,19 @@ const PROGRAMS = [
       ConfinedSpaceTanksPitsSilosTraining,
       ConfinedSpaceSewersWetWellsTraining,
       ConfinedSpaceHotWorkSIMOPSTraining,
+    ][index],
+  })),
+  ...ELECTRICAL_SAFETY_PHASE1_MODULES.map((module, index) => ({
+    ...module,
+    Component: [
+      ShockArcFlashBlastTraining,
+      ElectricallySafeWorkConditionTraining,
+      TestBeforeTouchTraining,
+      MCCSwitchgearPanelAccessTraining,
+      TemporaryPowerCordsPortablesTraining,
+      MotorVFDDisconnectIsolationTraining,
+      BatteryRoomsDCHazardsTraining,
+      QualifiedUnqualifiedBoundariesTraining,
     ][index],
   })),
   {
@@ -588,6 +612,7 @@ const CATEGORY_FILTERS = [
   { key: 'glass-fiberglass', label: 'Glass / Fiberglass' },
   { key: 'stored-energy', label: 'Stored Energy' },
   { key: 'confined-spaces', label: 'Confined Spaces' },
+  { key: 'electrical-safety', label: 'Electrical Safety' },
   { key: 'medical', label: 'Medical' },
 ]
 
@@ -638,7 +663,15 @@ const PROGRAM_CATEGORY_TAGS = {
   '/wastewater-biosolids-dewatering': ['waste-water'],
   '/wastewater-wet-well-confined-space': ['waste-water', 'confined-spaces'],
   '/wastewater-bypass-overflow-response': ['waste-water'],
-  '/arcflash': ['campus', ...INDUSTRIAL_ENVIRONMENTS, 'stored-energy'],
+  '/arcflash': ['campus', ...INDUSTRIAL_ENVIRONMENTS, 'stored-energy', 'electrical-safety'],
+  '/electrical-shock-vs-arc-flash-blast': ['electrical-safety', 'campus', ...INDUSTRIAL_ENVIRONMENTS],
+  '/electrically-safe-work-condition': ['electrical-safety', 'campus', ...INDUSTRIAL_ENVIRONMENTS],
+  '/test-before-touch': ['electrical-safety', 'campus', ...INDUSTRIAL_ENVIRONMENTS],
+  '/mcc-switchgear-panel-access': ['electrical-safety', 'campus', ...INDUSTRIAL_ENVIRONMENTS],
+  '/temporary-power-cords-portables': ['electrical-safety', 'campus', ...INDUSTRIAL_ENVIRONMENTS],
+  '/motor-vfd-disconnect-isolation': ['electrical-safety', 'stored-energy', 'campus', ...INDUSTRIAL_ENVIRONMENTS],
+  '/battery-rooms-dc-hazards': ['electrical-safety', 'stored-energy', 'campus', ...INDUSTRIAL_ENVIRONMENTS],
+  '/qualified-vs-unqualified-boundaries': ['electrical-safety', 'campus', ...INDUSTRIAL_ENVIRONMENTS],
   '/evacuation': CAMPUS_AND_ALL_ENVIRONMENTS,
 
   '/medical-emergency-basics': MEDICAL_AND_ALL_ENVIRONMENTS,
@@ -696,7 +729,7 @@ const PROGRAM_CATEGORY_TAGS = {
 
   '/hydraulic-stored-energy': ['stored-energy', 'foundry', 'beam-mill', 'process-gas', 'cracker-plant', 'food-retail', 'glass-fiberglass'],
   '/pneumatic-stored-energy': ['stored-energy', 'foundry', 'beam-mill', 'process-gas', 'cracker-plant', 'waste-water', 'food-retail', 'glass-fiberglass'],
-  '/electrical-stored-energy': ['stored-energy', 'campus', ...INDUSTRIAL_ENVIRONMENTS],
+  '/electrical-stored-energy': ['stored-energy', 'electrical-safety', 'campus', ...INDUSTRIAL_ENVIRONMENTS],
   '/fermentation-stored-energy': ['stored-energy', 'process-gas', 'waste-water', 'food-retail'],
   '/gravity-stored-energy': ['stored-energy', 'campus', ...INDUSTRIAL_ENVIRONMENTS],
   '/elastic-stored-energy': ['stored-energy', 'campus', 'foundry', 'beam-mill', 'food-retail', 'glass-fiberglass'],
@@ -739,6 +772,14 @@ const HIGH_RISK_PROGRAMS = new Set([
   '/cracker-psv-drains-sampling',
   '/cracker-emergency-shelter-muster',
   '/arcflash',
+  '/electrical-shock-vs-arc-flash-blast',
+  '/electrically-safe-work-condition',
+  '/test-before-touch',
+  '/mcc-switchgear-panel-access',
+  '/temporary-power-cords-portables',
+  '/motor-vfd-disconnect-isolation',
+  '/battery-rooms-dc-hazards',
+  '/qualified-vs-unqualified-boundaries',
   '/molten-metal',
   '/furnace-melt-deck',
   '/silica-sand',

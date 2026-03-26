@@ -5,6 +5,14 @@ export const TRAINING_CATALOG = {
     "LOTO — Full Campus",
     "H₂S Awareness & SCBA",
     "Arc Flash & Electrical Safety",
+    "Shock vs Arc Flash vs Arc Blast",
+    "Electrically Safe Work Condition",
+    "Test Before Touch",
+    "MCC, Switchgear & Panel Access Safety",
+    "Temporary Power, Cords & Portable Equipment",
+    "Motor, VFD & Disconnect Isolation",
+    "Battery Rooms & DC Hazards",
+    "Qualified vs Unqualified Person Boundaries",
     "Emergency Evacuation & Muster",
     "Hazard Communication / SDS / GHS",
     "PPE Fundamentals",
@@ -207,4 +215,16 @@ export const CONFINED_SPACES_PHASE1_READY = [
   "Tank, Pit, Hopper & Silo Interior Work Safety",
   "Sewer, Wet Well & Utility Vault Confined Space Hazards",
   "Hot Work, Coatings & SIMOPS in Confined Spaces",
+]
+
+
+export const ELECTRICAL_SAFETY_PHASE1_READY = [
+  "Shock vs Arc Flash vs Arc Blast",
+  "Electrically Safe Work Condition",
+  "Test Before Touch",
+  "MCC, Switchgear & Panel Access Safety",
+  "Temporary Power, Cords & Portable Equipment",
+  "Motor, VFD & Disconnect Isolation",
+  "Battery Rooms & DC Hazards",
+  "Qualified vs Unqualified Person Boundaries"
 ]

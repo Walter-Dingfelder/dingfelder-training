@@ -2,6 +2,7 @@
 import { Routes, Route, useNavigate, useLocation } from 'react-router-dom'
 import { useState, useEffect, useMemo } from 'react'
 import aironSplash from './assets/airon-splash.png'
+import { bootstrapNetlifyIdentity, signOutNetlifyIdentity } from './auth/netlifyIdentity.js'
 
 // ─── Training Programs ────────────────────────────────────────────────────────
 import LOTOFoundry     from './programs/LOTOFoundry.jsx'
@@ -1807,7 +1808,7 @@ function AIRONLanding() {
   )
 }
 
-function PortalHome() {
+function PortalHome({ authState, onSignOut }) {
   const navigate = useNavigate()
   const location = useLocation()
   const [tick, setTick] = useState(0)
@@ -1879,18 +1880,84 @@ function PortalHome() {
             BY DINGFELDER ENTERPRISES · DINGFELDER INDUSTRIAL CAMPUS
           </div>
         </div>
-        <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 8 }}>
+        <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <div style={{
+              width: 8, height: 8, borderRadius: '50%',
+              background: blink ? '#22CC66' : 'transparent',
+              border: '1px solid #22CC66',
+              transition: 'background 0.15s',
+            }} />
+            <span style={{
+              color: '#22CC66',
+              fontFamily: "'IBM Plex Mono', monospace",
+              fontSize: 11, letterSpacing: 2,
+            }}>PORTAL ONLINE</span>
+          </div>
+
           <div style={{
-            width: 8, height: 8, borderRadius: '50%',
-            background: blink ? '#22CC66' : 'transparent',
-            border: '1px solid #22CC66',
-            transition: 'background 0.15s',
-          }} />
-          <span style={{
-            color: '#22CC66',
-            fontFamily: "'IBM Plex Mono', monospace",
-            fontSize: 11, letterSpacing: 2,
-          }}>PORTAL ONLINE</span>
+            minWidth: 0,
+            padding: '8px 10px',
+            borderRadius: 10,
+            background: 'rgba(255,255,255,0.04)',
+            border: `1px solid ${authState.error ? 'rgba(255,107,0,0.45)' : authState.user ? 'rgba(34,204,102,0.45)' : 'rgba(255,209,0,0.28)'}`,
+            display: 'flex',
+            alignItems: 'center',
+            gap: 10,
+          }}>
+            <div style={{
+              width: 8,
+              height: 8,
+              borderRadius: '50%',
+              background: authState.error ? '#FF6B00' : authState.user ? '#22CC66' : '#FFD100',
+              boxShadow: authState.user ? '0 0 12px rgba(34,204,102,0.35)' : 'none',
+              flexShrink: 0,
+            }} />
+            <div style={{ minWidth: 0 }}>
+              <div style={{
+                color: authState.error ? '#FF9B6B' : authState.user ? '#8DFFB4' : '#FFD100',
+                fontFamily: "'IBM Plex Mono', monospace",
+                fontSize: 10,
+                letterSpacing: 1.5,
+                textTransform: 'uppercase',
+              }}>
+                {authState.error ? 'Auth callback issue' : authState.user ? 'Identity active' : authState.ready ? 'Identity ready' : 'Identity loading'}
+              </div>
+              <div style={{
+                color: '#D4D4D4',
+                fontSize: 12,
+                lineHeight: 1.3,
+                maxWidth: 260,
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap',
+              }}>
+                {authState.error || authState.user?.email || (authState.ready ? 'Invite links can now complete on-site.' : 'Checking session...')}
+              </div>
+            </div>
+            {authState.user && (
+              <button
+                onClick={async (event) => {
+                  event.stopPropagation()
+                  await onSignOut()
+                }}
+                style={{
+                  appearance: 'none',
+                  border: '1px solid rgba(255,255,255,0.12)',
+                  background: '#101010',
+                  color: '#E6E6E6',
+                  borderRadius: 8,
+                  padding: '7px 10px',
+                  fontFamily: "'IBM Plex Mono', monospace",
+                  fontSize: 11,
+                  cursor: 'pointer',
+                  flexShrink: 0,
+                }}
+              >
+                Sign out
+              </button>
+            )}
+          </div>
         </div>
       </div>
 
@@ -1925,6 +1992,22 @@ function PortalHome() {
           Training environments include the Dingfelder Industrial Campus.
           Select a module below to begin and build operational confidence before the job starts.
         </p>
+
+        {(authState.message || authState.error) && (
+          <div style={{
+            marginTop: 18,
+            maxWidth: 760,
+            padding: '12px 14px',
+            borderRadius: 12,
+            background: authState.error ? 'rgba(255,107,0,0.10)' : 'rgba(34,204,102,0.08)',
+            border: `1px solid ${authState.error ? 'rgba(255,107,0,0.30)' : 'rgba(34,204,102,0.24)'}`,
+            color: authState.error ? '#FFB48F' : '#A7F4BE',
+            fontSize: 13,
+            lineHeight: 1.6,
+          }}>
+            {authState.error || authState.message}
+          </div>
+        )}
       </div>
 
       <div style={{
@@ -2168,10 +2251,10 @@ const forceScrollTop = () => {
   setTimeout(apply, 0);
 };
 
-function AppRoutes() {
+function AppRoutes({ authState, onSignOut }) {
   return (
     <Routes>
-      <Route path="/" element={<PortalHome />} />
+      <Route path="/" element={<PortalHome authState={authState} onSignOut={onSignOut} />} />
       <Route path="/landing" element={<AIRONLanding />} />
       {PROGRAMS.map(prog => (
         <Route
@@ -2180,16 +2263,57 @@ function AppRoutes() {
           element={<prog.Component />}
         />
       ))}
-      <Route path="*" element={<PortalHome />} />
+      <Route path="*" element={<PortalHome authState={authState} onSignOut={onSignOut} />} />
     </Routes>
   )
+}
+
+function hasIdentityCallbackInUrl() {
+  if (typeof window === 'undefined') return false
+  const candidate = `${window.location.search || ''}${window.location.hash || ''}`.toLowerCase()
+  return [
+    'invite_token=',
+    'confirmation_token=',
+    'recovery_token=',
+    'email_change_token=',
+    'access_token=',
+    'refresh_token=',
+  ].some(token => candidate.includes(token))
 }
 
 export default function App() {
   const location = useLocation()
   const navigate = useNavigate()
   const mode = useMemo(() => getSiteMode(window.location.hostname), [])
-  const [showSplash, setShowSplash] = useState(() => location.pathname === '/')
+  const [authState, setAuthState] = useState({
+    ready: false,
+    user: null,
+    message: '',
+    error: '',
+  })
+  const [showSplash, setShowSplash] = useState(() => location.pathname === '/' && !hasIdentityCallbackInUrl())
+
+  useEffect(() => {
+    let cancelled = false
+
+    async function initializeIdentity() {
+      const result = await bootstrapNetlifyIdentity()
+      if (cancelled) return
+
+      setAuthState({
+        ready: true,
+        user: result.user,
+        message: result.message,
+        error: result.error,
+      })
+    }
+
+    initializeIdentity()
+
+    return () => {
+      cancelled = true
+    }
+  }, [])
 
   useEffect(() => {
     if (location.pathname !== '/') {
@@ -2211,9 +2335,19 @@ export default function App() {
     }
   }
 
+  const handleSignOut = async () => {
+    const result = await signOutNetlifyIdentity()
+    setAuthState({
+      ready: true,
+      user: result.user,
+      message: result.message,
+      error: result.error,
+    })
+  }
+
   if (showSplash) {
     return <AIRONSplash onDone={handleSplashDone} />
   }
 
-  return <AppRoutes />
+  return <AppRoutes authState={authState} onSignOut={handleSignOut} />
 }

@@ -134,6 +134,17 @@ import {
   BatteryRoomsDCHazardsTraining,
   QualifiedUnqualifiedBoundariesTraining,
 } from './programs/ElectricalSafetyPhase1.jsx'
+import {
+  CHEMICAL_SAFETY_PHASE1_MODULES,
+  HazComLabelsSDSTraining,
+  CorrosivesAcidsCausticsTraining,
+  OxidizersReactivesIncompatiblesTraining,
+  SolventsFlammablesVaporControlTraining,
+  ToxicGasFumeInhalationTraining,
+  ChemicalTransferSamplingHandlingTraining,
+  SpillResponseIsolationDeconTraining,
+  ChemicalWasteResiduesContainersTraining,
+} from './programs/ChemicalSafetyPhase1.jsx'
 
 // ─── Route map ───────────────────────────────────────────────────────────────
 const PROGRAMS = [
@@ -233,6 +244,19 @@ const PROGRAMS = [
       MotorVFDDisconnectIsolationTraining,
       BatteryRoomsDCHazardsTraining,
       QualifiedUnqualifiedBoundariesTraining,
+    ][index],
+  })),
+  ...CHEMICAL_SAFETY_PHASE1_MODULES.map((module, index) => ({
+    ...module,
+    Component: [
+      HazComLabelsSDSTraining,
+      CorrosivesAcidsCausticsTraining,
+      OxidizersReactivesIncompatiblesTraining,
+      SolventsFlammablesVaporControlTraining,
+      ToxicGasFumeInhalationTraining,
+      ChemicalTransferSamplingHandlingTraining,
+      SpillResponseIsolationDeconTraining,
+      ChemicalWasteResiduesContainersTraining,
     ][index],
   })),
   {
@@ -613,6 +637,7 @@ const CATEGORY_FILTERS = [
   { key: 'stored-energy', label: 'Stored Energy' },
   { key: 'confined-spaces', label: 'Confined Spaces' },
   { key: 'electrical-safety', label: 'Electrical Safety' },
+  { key: 'chemical-safety', label: 'Chemical Safety / HazCom' },
   { key: 'medical', label: 'Medical' },
 ]
 
@@ -636,6 +661,7 @@ const INDUSTRIAL_ENVIRONMENTS = [
 
 const CAMPUS_AND_ALL_ENVIRONMENTS = ['campus', ...INDUSTRIAL_ENVIRONMENTS]
 const MEDICAL_AND_ALL_ENVIRONMENTS = ['medical', ...CAMPUS_AND_ALL_ENVIRONMENTS]
+const CHEMICAL_SAFETY_ALL_ENVIRONMENTS = ['chemical-safety', ...CAMPUS_AND_ALL_ENVIRONMENTS]
 const CONFINED_SPACES_ALL_ENVIRONMENTS = ['confined-spaces', ...CAMPUS_AND_ALL_ENVIRONMENTS]
 const CONFINED_SPACES_INDUSTRIAL_ENVIRONMENTS = ['confined-spaces', ...INDUSTRIAL_ENVIRONMENTS]
 
@@ -644,7 +670,7 @@ const PROGRAM_CATEGORY_TAGS = {
 
   '/loto': ['foundry'],
   '/loto-campus': CAMPUS_AND_ALL_ENVIRONMENTS,
-  '/h2s': ['process-gas', 'cracker-plant', 'waste-water', 'confined-spaces'],
+  '/h2s': ['process-gas', 'cracker-plant', 'waste-water', 'confined-spaces', 'chemical-safety'],
   '/cracker-feed-gas': ['cracker-plant', 'process-gas'],
   '/cracker-furnace': ['cracker-plant', 'process-gas'],
   '/cracker-quench-fractionation': ['cracker-plant', 'process-gas'],
@@ -658,8 +684,8 @@ const PROGRAM_CATEGORY_TAGS = {
   '/wastewater-open-basins-clarifiers': ['waste-water'],
   '/wastewater-h2s-gas-detection': ['waste-water'],
   '/wastewater-digesters-biogas': ['waste-water'],
-  '/wastewater-disinfection-chemicals': ['waste-water'],
-  '/wastewater-chemical-feed-polymer': ['waste-water'],
+  '/wastewater-disinfection-chemicals': ['waste-water', 'chemical-safety'],
+  '/wastewater-chemical-feed-polymer': ['waste-water', 'chemical-safety'],
   '/wastewater-biosolids-dewatering': ['waste-water'],
   '/wastewater-wet-well-confined-space': ['waste-water', 'confined-spaces'],
   '/wastewater-bypass-overflow-response': ['waste-water'],
@@ -672,6 +698,14 @@ const PROGRAM_CATEGORY_TAGS = {
   '/motor-vfd-disconnect-isolation': ['electrical-safety', 'stored-energy', 'campus', ...INDUSTRIAL_ENVIRONMENTS],
   '/battery-rooms-dc-hazards': ['electrical-safety', 'stored-energy', 'campus', ...INDUSTRIAL_ENVIRONMENTS],
   '/qualified-vs-unqualified-boundaries': ['electrical-safety', 'campus', ...INDUSTRIAL_ENVIRONMENTS],
+  '/chemical-hazcom-labels-sds-pictograms': CHEMICAL_SAFETY_ALL_ENVIRONMENTS,
+  '/chemical-corrosives-acids-caustics': ['chemical-safety', 'campus', 'foundry', 'process-gas', 'cracker-plant', 'waste-water', 'food-retail', 'glass-fiberglass'],
+  '/chemical-oxidizers-reactives-incompatibles': ['chemical-safety', 'campus', 'foundry', 'process-gas', 'cracker-plant', 'waste-water', 'food-retail', 'glass-fiberglass'],
+  '/chemical-solvents-flammables-vapor-control': ['chemical-safety', 'campus', 'foundry', 'beam-mill', 'process-gas', 'cracker-plant', 'food-retail', 'glass-fiberglass'],
+  '/chemical-toxic-gas-fume-inhalation': ['chemical-safety', 'campus', 'foundry', 'process-gas', 'cracker-plant', 'waste-water', 'food-retail', 'glass-fiberglass'],
+  '/chemical-transfer-sampling-container-handling': ['chemical-safety', 'campus', 'foundry', 'process-gas', 'cracker-plant', 'waste-water', 'food-retail', 'glass-fiberglass'],
+  '/chemical-spill-response-isolation-decon': CHEMICAL_SAFETY_ALL_ENVIRONMENTS,
+  '/chemical-waste-residues-empty-containers': CHEMICAL_SAFETY_ALL_ENVIRONMENTS,
   '/evacuation': CAMPUS_AND_ALL_ENVIRONMENTS,
 
   '/medical-emergency-basics': MEDICAL_AND_ALL_ENVIRONMENTS,
@@ -685,10 +719,10 @@ const PROGRAM_CATEGORY_TAGS = {
   '/stroke-fast': MEDICAL_AND_ALL_ENVIRONMENTS,
   '/heart-attack-warning': MEDICAL_AND_ALL_ENVIRONMENTS,
   '/burn-first-aid': ['medical', 'campus', 'foundry', 'beam-mill', 'process-gas', 'cracker-plant', 'waste-water', 'food-retail', 'glass-fiberglass'],
-  '/eye-exposure': ['medical', 'campus', 'foundry', 'process-gas', 'cracker-plant', 'waste-water', 'food-retail', 'glass-fiberglass'],
+  '/eye-exposure': ['medical', 'campus', 'foundry', 'process-gas', 'cracker-plant', 'waste-water', 'food-retail', 'glass-fiberglass', 'chemical-safety'],
   '/medical-response-final': ['medical'],
 
-  '/hazcom': CAMPUS_AND_ALL_ENVIRONMENTS,
+  '/hazcom': CHEMICAL_SAFETY_ALL_ENVIRONMENTS,
   '/ppe': CAMPUS_AND_ALL_ENVIRONMENTS,
   '/forklift': ['campus', 'foundry', 'food-retail', 'glass-fiberglass'],
   '/fire-extinguishers': CAMPUS_AND_ALL_ENVIRONMENTS,
@@ -697,8 +731,8 @@ const PROGRAM_CATEGORY_TAGS = {
   '/silica-sand': ['foundry'],
   '/crane-ladle': ['foundry', 'beam-mill', 'glass-fiberglass'],
   '/propane-farm': ['campus', 'process-gas'],
-  '/food-chemical': ['campus', 'food-retail'],
-  '/ammonia': ['campus', 'food-retail'],
+  '/food-chemical': ['campus', 'food-retail', 'chemical-safety'],
+  '/ammonia': ['campus', 'food-retail', 'chemical-safety'],
   '/retail-backroom': ['campus', 'food-retail'],
 
   '/walking-working-surfaces': CAMPUS_AND_ALL_ENVIRONMENTS,
@@ -706,7 +740,7 @@ const PROGRAM_CATEGORY_TAGS = {
   '/contractor-safety': CAMPUS_AND_ALL_ENVIRONMENTS,
   '/severe-weather': CAMPUS_AND_ALL_ENVIRONMENTS,
   '/confined-space': CONFINED_SPACES_ALL_ENVIRONMENTS,
-  '/respiratory-protection': ['campus', 'foundry', 'process-gas', 'cracker-plant', 'waste-water', 'food-retail', 'glass-fiberglass', 'confined-spaces'],
+  '/respiratory-protection': ['campus', 'foundry', 'process-gas', 'cracker-plant', 'waste-water', 'food-retail', 'glass-fiberglass', 'confined-spaces', 'chemical-safety'],
   '/hearing-conservation': ['campus', 'foundry', 'beam-mill', 'cracker-plant', 'waste-water', 'food-retail', 'glass-fiberglass'],
   '/hot-work': ['campus', ...INDUSTRIAL_ENVIRONMENTS, 'confined-spaces'],
   '/confined-space-permit-roles': CONFINED_SPACES_ALL_ENVIRONMENTS,
@@ -721,7 +755,7 @@ const PROGRAM_CATEGORY_TAGS = {
 
   '/machine-guarding-molding-line': ['foundry'],
   '/foundry-heat-stress-burn-prevention': ['foundry'],
-  '/core-room-binder-ventilation': ['foundry'],
+  '/core-room-binder-ventilation': ['foundry', 'chemical-safety'],
   '/shakeout-cleaning-grinding': ['foundry'],
   '/beam-mill-rolling-line': ['beam-mill'],
   '/overhead-crane-rigging': ['foundry', 'beam-mill', 'glass-fiberglass'],
@@ -743,7 +777,7 @@ const PROGRAM_CATEGORY_TAGS = {
   '/fiberizing-spinner': ['glass-fiberglass'],
   '/mat-forming-line': ['glass-fiberglass'],
   '/fiberglass-dust': ['glass-fiberglass'],
-  '/binder-resin-sizing': ['glass-fiberglass'],
+  '/binder-resin-sizing': ['glass-fiberglass', 'chemical-safety'],
   '/glass-line-loto': ['glass-fiberglass'],
 }
 
@@ -780,6 +814,13 @@ const HIGH_RISK_PROGRAMS = new Set([
   '/motor-vfd-disconnect-isolation',
   '/battery-rooms-dc-hazards',
   '/qualified-vs-unqualified-boundaries',
+  '/chemical-corrosives-acids-caustics',
+  '/chemical-oxidizers-reactives-incompatibles',
+  '/chemical-solvents-flammables-vapor-control',
+  '/chemical-toxic-gas-fume-inhalation',
+  '/chemical-transfer-sampling-container-handling',
+  '/chemical-spill-response-isolation-decon',
+  '/chemical-waste-residues-empty-containers',
   '/molten-metal',
   '/furnace-melt-deck',
   '/silica-sand',

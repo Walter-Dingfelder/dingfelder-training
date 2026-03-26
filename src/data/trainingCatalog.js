@@ -15,6 +15,14 @@ export const TRAINING_CATALOG = {
     "Qualified vs Unqualified Person Boundaries",
     "Emergency Evacuation & Muster",
     "Hazard Communication / SDS / GHS",
+    "HazCom Labels, SDS & Pictograms",
+    "Corrosives, Acids, Caustics & Chemical Burn Prevention",
+    "Oxidizers, Reactives & Incompatible Storage",
+    "Solvents, Flammables & Vapor Control",
+    "Toxic Gas, Fume & Inhalation Hazard Awareness",
+    "Chemical Transfer, Sampling & Container Handling",
+    "Spill Response, Isolation & Decontamination Basics",
+    "Waste Handling, Residues & Empty Container Safety",
     "PPE Fundamentals",
     "Forklift / Powered Industrial Truck Safety",
     "Fire Extinguisher Basics",
@@ -227,4 +235,15 @@ export const ELECTRICAL_SAFETY_PHASE1_READY = [
   "Motor, VFD & Disconnect Isolation",
   "Battery Rooms & DC Hazards",
   "Qualified vs Unqualified Person Boundaries"
+]
+
+export const CHEMICAL_SAFETY_PHASE1_READY = [
+  "HazCom Labels, SDS & Pictograms",
+  "Corrosives, Acids, Caustics & Chemical Burn Prevention",
+  "Oxidizers, Reactives & Incompatible Storage",
+  "Solvents, Flammables & Vapor Control",
+  "Toxic Gas, Fume & Inhalation Hazard Awareness",
+  "Chemical Transfer, Sampling & Container Handling",
+  "Spill Response, Isolation & Decontamination Basics",
+  "Waste Handling, Residues & Empty Container Safety"
 ]

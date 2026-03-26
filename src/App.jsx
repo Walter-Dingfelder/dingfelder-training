@@ -66,6 +66,17 @@ import {
   EyeExposureTraining,
 } from './programs/MedicalResponseBatch2.jsx'
 import MedicalResponseFinalTraining from './programs/MedicalResponseFinal.jsx'
+import {
+  GLASS_FIBERGLASS_PHASE1_MODULES,
+  GlassMeltFurnaceTraining,
+  MarbleMeltFeedTraining,
+  ForehearthTransferTraining,
+  FiberizingSpinnerTraining,
+  MatFormingLineTraining,
+  FiberglassDustTraining,
+  BinderResinSizingTraining,
+  GlassLineLOTOTraining,
+} from './programs/GlassFiberglassPhase1.jsx'
 
 // ─── Route map ───────────────────────────────────────────────────────────────
 const PROGRAMS = [
@@ -439,7 +450,21 @@ const PROGRAMS = [
       HydraulicStoredEnergyTraining,
       PinchCrushSteelHandlingTraining,
     ][index],
-  }))
+  })),
+
+...GLASS_FIBERGLASS_PHASE1_MODULES.map((module, index) => ({
+  ...module,
+  Component: [
+    GlassMeltFurnaceTraining,
+    MarbleMeltFeedTraining,
+    ForehearthTransferTraining,
+    FiberizingSpinnerTraining,
+    MatFormingLineTraining,
+    FiberglassDustTraining,
+    BinderResinSizingTraining,
+    GlassLineLOTOTraining,
+  ][index],
+})),
 ]
 
 function getSiteMode(hostname) {
@@ -458,6 +483,7 @@ const CATEGORY_FILTERS = [
   { key: 'process-gas', label: 'Process / Gas' },
   { key: 'food-retail', label: 'Food / Retail' },
   { key: 'medical', label: 'Medical' },
+  { key: 'glass-fiberglass', label: 'Glass / Fiberglass' },
 ]
 
 const TYPE_FILTERS = [
@@ -475,6 +501,10 @@ function getProgramCategory(path) {
   const foodRetail = new Set(['/food-chemical', '/ammonia', '/retail-backroom', '/forklift'])
   const medical = new Set(['/medical-emergency-basics', '/aed-awareness', '/adult-cpr-awareness', '/pulse-check-awareness', '/severe-bleeding-control', '/choking-response', '/ems-activation', '/heat-illness', '/stroke-fast', '/heart-attack-warning', '/burn-first-aid', '/eye-exposure', '/medical-response-final'])
 
+const glassFiberglass = new Set(['/glass-melt-furnace', '/marble-melt-feed', '/forehearth-transfer', '/fiberizing-spinner', '/mat-forming-line', '/fiberglass-dust', '/binder-resin-sizing', '/glass-line-loto'])
+
+if (glassFiberglass.has(path)) return 'glass-fiberglass'
+
   if (medical.has(path)) return 'medical'
   if (foundry.has(path)) return 'foundry'
   if (beamMill.has(path)) return 'beam-mill'
@@ -485,7 +515,7 @@ function getProgramCategory(path) {
 
 function getProgramType(path) {
   const core = new Set(['/sat', '/hazcom', '/ppe', '/evacuation', '/contractor-safety', '/walking-working-surfaces', '/incident-reporting', '/severe-weather'])
-  const highRisk = new Set(['/loto', '/loto-campus', '/h2s', '/arcflash', '/molten-metal', '/furnace-melt-deck', '/crane-ladle', '/propane-farm', '/confined-space', '/hot-work', '/machine-guarding', '/adult-cpr-awareness', '/aed-awareness', '/pulse-check-awareness', '/severe-bleeding-control', '/heat-illness'])
+  const highRisk = new Set(['/loto', '/loto-campus', '/h2s', '/arcflash', '/molten-metal', '/furnace-melt-deck', '/crane-ladle', '/propane-farm', '/confined-space', '/hot-work', '/machine-guarding', '/adult-cpr-awareness', '/aed-awareness', '/pulse-check-awareness', '/severe-bleeding-control', '/heat-illness', '/glass-melt-furnace', '/forehearth-transfer', '/fiberizing-spinner', '/glass-line-loto'])
   const finals = new Set(['/medical-response-final'])
   if (finals.has(path)) return 'final'
   if (core.has(path)) return 'core'

@@ -1,4 +1,6 @@
 import { useState, useEffect, useRef } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
+import { getNextCardPath, navigateToNextCard, navigateToPortal } from "./portalNavigation.js";
 
 // ─── ROLE → CONTEXT MAP ───────────────────────────────────────────────────────
 const ROLE_CONTEXT = {
@@ -408,6 +410,9 @@ function QuizView({ mod, onComplete }) {
 
 // ─── MAIN ─────────────────────────────────────────────────────────────────────
 export default function H2STraining() {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const nextCardPath = getNextCardPath(location.pathname, location.state);
   const playerRole = "Oilfield Operator"; // In Roblox: player:GetAttribute("Role")
   const ctx = ROLE_CONTEXT[playerRole] || ROLE_CONTEXT["default"];
 
@@ -482,6 +487,21 @@ export default function H2STraining() {
         Present this completion record to your supervisor. Annual recertification required.
       </p>
       <div style={{ color:"#333", fontSize:11, fontFamily:"'Share Tech Mono',monospace", letterSpacing:2 }}>DINGFELDER SAFETY · OSHA 29 CFR 1910.134 · {new Date().toLocaleDateString()}</div>
+      <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:10, width:"100%", maxWidth:420, marginTop:20 }}>
+        <button
+          onClick={() => navigateToPortal(navigate, location.state)}
+          style={{ padding:"10px 16px", background:"transparent", border:"1px solid #333", borderRadius:3, color:"#ccc", cursor:"pointer", fontFamily:"'Oswald',sans-serif", fontSize:12, letterSpacing:2 }}
+        >
+          RETURN TO PORTAL
+        </button>
+        <button
+          onClick={() => navigateToNextCard(navigate, location.pathname, location.state)}
+          disabled={!nextCardPath}
+          style={{ padding:"10px 16px", background:nextCardPath ? "#FF8800" : "#111", border:"1px solid #333", borderRadius:3, color:nextCardPath ? "#050400" : "#444", cursor:nextCardPath ? "pointer" : "not-allowed", fontFamily:"'Oswald',sans-serif", fontSize:12, letterSpacing:2, fontWeight:700 }}
+        >
+          NEXT CARD
+        </button>
+      </div>
       <button onClick={()=>{setCompleted({});setScreen("home");}} style={{ marginTop:20, padding:"10px 24px", background:"transparent", border:"1px solid #333", borderRadius:3, color:"#444", cursor:"pointer", fontFamily:"'Oswald',sans-serif", fontSize:12, letterSpacing:2 }}>RESTART</button>
     </div>
   );

@@ -1,4 +1,6 @@
 import { useState, useEffect, useRef } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
+import { getNextCardPath, navigateToNextCard, navigateToPortal } from "./portalNavigation.js";
 
 // ─── DATA ────────────────────────────────────────────────────────────────────
 
@@ -424,6 +426,9 @@ const QuizView = ({ questions, moduleColor, onComplete, moduleName }) => {
 // ─── MAIN APP ─────────────────────────────────────────────────────────────────
 
 export default function LOTOTraining() {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const nextCardPath = getNextCardPath(location.pathname, location.state);
   const [screen, setScreen] = useState("home"); // home | module | complete
   const [moduleIdx, setModuleIdx] = useState(0);
   const [slideIdx, setSlideIdx] = useState(0);
@@ -555,6 +560,21 @@ export default function LOTOTraining() {
       </div>
       <div style={{ color: "#444", fontSize: 12, fontFamily: "'Barlow Condensed', sans-serif", letterSpacing: 2 }}>
         DINGFELDER SAFETY TRAINING · OSHA 29 CFR 1910.147 · {new Date().toLocaleDateString()}
+      </div>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, width: "100%", maxWidth: 400, marginTop: 20 }}>
+        <button
+          onClick={() => navigateToPortal(navigate, location.state)}
+          style={{ padding: "11px 16px", background: "transparent", border: "1px solid #333", borderRadius: 6, color: "#ccc", cursor: "pointer", fontFamily: "'Barlow Condensed', sans-serif", fontSize: 13, letterSpacing: 1.5 }}
+        >
+          RETURN TO PORTAL
+        </button>
+        <button
+          onClick={() => navigateToNextCard(navigate, location.pathname, location.state)}
+          disabled={!nextCardPath}
+          style={{ padding: "11px 16px", background: nextCardPath ? "#FF6B00" : "#151515", border: "1px solid #333", borderRadius: 6, color: nextCardPath ? "#0a0a0a" : "#555", cursor: nextCardPath ? "pointer" : "not-allowed", fontFamily: "'Barlow Condensed', sans-serif", fontSize: 13, letterSpacing: 1.5, fontWeight: 800 }}
+        >
+          NEXT CARD
+        </button>
       </div>
     </div>
   );

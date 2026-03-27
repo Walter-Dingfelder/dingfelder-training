@@ -1,6 +1,5 @@
 
-import { useEffect, useMemo, useRef, useState } from "react";
-import { persistTrainingRecordNetlifyIdentity } from "../auth/netlifyIdentity.js";
+import { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 
 const PAGE_BG = "#080808";
@@ -79,15 +78,6 @@ function getPortalContext(locationState) {
 }
 
 
-
-
-function labelizeCategoryKey(categoryKey) {
-  if (!categoryKey || categoryKey === "all") return "General"
-  return categoryKey
-    .split("-")
-    .map((part) => (part ? part.charAt(0).toUpperCase() + part.slice(1) : part))
-    .join(" ")
-}
 
 function normalizeQuizItem(item) {
   const prompt =
@@ -230,18 +220,14 @@ export default function TrainingModuleShell({ module }) {
   const location = useLocation();
   const navigate = useNavigate();
   const [slideIndex, setSlideIndex] = useState(0);
-  const [quizIndex, setQuizIndex] = useState(0);
   const [answers, setAnswers] = useState({});
   const [submitted, setSubmitted] = useState(false);
-  const [recordStatus, setRecordStatus] = useState({ busy: false, message: "", error: "" });
-  const recordAttemptRef = useRef("");
 
   const portalContext = useMemo(() => getPortalContext(location.state), [location.state]);
   const portalSearch = portalContext.portalSearch;
   const seriesPaths = portalContext.seriesPaths;
   const currentSeriesIndex = seriesPaths.indexOf(module.path);
   const nextModulePath = currentSeriesIndex >= 0 ? seriesPaths[currentSeriesIndex + 1] : null;
-  const activeCategory = typeof location.state?.activeCategory === "string" ? location.state.activeCategory : "";
 
   const returnToPortal = () => {
     writeStoredPortalContext(portalSearch, seriesPaths);
@@ -257,7 +243,6 @@ export default function TrainingModuleShell({ module }) {
       state: {
         portalSearch,
         seriesPaths,
-        activeCategory,
       },
     });
   };
@@ -268,59 +253,7 @@ export default function TrainingModuleShell({ module }) {
 
   useEffect(() => {
     forceScrollTop();
-  }, [slideIndex, quizIndex, submitted]);
-
-  useEffect(() => {
-    if (!submitted) {
-      recordAttemptRef.current = "";
-      setRecordStatus({ busy: false, message: "", error: "" });
-      return;
-    }
-
-    if (recordAttemptRef.current) return;
-
-    const attemptId = `${module.path || module.label}:${Date.now()}:${Math.random().toString(36).slice(2, 8)}`;
-    recordAttemptRef.current = attemptId;
-
-    let cancelled = false;
-    const passedNow = score >= Math.ceil(quiz.length * 0.7);
-
-    setRecordStatus({ busy: true, message: "", error: "" });
-
-    persistTrainingRecordNetlifyIdentity(null, {
-      attemptId,
-      modulePath: module.path || "",
-      moduleTitle: module.label || "",
-      categoryKey: activeCategory || "",
-      categoryLabel: labelizeCategoryKey(activeCategory),
-      score,
-      quizCorrect: score,
-      quizTotal: quiz.length,
-      passed: passedNow,
-      completedAt: new Date().toISOString(),
-      runtimeMinutes: Number(module.minutes) || null,
-      certificateClass: "Portal Completion Record",
-      certificateEligible: Boolean(passedNow),
-      source: "shared-shell",
-    }).then((result) => {
-      if (cancelled) return;
-      if (result?.skipped) {
-        setRecordStatus({ busy: false, message: "", error: "" });
-      } else if (result?.error) {
-        setRecordStatus({ busy: false, message: "", error: result.error });
-      } else {
-        setRecordStatus({
-          busy: false,
-          message: result?.message || "Retained training record saved to your A.I.R.O.N. account.",
-          error: "",
-        });
-      }
-    });
-
-    return () => {
-      cancelled = true
-    };
-  }, [submitted, module.path, module.label, module.minutes, activeCategory, score, quiz.length]);
+  }, [slideIndex, submitted]);
 
   const slides = module.slides || [];
   const quiz = useMemo(() => (module.quiz || []).map(normalizeQuizItem), [module.quiz]);
@@ -330,9 +263,6 @@ export default function TrainingModuleShell({ module }) {
     () => quiz.reduce((sum, q, idx) => sum + (answers[idx] === q.answer ? 1 : 0), 0),
     [answers, quiz]
   );
-  const currentQuestion = quiz[quizIndex];
-  const currentAnswer = answers[quizIndex];
-  const isLastQuestion = quizIndex >= quiz.length - 1;
 
   if (submitted) {
     const passed = score >= Math.ceil(quiz.length * 0.7);
@@ -389,38 +319,6 @@ export default function TrainingModuleShell({ module }) {
                 : "The module is still available. Review your answers and retake when ready."}
             </p>
 
-            {recordStatus.message ? (
-              <div
-                style={{
-                  marginTop: 14,
-                  padding: "12px 14px",
-                  borderRadius: 10,
-                  border: "1px solid rgba(34,204,102,0.35)",
-                  background: "rgba(34,204,102,0.10)",
-                  color: "#8CF0B1",
-                  lineHeight: 1.6,
-                }}
-              >
-                {recordStatus.message}
-              </div>
-            ) : null}
-
-            {recordStatus.error ? (
-              <div
-                style={{
-                  marginTop: 14,
-                  padding: "12px 14px",
-                  borderRadius: 10,
-                  border: "1px solid rgba(255,107,0,0.35)",
-                  background: "rgba(255,107,0,0.10)",
-                  color: "#FFB27A",
-                  lineHeight: 1.6,
-                }}
-              >
-                {recordStatus.error}
-              </div>
-            ) : null}
-
             <div
               style={{
                 marginTop: 18,
@@ -432,7 +330,7 @@ export default function TrainingModuleShell({ module }) {
               <div style={{ background: PANEL_ALT, border: "1px solid #222", borderRadius: 8, padding: 14 }}>
                 <div style={{ color: DIM, fontSize: 12, fontFamily: MONO }}>SCORE</div>
                 <div style={{ color: "#fff", fontSize: 24, fontWeight: 700 }}>
-                  {score} / {quiz.length}
+                  {score} / {module.quiz.length}
                 </div>
               </div>
               <div style={{ background: PANEL_ALT, border: "1px solid #222", borderRadius: 8, padding: 14 }}>
@@ -486,7 +384,6 @@ export default function TrainingModuleShell({ module }) {
                     setAnswers({});
                     setSubmitted(false);
                     setSlideIndex(0);
-                    setQuizIndex(0);
                     forceScrollTop();
                   }}
                   style={{
@@ -544,7 +441,7 @@ export default function TrainingModuleShell({ module }) {
               ← BACK TO PORTAL
             </button>
             <div style={{ color: module.color, fontFamily: MONO, fontSize: 12 }}>
-              KNOWLEDGE CHECK — QUESTION {quizIndex + 1} / {quiz.length}
+              KNOWLEDGE CHECK — {quiz.length} QUESTIONS
             </div>
           </div>
           <div
@@ -563,31 +460,20 @@ export default function TrainingModuleShell({ module }) {
               {module.label}
             </h1>
             <p style={{ color: "#BDBDBD", lineHeight: 1.6, marginBottom: 20 }}>
-              Answer each checkpoint one at a time to complete the module record.
+              Answer each checkpoint to complete the module record.
             </p>
-
-            {quiz.length > 0 ? (
-              <QuizCard
-                question={currentQuestion}
-                qIndex={quizIndex}
-                answers={answers}
-                setAnswers={setAnswers}
-                color={module.color}
-              />
-            ) : (
-              <div
-                style={{
-                  background: PANEL_ALT,
-                  border: "1px solid #222",
-                  borderRadius: 8,
-                  padding: 18,
-                  color: "#BDBDBD",
-                }}
-              >
-                No quiz items were found for this module.
-              </div>
-            )}
-
+            <div style={{ display: "grid", gap: 14 }}>
+              {quiz.map((question, idx) => (
+                <QuizCard
+                  key={idx}
+                  question={question}
+                  qIndex={idx}
+                  answers={answers}
+                  setAnswers={setAnswers}
+                  color={module.color}
+                />
+              ))}
+            </div>
             <div style={{ display: "flex", gap: 12, marginTop: 22, flexWrap: "wrap" }}>
               <button
                 onClick={() => {
@@ -607,51 +493,25 @@ export default function TrainingModuleShell({ module }) {
               >
                 REVIEW CONTENT
               </button>
-
-              {quizIndex > 0 && (
-                <button
-                  onClick={() => {
-                    setQuizIndex((prev) => Math.max(0, prev - 1));
-                    forceScrollTop();
-                  }}
-                  style={{
-                    background: "#121212",
-                    color: "#fff",
-                    border: "1px solid #333",
-                    borderRadius: 8,
-                    padding: "12px 16px",
-                    cursor: "pointer",
-                    fontFamily: CONDENSED,
-                    letterSpacing: 1,
-                  }}
-                >
-                  PREVIOUS QUESTION
-                </button>
-              )}
-
               <button
-                disabled={quiz.length > 0 && currentAnswer === undefined}
+                disabled={!allAnswered}
                 onClick={() => {
-                  if (quiz.length === 0 || isLastQuestion) {
-                    setSubmitted(true);
-                  } else {
-                    setQuizIndex((prev) => Math.min(quiz.length - 1, prev + 1));
-                  }
-                  forceScrollTop();
+                  setSubmitted(true)
+                  forceScrollTop()
                 }}
                 style={{
-                  background: quiz.length === 0 || currentAnswer !== undefined ? module.color : "#252525",
-                  color: quiz.length === 0 || currentAnswer !== undefined ? "#0b0b0b" : "#777",
+                  background: allAnswered ? module.color : "#252525",
+                  color: allAnswered ? "#0b0b0b" : "#777",
                   border: "none",
                   borderRadius: 8,
                   padding: "12px 16px",
-                  cursor: quiz.length === 0 || currentAnswer !== undefined ? "pointer" : "not-allowed",
+                  cursor: allAnswered ? "pointer" : "not-allowed",
                   fontFamily: CONDENSED,
                   letterSpacing: 1,
                   fontWeight: 800,
                 }}
               >
-                {quiz.length === 0 || isLastQuestion ? "COMPLETE MODULE" : "NEXT QUESTION"}
+                COMPLETE MODULE
               </button>
             </div>
           </div>

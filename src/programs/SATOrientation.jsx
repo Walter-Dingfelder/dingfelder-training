@@ -18,7 +18,7 @@ const SECTIONS = [
     id: "welcome",
     zone: "GATE",
     icon: "🏭",
-    title: "Welcome to A.I.R.O.N. Safety Training",
+    title: "Welcome to Dingfelder Industrial Campus",
     color: Y,
     slides: [
       {
@@ -657,6 +657,8 @@ export default function SATOrientation() {
     else setSlideIdx(s => s + 1);
   };
   const handlePrev = () => { if (slideIdx > 0) setSlideIdx(s => s - 1); };
+  const returnToPortal = () => { window.location.href = "/"; };
+
   const handleQuizResult = (passed) => {
     if (!passed) { setSlideIdx(0); setPhase("slides"); return; }
     setCleared(c => ({ ...c, [section.id]: true }));
@@ -724,7 +726,7 @@ export default function SATOrientation() {
       <ChevronBg color={Y} opacity={0.03} />
 
       <div style={{ background: Y, padding: "12px 24px", position: "relative", zIndex: 1 }}>
-        <span style={{ fontFamily: "'Oswald', sans-serif", fontWeight: 700, fontSize: 13, letterSpacing: 3, color: BK }}>DINGFELDER INDUSTRIAL CAMPUS — ORIENTATION COMPLETE</span>
+        <span style={{ fontFamily: "'Oswald', sans-serif", fontWeight: 700, fontSize: 13, letterSpacing: 3, color: BK }}>A.I.R.O.N. SAFETY TRAINING — ORIENTATION COMPLETE</span>
       </div>
 
       <div style={{ position: "relative", zIndex: 1, padding: "28px 22px", maxWidth: 460, margin: "0 auto" }}>
@@ -749,7 +751,9 @@ export default function SATOrientation() {
           </p>
         </div>
 
-        <button onClick={() => { setScreen("welcome"); setCleared({}); setSectionIdx(0); setSlideIdx(0); setPhase("slides"); }} style={{ marginTop: 16, width: "100%", padding: "11px", background: "transparent", border: "1px solid #3a3018", borderRadius: 3, color: "#4a4220", cursor: "pointer", fontFamily: "'Oswald', sans-serif", fontSize: 12, letterSpacing: 3 }}>RESTART FOR NEXT VISITOR</button>
+        <button onClick={returnToPortal} style={{ marginTop: 16, width: "100%", padding: "12px", background: Y, border: "none", borderRadius: 3, color: BK, cursor: "pointer", fontFamily: "'Oswald', sans-serif", fontSize: 12, fontWeight: 700, letterSpacing: 3 }}>RETURN TO MAIN PORTAL</button>
+
+        <button onClick={() => { setScreen("welcome"); setCleared({}); setSectionIdx(0); setSlideIdx(0); setPhase("slides"); }} style={{ marginTop: 12, width: "100%", padding: "11px", background: "transparent", border: "1px solid #3a3018", borderRadius: 3, color: "#4a4220", cursor: "pointer", fontFamily: "'Oswald', sans-serif", fontSize: 12, letterSpacing: 3 }}>RESTART FOR NEXT VISITOR</button>
       </div>
     </div>
   );

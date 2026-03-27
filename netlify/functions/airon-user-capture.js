@@ -1,3 +1,4 @@
+import { getStore } from '@netlify/blobs'
 import { getUser } from '@netlify/identity'
 
 function normalizeUserCaptureShape(rawCapture) {
@@ -21,83 +22,22 @@ function normalizeUserCaptureShape(rawCapture) {
   }
 }
 
-function buildUserMetadata(currentUser, capture) {
-  const safeCapture = normalizeUserCaptureShape(capture)
-  const currentMetadata = currentUser?.user_metadata || {}
-  const fullName = `${safeCapture?.profile?.firstName || ''} ${safeCapture?.profile?.lastName || ''}`.trim()
+function deriveCaptureKey(currentUser) {
+  const email = typeof currentUser?.email === 'string' ? currentUser.email.trim().toLowerCase() : ''
+  const stableId =
+    (typeof currentUser?.sub === 'string' && currentUser.sub.trim()) ||
+    (typeof currentUser?.id === 'string' && currentUser.id.trim()) ||
+    email
 
-  return {
-    ...currentMetadata,
-    airon_capture: safeCapture,
-    full_name: fullName || currentMetadata.full_name || '',
-    company_name: safeCapture?.profile?.companyName || '',
-    department_name: safeCapture?.profile?.departmentName || '',
-    role_name: safeCapture?.profile?.roleName || '',
-    employee_id: safeCapture?.profile?.employeeId || '',
-    user_type: safeCapture?.profile?.userType || 'employee',
-    accepted_terms: Boolean(safeCapture?.acceptance?.accepted),
-    accepted_terms_version: safeCapture?.acceptance?.version || '',
-    accepted_terms_at: safeCapture?.acceptance?.acceptedAt || '',
-  }
+  if (!stableId) return ''
+  return `identity/${stableId}`
 }
 
-function isUuid(value) {
-  return typeof value === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value)
+function makeStore() {
+  return getStore({ name: 'airon-user-capture', consistency: 'strong' })
 }
 
-function getIdentityContext(context) {
-  const identity = context?.clientContext?.identity || {}
-  const user = context?.clientContext?.user || {}
-
-  return {
-    identityUrl: typeof identity?.url === 'string' ? identity.url : '',
-    adminToken: typeof identity?.token === 'string' ? identity.token : '',
-    userId: typeof user?.sub === 'string' ? user.sub : '',
-  }
-}
-
-async function updateIdentityUserMetadata(context, currentUser, capture) {
-  const { identityUrl, adminToken, userId } = getIdentityContext(context)
-
-  if (!identityUrl || !adminToken) {
-    throw new Error('Identity admin context is not available in this function.')
-  }
-
-  if (!isUuid(userId)) {
-    throw new Error('Unable to resolve a valid Identity user ID for this account.')
-  }
-
-  const response = await fetch(`${identityUrl}/admin/users/${userId}`, {
-    method: 'PUT',
-    headers: {
-      Authorization: `Bearer ${adminToken}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      user_metadata: buildUserMetadata(currentUser, capture),
-    }),
-  })
-
-  let payload = null
-  try {
-    payload = await response.json()
-  } catch (error) {
-    payload = null
-  }
-
-  if (!response.ok) {
-    const errorMessage =
-      (payload && typeof payload.msg === 'string' && payload.msg) ||
-      (payload && typeof payload.error === 'string' && payload.error) ||
-      (payload && typeof payload.message === 'string' && payload.message) ||
-      `Identity admin update failed with status ${response.status}.`
-    throw new Error(errorMessage)
-  }
-
-  return payload?.data || payload || {}
-}
-
-export default async (req, context) => {
+export default async (req) => {
   const currentUser = await getUser()
 
   if (!currentUser) {
@@ -107,10 +47,21 @@ export default async (req, context) => {
     })
   }
 
+  const key = deriveCaptureKey(currentUser)
+  if (!key) {
+    return new Response(JSON.stringify({ error: 'Unable to resolve a durable key for this account.' }), {
+      status: 500,
+      headers: { 'Content-Type': 'application/json' },
+    })
+  }
+
+  const store = makeStore()
+
   if (req.method === 'GET') {
+    const entry = await store.get(key, { type: 'json', consistency: 'strong' })
     return Response.json({
-      capture: normalizeUserCaptureShape(currentUser?.user_metadata?.airon_capture),
-      userMetadata: currentUser?.user_metadata || {},
+      capture: normalizeUserCaptureShape(entry?.capture) || normalizeUserCaptureShape(currentUser?.user_metadata?.airon_capture),
+      key,
     })
   }
 
@@ -132,17 +83,29 @@ export default async (req, context) => {
       })
     }
 
-    const updatedUser = await updateIdentityUserMetadata(context, currentUser, capture)
+    const entry = {
+      version: 1,
+      account: {
+        email: typeof currentUser?.email === 'string' ? currentUser.email : '',
+        id: typeof currentUser?.id === 'string' ? currentUser.id : '',
+        sub: typeof currentUser?.sub === 'string' ? currentUser.sub : '',
+      },
+      capture,
+      updatedAt: new Date().toISOString(),
+    }
+
+    await store.setJSON(key, entry)
 
     return Response.json({
-      capture: normalizeUserCaptureShape(updatedUser?.user_metadata?.airon_capture) || capture,
-      userMetadata: updatedUser?.user_metadata || {},
+      capture,
+      key,
+      savedAt: entry.updatedAt,
     })
   } catch (error) {
     return new Response(
       JSON.stringify({
         error:
-          (typeof error?.message === 'string' && error.message) ||
+          (typeof error?.message === 'string' && error.message.trim()) ||
           'Unable to save your account record right now.',
       }),
       {

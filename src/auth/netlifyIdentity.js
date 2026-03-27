@@ -34,17 +34,73 @@ export function getUserCaptureFromIdentityUser(user) {
   return normalizeUserCaptureShape(user?.user_metadata?.airon_capture)
 }
 
-export async function loadCurrentUserCaptureNetlifyIdentity(user) {
+
+async function getAccessTokenFromIdentityUser(user) {
+  if (!user) return ''
+  if (typeof user?.token?.access_token === 'string' && user.token.access_token) return user.token.access_token
+  if (typeof user?.jwt === 'function') {
+    try {
+      const token = await user.jwt()
+      if (typeof token === 'string' && token) return token
+    } catch (error) {
+      // ignore token read failure and fall back to cookie-auth if available
+    }
+  }
+  return ''
+}
+
+async function callUserCaptureFunction(method, user, capture) {
+  const currentUser = user || await getUser()
+  const token = await getAccessTokenFromIdentityUser(currentUser)
+
+  const response = await fetch('/.netlify/functions/airon-user-capture', {
+    method,
+    credentials: 'include',
+    headers: {
+      'Content-Type': 'application/json',
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
+    ...(method === 'GET' ? {} : { body: JSON.stringify({ capture }) }),
+  })
+
+  let payload = null
   try {
-    const currentUser = user || await getUser()
+    payload = await response.json()
+  } catch (error) {
+    payload = null
+  }
+
+  if (!response.ok) {
+    const serverError =
+      (payload && typeof payload.error === 'string' && payload.error.trim()) ||
+      `Unable to save your account record right now.`
+    throw new Error(serverError)
+  }
+
+  return payload || {}
+}
+
+export async function loadCurrentUserCaptureNetlifyIdentity(user) {
+  const currentUser = user || await getUser().catch(() => null)
+
+  if (!currentUser) {
+    return {
+      user: null,
+      capture: null,
+      message: '',
+      error: '',
+    }
+  }
+
+  try {
+    const payload = await callUserCaptureFunction('GET', currentUser)
     return {
       user: currentUser,
-      capture: getUserCaptureFromIdentityUser(currentUser),
+      capture: normalizeUserCaptureShape(payload?.capture) || getUserCaptureFromIdentityUser(currentUser),
       message: '',
       error: '',
     }
   } catch (error) {
-    const currentUser = await getUser().catch(() => null)
     return {
       user: currentUser,
       capture: getUserCaptureFromIdentityUser(currentUser),
@@ -55,44 +111,26 @@ export async function loadCurrentUserCaptureNetlifyIdentity(user) {
 }
 
 export async function persistUserCaptureNetlifyIdentity(user, capture) {
-  try {
-    const currentUser = user || await getUser()
+  const currentUser = user || await getUser().catch(() => null)
 
-    if (!currentUser || typeof currentUser.update !== 'function') {
-      return {
-        user: currentUser,
-        capture,
-        message: '',
-        error: 'Unable to save your account record right now.',
-      }
-    }
-
-    const fullName = `${capture?.profile?.firstName || ''} ${capture?.profile?.lastName || ''}`.trim()
-
-    const updatedUser = await currentUser.update({
-      data: {
-        ...(currentUser.user_metadata || {}),
-        airon_capture: capture,
-        full_name: fullName || currentUser?.user_metadata?.full_name || '',
-        company_name: capture?.profile?.companyName || '',
-        department_name: capture?.profile?.departmentName || '',
-        role_name: capture?.profile?.roleName || '',
-        employee_id: capture?.profile?.employeeId || '',
-        user_type: capture?.profile?.userType || 'employee',
-        accepted_terms: Boolean(capture?.acceptance?.accepted),
-        accepted_terms_version: capture?.acceptance?.version || '',
-        accepted_terms_at: capture?.acceptance?.acceptedAt || '',
-      },
-    })
-
+  if (!currentUser) {
     return {
-      user: updatedUser,
-      capture: getUserCaptureFromIdentityUser(updatedUser) || normalizeUserCaptureShape(capture),
+      user: null,
+      capture: normalizeUserCaptureShape(capture),
+      message: '',
+      error: 'Unable to save your account record right now.',
+    }
+  }
+
+  try {
+    const payload = await callUserCaptureFunction('PUT', currentUser, normalizeUserCaptureShape(capture))
+    return {
+      user: currentUser,
+      capture: normalizeUserCaptureShape(payload?.capture) || normalizeUserCaptureShape(capture),
       message: 'Saved-record setup synced to your A.I.R.O.N. account.',
       error: '',
     }
   } catch (error) {
-    const currentUser = await getUser().catch(() => null)
     return {
       user: currentUser,
       capture: normalizeUserCaptureShape(capture),

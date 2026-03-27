@@ -78,6 +78,29 @@ function getPortalContext(locationState) {
 }
 
 
+
+function normalizeQuizItem(item) {
+  const prompt =
+    typeof item?.q === "string" && item.q.trim().length
+      ? item.q
+      : typeof item?.question === "string" && item.question.trim().length
+      ? item.question
+      : "";
+
+  const options = Array.isArray(item?.options)
+    ? item.options
+    : Array.isArray(item?.choices)
+    ? item.choices
+    : [];
+
+  return {
+    ...item,
+    q: prompt,
+    options,
+    answer: typeof item?.answer === "number" ? item.answer : null,
+  };
+}
+
 function DetailList({ items, color }) {
   if (!items?.length) return null;
   return (
@@ -132,29 +155,6 @@ function Callout({ callout, color }) {
   );
 }
 
-
-
-function normalizeQuizItem(question) {
-  const prompt =
-    typeof question?.q === "string"
-      ? question.q
-      : typeof question?.question === "string"
-      ? question.question
-      : "";
-
-  const options = Array.isArray(question?.options)
-    ? question.options
-    : Array.isArray(question?.choices)
-    ? question.choices
-    : [];
-
-  return {
-    prompt,
-    options,
-    answer: typeof question?.answer === "number" ? question.answer : null,
-  };
-}
-
 function QuizCard({ question, qIndex, answers, setAnswers, color }) {
   const selected = answers[qIndex];
   return (
@@ -186,10 +186,10 @@ function QuizCard({ question, qIndex, answers, setAnswers, color }) {
           lineHeight: 1.45,
         }}
       >
-        {normalizeQuizItem(question).prompt}
+        {question.q || ""}
       </div>
       <div style={{ display: "grid", gap: 10 }}>
-        {normalizeQuizItem(question).options.map((option, idx) => {
+        {(question.options || []).map((option, idx) => {
           const active = selected === idx;
           return (
             <button
@@ -255,9 +255,9 @@ export default function TrainingModuleShell({ module }) {
     forceScrollTop();
   }, [slideIndex, submitted]);
 
-  const slides = Array.isArray(module?.slides) ? module.slides : [];
-  const quiz = Array.isArray(module?.quiz) ? module.quiz.map(normalizeQuizItem) : [];
-  const progress = slides.length > 0 ? Math.round(((slideIndex + 1) / slides.length) * 100) : 0;
+  const slides = module.slides || [];
+  const quiz = useMemo(() => (module.quiz || []).map(normalizeQuizItem), [module.quiz]);
+  const progress = Math.round(((slideIndex + 1) / slides.length) * 100);
   const allAnswered = quiz.every((_, idx) => answers[idx] !== undefined);
   const score = useMemo(
     () => quiz.reduce((sum, q, idx) => sum + (answers[idx] === q.answer ? 1 : 0), 0),
@@ -441,7 +441,7 @@ export default function TrainingModuleShell({ module }) {
               ← BACK TO PORTAL
             </button>
             <div style={{ color: module.color, fontFamily: MONO, fontSize: 12 }}>
-              KNOWLEDGE CHECK — {module.quiz.length} QUESTIONS
+              KNOWLEDGE CHECK — {quiz.length} QUESTIONS
             </div>
           </div>
           <div

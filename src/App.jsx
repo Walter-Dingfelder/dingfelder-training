@@ -2,7 +2,7 @@
 import { Routes, Route, useNavigate, useLocation } from 'react-router-dom'
 import { useState, useEffect, useMemo } from 'react'
 import aironSplash from './assets/airon-splash.png'
-import { bootstrapNetlifyIdentity, signOutNetlifyIdentity } from './auth/netlifyIdentity.js'
+import { bootstrapNetlifyIdentity, signInNetlifyIdentity, signOutNetlifyIdentity } from './auth/netlifyIdentity.js'
 
 // ─── Training Programs ────────────────────────────────────────────────────────
 import LOTOFoundry     from './programs/LOTOFoundry.jsx'
@@ -871,35 +871,6 @@ const CATEGORY_FILTERS = [
   { key: 'hearing-conservation', label: 'Hearing Conservation / Noise Exposure' },
   { key: 'medical', label: 'Medical' },
 ]
-
-
-const GROUPABLE_CATEGORY_KEYS = CATEGORY_FILTERS
-  .map(filter => filter.key)
-  .filter(key => key !== 'all' && key !== 'campus')
-
-function splitProgramsBySpecificity(programs, activeCategory) {
-  if (activeCategory === 'all' || activeCategory === 'campus') {
-    return { specific: programs, common: [] }
-  }
-
-  const specific = []
-  const common = []
-
-  programs.forEach(prog => {
-    const categories = getProgramCategories(prog.path)
-    const otherRecognizedCategories = categories.filter(
-      key => key !== activeCategory && key !== 'campus' && GROUPABLE_CATEGORY_KEYS.includes(key)
-    )
-
-    if (otherRecognizedCategories.length === 0) {
-      specific.push(prog)
-    } else {
-      common.push(prog)
-    }
-  })
-
-  return { specific, common }
-}
 
 const TYPE_FILTERS = [
   { key: 'all', label: 'All Types' },
@@ -1837,15 +1808,1071 @@ function AIRONLanding() {
   )
 }
 
-function PortalHome({ authState, onSignOut }) {
+
+const USER_CAPTURE_VERSION = 'AIRON-TRAINING-USE-AND-RECORD-v1'
+const USER_CAPTURE_STORAGE_PREFIX = 'airon.userCapture.'
+const VALID_CATEGORY_FILTER_KEYS = new Set(CATEGORY_FILTERS.map(filter => filter.key).filter(key => key !== 'all'))
+
+function getUserCaptureStorageKey(user) {
+  const rawIdentity = `${user?.id || user?.email || ''}`.trim().toLowerCase()
+  return rawIdentity ? `${USER_CAPTURE_STORAGE_PREFIX}${rawIdentity}` : null
+}
+
+function getEmptyUserCapture() {
+  return {
+    acceptance: {
+      accepted: false,
+      version: USER_CAPTURE_VERSION,
+      acceptedAt: '',
+    },
+    profile: {
+      firstName: '',
+      lastName: '',
+      companyName: '',
+      departmentName: '',
+      roleName: '',
+      employeeId: '',
+      userType: 'employee',
+    },
+  }
+}
+
+function loadUserCapture(user) {
+  const empty = getEmptyUserCapture()
+  if (typeof window === 'undefined') return empty
+  const key = getUserCaptureStorageKey(user)
+  if (!key) return empty
+
+  try {
+    const parsed = JSON.parse(window.localStorage.getItem(key) || '{}')
+    return {
+      acceptance: {
+        ...empty.acceptance,
+        ...(parsed.acceptance || {}),
+      },
+      profile: {
+        ...empty.profile,
+        ...(parsed.profile || {}),
+      },
+    }
+  } catch {
+    return empty
+  }
+}
+
+function saveUserCapture(user, nextPartial) {
+  const current = loadUserCapture(user)
+  const merged = {
+    acceptance: {
+      ...current.acceptance,
+      ...(nextPartial.acceptance || {}),
+    },
+    profile: {
+      ...current.profile,
+      ...(nextPartial.profile || {}),
+    },
+  }
+
+  if (typeof window !== 'undefined') {
+    const key = getUserCaptureStorageKey(user)
+    if (key) {
+      window.localStorage.setItem(key, JSON.stringify(merged))
+    }
+  }
+
+  return merged
+}
+
+function hasAcceptedUserCapture(capture) {
+  return Boolean(capture?.acceptance?.accepted && capture?.acceptance?.version === USER_CAPTURE_VERSION)
+}
+
+function hasCompletedUserProfile(profile) {
+  return Boolean(
+    profile?.firstName?.trim() &&
+    profile?.lastName?.trim() &&
+    profile?.roleName?.trim() &&
+    profile?.userType?.trim()
+  )
+}
+
+function isUserCaptureComplete(capture) {
+  return hasAcceptedUserCapture(capture) && hasCompletedUserProfile(capture?.profile || {})
+}
+
+function splitProgramsForCategory(programs, selectedCategory) {
+  if (!selectedCategory || selectedCategory === 'all') {
+    return { specific: programs, common: [] }
+  }
+
+  return programs.reduce((acc, prog) => {
+    const tags = getProgramCategories(prog.path)
+    const sharedTags = tags.filter(tag => tag !== selectedCategory && tag !== 'campus' && VALID_CATEGORY_FILTER_KEYS.has(tag))
+    if (sharedTags.length > 0) {
+      acc.common.push(prog)
+    } else {
+      acc.specific.push(prog)
+    }
+    return acc
+  }, { specific: [], common: [] })
+}
+
+function HeaderActionButton({ children, onClick, accent = 'neutral', type = 'button' }) {
+  const palette = accent === 'primary'
+    ? {
+        border: '1px solid rgba(255,209,0,0.35)',
+        background: 'rgba(255,209,0,0.08)',
+        color: '#FFD100',
+      }
+    : accent === 'success'
+      ? {
+          border: '1px solid rgba(34,204,102,0.35)',
+          background: 'rgba(34,204,102,0.08)',
+          color: '#9DFFBC',
+        }
+      : {
+          border: '1px solid rgba(255,255,255,0.12)',
+          background: '#101010',
+          color: '#E6E6E6',
+        }
+
+  return (
+    <button
+      type={type}
+      onClick={onClick}
+      style={{
+        appearance: 'none',
+        border: palette.border,
+        background: palette.background,
+        color: palette.color,
+        borderRadius: 10,
+        padding: '9px 12px',
+        fontFamily: "'IBM Plex Mono', monospace",
+        fontSize: 11,
+        letterSpacing: 0.5,
+        cursor: 'pointer',
+        whiteSpace: 'nowrap',
+      }}
+    >
+      {children}
+    </button>
+  )
+}
+
+function SignInPanel({
+  open,
+  email,
+  password,
+  busy,
+  error,
+  onEmailChange,
+  onPasswordChange,
+  onClose,
+  onSubmit,
+}) {
+  if (!open) return null
+
+  return (
+    <div style={{
+      position: 'fixed',
+      inset: 0,
+      background: 'rgba(0,0,0,0.74)',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: 24,
+      zIndex: 2000,
+    }}>
+      <div style={{
+        width: '100%',
+        maxWidth: 460,
+        borderRadius: 18,
+        border: '1px solid rgba(255,209,0,0.22)',
+        background: '#0D0D0D',
+        boxShadow: '0 18px 60px rgba(0,0,0,0.45)',
+        overflow: 'hidden',
+      }}>
+        <div style={{
+          padding: '18px 20px 14px',
+          borderBottom: '1px solid rgba(255,255,255,0.08)',
+          background: 'linear-gradient(180deg, rgba(255,209,0,0.06), rgba(255,209,0,0.00))',
+        }}>
+          <div style={{
+            color: '#FFD100',
+            fontFamily: "'IBM Plex Mono', monospace",
+            fontSize: 11,
+            letterSpacing: 2,
+            textTransform: 'uppercase',
+            marginBottom: 8,
+          }}>
+            Sign in
+          </div>
+          <div style={{
+            color: '#FFFFFF',
+            fontFamily: "'Barlow Condensed', sans-serif",
+            fontSize: 28,
+            lineHeight: 1,
+            fontWeight: 800,
+          }}>
+            Access your training record
+          </div>
+          <div style={{
+            color: '#A0A0A0',
+            fontSize: 13,
+            lineHeight: 1.6,
+            marginTop: 10,
+            maxWidth: 380,
+          }}>
+            Testing remains open without login. Sign in when you want your saved record, certificates, and future reports tied to your account.
+          </div>
+        </div>
+
+        <form onSubmit={onSubmit} style={{ padding: 20 }}>
+          <label style={{ display: 'block', marginBottom: 14 }}>
+            <div style={{
+              color: '#BEBEBE',
+              fontFamily: "'IBM Plex Mono', monospace",
+              fontSize: 11,
+              letterSpacing: 1.5,
+              textTransform: 'uppercase',
+              marginBottom: 8,
+            }}>
+              Email
+            </div>
+            <input
+              type="email"
+              value={email}
+              onChange={event => onEmailChange(event.target.value)}
+              autoComplete="email"
+              required
+              style={{
+                width: '100%',
+                boxSizing: 'border-box',
+                borderRadius: 10,
+                border: '1px solid rgba(255,255,255,0.12)',
+                background: '#141414',
+                color: '#FFFFFF',
+                padding: '12px 14px',
+                fontSize: 14,
+                outline: 'none',
+              }}
+            />
+          </label>
+
+          <label style={{ display: 'block', marginBottom: 10 }}>
+            <div style={{
+              color: '#BEBEBE',
+              fontFamily: "'IBM Plex Mono', monospace",
+              fontSize: 11,
+              letterSpacing: 1.5,
+              textTransform: 'uppercase',
+              marginBottom: 8,
+            }}>
+              Password
+            </div>
+            <input
+              type="password"
+              value={password}
+              onChange={event => onPasswordChange(event.target.value)}
+              autoComplete="current-password"
+              required
+              style={{
+                width: '100%',
+                boxSizing: 'border-box',
+                borderRadius: 10,
+                border: '1px solid rgba(255,255,255,0.12)',
+                background: '#141414',
+                color: '#FFFFFF',
+                padding: '12px 14px',
+                fontSize: 14,
+                outline: 'none',
+              }}
+            />
+          </label>
+
+          <div style={{
+            color: '#7E7E7E',
+            fontSize: 12,
+            lineHeight: 1.6,
+            marginBottom: 12,
+          }}>
+            If your invite or recovery email already signed you in on this browser, use the Account panel to finish setup.
+          </div>
+
+          {error && (
+            <div style={{
+              marginBottom: 14,
+              borderRadius: 10,
+              border: '1px solid rgba(255,107,0,0.32)',
+              background: 'rgba(255,107,0,0.10)',
+              color: '#FFB48F',
+              padding: '10px 12px',
+              fontSize: 13,
+              lineHeight: 1.5,
+            }}>
+              {error}
+            </div>
+          )}
+
+          <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end', flexWrap: 'wrap' }}>
+            <HeaderActionButton onClick={onClose}>Close</HeaderActionButton>
+            <HeaderActionButton type="submit" accent="primary">
+              {busy ? 'Signing In…' : 'Sign In'}
+            </HeaderActionButton>
+          </div>
+        </form>
+      </div>
+    </div>
+  )
+}
+
+function AccountPanel({ open, authState, captureState, onClose, onOpenSignIn, onOpenSetup }) {
+  if (!open) return null
+
+  const privacyText = 'Your information is used only to create and maintain your training record, save test results, retain certificates, and send training-related notices. We do not sell your data, rent your data, or use it for advertising.'
+  const accepted = hasAcceptedUserCapture(captureState)
+  const profileComplete = hasCompletedUserProfile(captureState?.profile || {})
+  const setupComplete = isUserCaptureComplete(captureState)
+
+  return (
+    <div style={{
+      position: 'fixed',
+      inset: 0,
+      background: 'rgba(0,0,0,0.74)',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: 24,
+      zIndex: 1900,
+    }}>
+      <div style={{
+        width: '100%',
+        maxWidth: 760,
+        borderRadius: 18,
+        border: '1px solid rgba(255,209,0,0.18)',
+        background: '#0D0D0D',
+        boxShadow: '0 18px 60px rgba(0,0,0,0.45)',
+        overflow: 'hidden',
+      }}>
+        <div style={{
+          padding: '18px 20px 14px',
+          borderBottom: '1px solid rgba(255,255,255,0.08)',
+          background: 'linear-gradient(180deg, rgba(255,209,0,0.06), rgba(255,209,0,0.00))',
+        }}>
+          <div style={{
+            color: '#FFD100',
+            fontFamily: "'IBM Plex Mono', monospace",
+            fontSize: 11,
+            letterSpacing: 2,
+            textTransform: 'uppercase',
+            marginBottom: 8,
+          }}>
+            Account and privacy
+          </div>
+          <div style={{
+            color: '#FFFFFF',
+            fontFamily: "'Barlow Condensed', sans-serif",
+            fontSize: 28,
+            lineHeight: 1,
+            fontWeight: 800,
+            marginBottom: 10,
+          }}>
+            {authState.user ? (setupComplete ? 'Saved record ready' : 'Finish your saved record setup') : 'Testing remains open without login'}
+          </div>
+          <div style={{
+            color: '#A4A4A4',
+            fontSize: 14,
+            lineHeight: 1.65,
+            maxWidth: 640,
+          }}>
+            {authState.user
+              ? 'Signed-in users can retain accepted terms, profile information, future scores, and certificates. Complete setup once, then use the same account for all retained records.'
+              : 'You can keep testing without login while the user system is being built. Sign in when you want the portal to attach future attempts, reports, and certificates to a saved personal record.'}
+          </div>
+        </div>
+
+        <div style={{ padding: 20 }}>
+          <div style={{
+            display: 'grid',
+            gap: 14,
+            gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+          }}>
+            <div style={{
+              padding: '14px 15px',
+              borderRadius: 12,
+              background: '#111111',
+              border: '1px solid rgba(255,255,255,0.08)',
+            }}>
+              <div style={{
+                color: '#BEBEBE',
+                fontFamily: "'IBM Plex Mono', monospace",
+                fontSize: 11,
+                letterSpacing: 1.5,
+                textTransform: 'uppercase',
+                marginBottom: 8,
+              }}>
+                Account status
+              </div>
+              <div style={{ color: '#FFFFFF', fontSize: 15, fontWeight: 700, marginBottom: 8 }}>
+                {authState.user ? 'Signed in' : 'Guest testing mode'}
+              </div>
+              <div style={{ color: '#8C8C8C', fontSize: 13, lineHeight: 1.6 }}>
+                {authState.user?.email || 'No saved identity is attached to this browser session yet.'}
+              </div>
+            </div>
+
+            <div style={{
+              padding: '14px 15px',
+              borderRadius: 12,
+              background: '#111111',
+              border: '1px solid rgba(255,255,255,0.08)',
+            }}>
+              <div style={{
+                color: '#BEBEBE',
+                fontFamily: "'IBM Plex Mono', monospace",
+                fontSize: 11,
+                letterSpacing: 1.5,
+                textTransform: 'uppercase',
+                marginBottom: 8,
+              }}>
+                Setup status
+              </div>
+              <div style={{ color: '#FFFFFF', fontSize: 15, fontWeight: 700, marginBottom: 8 }}>
+                {authState.user ? (setupComplete ? 'Ready for retained records' : 'Setup required') : 'Not started'}
+              </div>
+              <div style={{ color: '#8C8C8C', fontSize: 13, lineHeight: 1.6 }}>
+                Acceptance: {accepted ? 'Accepted' : 'Pending'} · Profile: {profileComplete ? 'Complete' : 'Pending'}
+              </div>
+            </div>
+
+            <div style={{
+              padding: '14px 15px',
+              borderRadius: 12,
+              background: '#111111',
+              border: '1px solid rgba(255,255,255,0.08)',
+            }}>
+              <div style={{
+                color: '#BEBEBE',
+                fontFamily: "'IBM Plex Mono', monospace",
+                fontSize: 11,
+                letterSpacing: 1.5,
+                textTransform: 'uppercase',
+                marginBottom: 8,
+              }}>
+                Saved record path
+              </div>
+              <div style={{ color: '#FFFFFF', fontSize: 13, lineHeight: 1.7 }}>
+                Logged-in users will be the retained path for future scores, certificates, reports, and training history. Guest testing stays open until enforcement is turned on.
+              </div>
+            </div>
+          </div>
+
+          <div style={{
+            marginTop: 14,
+            padding: '12px 14px',
+            borderRadius: 12,
+            background: 'rgba(34,204,102,0.08)',
+            border: '1px solid rgba(34,204,102,0.18)',
+            color: '#A7F4BE',
+            fontSize: 13,
+            lineHeight: 1.65,
+          }}>
+            {privacyText}
+          </div>
+
+          <div style={{
+            marginTop: 16,
+            display: 'flex',
+            gap: 10,
+            justifyContent: 'flex-end',
+            flexWrap: 'wrap',
+          }}>
+            {!authState.user && (
+              <HeaderActionButton accent="primary" onClick={onOpenSignIn}>
+                Sign In
+              </HeaderActionButton>
+            )}
+            {authState.user && !setupComplete && (
+              <HeaderActionButton accent="success" onClick={onOpenSetup}>
+                Complete Setup
+              </HeaderActionButton>
+            )}
+            <HeaderActionButton onClick={onClose}>
+              Close
+            </HeaderActionButton>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function UserCaptureGate({
+  open,
+  authState,
+  captureState,
+  onClose,
+  onSave,
+}) {
+  const [step, setStep] = useState('acceptance')
+  const [acceptChecked, setAcceptChecked] = useState(false)
+  const [profile, setProfile] = useState(() => captureState?.profile || getEmptyUserCapture().profile)
+
+  useEffect(() => {
+    if (!open) return
+    setProfile(captureState?.profile || getEmptyUserCapture().profile)
+    if (hasAcceptedUserCapture(captureState)) {
+      setAcceptChecked(true)
+      setStep(hasCompletedUserProfile(captureState?.profile || {}) ? 'complete' : 'profile')
+    } else {
+      setAcceptChecked(false)
+      setStep('acceptance')
+    }
+  }, [open, captureState])
+
+  if (!open || !authState.user) return null
+
+  const privacyBulletStyle = {
+    color: '#C9C9C9',
+    fontSize: 13,
+    lineHeight: 1.7,
+    margin: 0,
+  }
+
+  const handleProfileChange = (field, value) => {
+    setProfile(prev => ({ ...prev, [field]: value }))
+  }
+
+  const saveAcceptanceAndContinue = () => {
+    const next = onSave({
+      acceptance: {
+        accepted: true,
+        version: USER_CAPTURE_VERSION,
+        acceptedAt: new Date().toISOString(),
+      },
+    })
+    setAcceptChecked(true)
+    setStep(hasCompletedUserProfile(next.profile || {}) ? 'complete' : 'profile')
+  }
+
+  const saveProfileAndComplete = () => {
+    onSave({
+      profile,
+    })
+    setStep('complete')
+  }
+
+  const profileReady = hasCompletedUserProfile(profile)
+
+  return (
+    <div style={{
+      position: 'fixed',
+      inset: 0,
+      background: 'rgba(0,0,0,0.82)',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: 24,
+      zIndex: 2100,
+    }}>
+      <div style={{
+        width: '100%',
+        maxWidth: 840,
+        maxHeight: '88vh',
+        overflow: 'auto',
+        borderRadius: 20,
+        border: '1px solid rgba(255,209,0,0.20)',
+        background: '#090909',
+        boxShadow: '0 18px 60px rgba(0,0,0,0.52)',
+      }}>
+        <div style={{
+          padding: '20px 22px 16px',
+          borderBottom: '1px solid rgba(255,255,255,0.08)',
+          background: 'linear-gradient(180deg, rgba(255,209,0,0.06), rgba(255,209,0,0.00))',
+        }}>
+          <div style={{
+            color: '#FFD100',
+            fontFamily: "'IBM Plex Mono', monospace",
+            fontSize: 11,
+            letterSpacing: 2,
+            textTransform: 'uppercase',
+            marginBottom: 8,
+          }}>
+            Saved record setup
+          </div>
+          <div style={{
+            color: '#FFFFFF',
+            fontFamily: "'Barlow Condensed', sans-serif",
+            fontSize: 34,
+            lineHeight: 1,
+            fontWeight: 800,
+            marginBottom: 10,
+          }}>
+            Finish your A.I.R.O.N. training account
+          </div>
+          <div style={{
+            color: '#A4A4A4',
+            fontSize: 14,
+            lineHeight: 1.65,
+            maxWidth: 680,
+          }}>
+            Before saved-record training begins, review the training-use acceptance, acknowledge the OSHA notice, and complete your basic profile.
+          </div>
+        </div>
+
+        <div style={{ padding: 22 }}>
+          <div style={{
+            display: 'flex',
+            gap: 10,
+            flexWrap: 'wrap',
+            marginBottom: 18,
+          }}>
+            {[
+              ['acceptance', 'Acceptance'],
+              ['profile', 'Profile'],
+              ['complete', 'Ready'],
+            ].map(([key, label]) => {
+              const active = step === key
+              return (
+                <div
+                  key={key}
+                  style={{
+                    borderRadius: 999,
+                    padding: '8px 12px',
+                    border: `1px solid ${active ? 'rgba(255,209,0,0.38)' : 'rgba(255,255,255,0.10)'}`,
+                    background: active ? 'rgba(255,209,0,0.08)' : '#101010',
+                    color: active ? '#FFD100' : '#8D8D8D',
+                    fontFamily: "'IBM Plex Mono', monospace",
+                    fontSize: 11,
+                    letterSpacing: 1.2,
+                    textTransform: 'uppercase',
+                  }}
+                >
+                  {label}
+                </div>
+              )
+            })}
+          </div>
+
+          {step === 'acceptance' && (
+            <div>
+              <div style={{ color: '#FFFFFF', fontFamily: "'Barlow Condensed', sans-serif", fontSize: 28, fontWeight: 800, marginBottom: 12 }}>
+                A.I.R.O.N. Training Use and Record Acceptance
+              </div>
+              <div style={{
+                border: '1px solid rgba(255,255,255,0.08)',
+                borderRadius: 14,
+                background: '#101010',
+                padding: 18,
+                display: 'grid',
+                gap: 14,
+              }}>
+                <div>
+                  <div style={{ color: '#FFD100', fontFamily: "'IBM Plex Mono', monospace", fontSize: 11, letterSpacing: 1.5, textTransform: 'uppercase', marginBottom: 8 }}>
+                    Training use
+                  </div>
+                  <p style={privacyBulletStyle}>
+                    A.I.R.O.N. Safety Training is provided for serious industrial training, hazard awareness, procedure support, knowledge checks, retained training records, and related reporting. Completion of a module here does not by itself guarantee qualification, job authorization, or certification.
+                  </p>
+                </div>
+
+                <div>
+                  <div style={{ color: '#FFD100', fontFamily: "'IBM Plex Mono', monospace", fontSize: 11, letterSpacing: 1.5, textTransform: 'uppercase', marginBottom: 8 }}>
+                    OSHA notice
+                  </div>
+                  <p style={privacyBulletStyle}>
+                    Dingfelder Enterprises does not represent this platform as OSHA-approved, OSHA-endorsed, or OSHA-certified. Completion of training here does not make you “OSHA certified.” Where OSHA standards require employer-specific training, hands-on qualification, retraining, or documentation, those obligations remain with the employer.
+                  </p>
+                </div>
+
+                <div>
+                  <div style={{ color: '#FFD100', fontFamily: "'IBM Plex Mono', monospace", fontSize: 11, letterSpacing: 1.5, textTransform: 'uppercase', marginBottom: 8 }}>
+                    Data and records
+                  </div>
+                  <p style={privacyBulletStyle}>
+                    If you use saved-record features, your information may be used only to create and maintain your training profile, record your test attempts and completion status, retain certificates and training history, send training-related notices or reports, and support employer-assigned reporting where applicable. We do not sell your data, rent your data, or use your data for advertising.
+                  </p>
+                </div>
+
+                <div>
+                  <div style={{ color: '#FFD100', fontFamily: "'IBM Plex Mono', monospace", fontSize: 11, letterSpacing: 1.5, textTransform: 'uppercase', marginBottom: 8 }}>
+                    Employer-sponsored training
+                  </div>
+                  <p style={privacyBulletStyle}>
+                    If you are completing training as part of an employer-sponsored or employer-assigned program, your employer or authorized training administrator may receive your assigned training status, completion history, scores, certificates, and related training records.
+                  </p>
+                </div>
+              </div>
+
+              <label style={{
+                display: 'flex',
+                gap: 10,
+                alignItems: 'flex-start',
+                marginTop: 16,
+                color: '#D8D8D8',
+                fontSize: 14,
+                lineHeight: 1.6,
+              }}>
+                <input
+                  type="checkbox"
+                  checked={acceptChecked}
+                  onChange={event => setAcceptChecked(event.target.checked)}
+                  style={{ marginTop: 4 }}
+                />
+                <span>
+                  I have read and accept the A.I.R.O.N. Training Use and Record Acceptance, including the OSHA Notice, and I understand that this system does not make me OSHA certified and may be used only to maintain my training record, save results, retain certificates, and provide training-related reporting or notices.
+                </span>
+              </label>
+
+              <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end', flexWrap: 'wrap', marginTop: 18 }}>
+                <HeaderActionButton onClick={onClose}>Close</HeaderActionButton>
+                <button
+                  type="button"
+                  onClick={saveAcceptanceAndContinue}
+                  disabled={!acceptChecked}
+                  style={{
+                    appearance: 'none',
+                    border: '1px solid rgba(255,209,0,0.35)',
+                    background: acceptChecked ? 'rgba(255,209,0,0.12)' : '#252525',
+                    color: acceptChecked ? '#FFD100' : '#777',
+                    borderRadius: 10,
+                    padding: '9px 12px',
+                    fontFamily: "'IBM Plex Mono', monospace",
+                    fontSize: 11,
+                    letterSpacing: 0.5,
+                    cursor: acceptChecked ? 'pointer' : 'not-allowed',
+                    whiteSpace: 'nowrap',
+                  }}
+                >
+                  Accept and Continue
+                </button>
+              </div>
+            </div>
+          )}
+
+          {step === 'profile' && (
+            <div>
+              <div style={{ color: '#FFFFFF', fontFamily: "'Barlow Condensed', sans-serif", fontSize: 28, fontWeight: 800, marginBottom: 12 }}>
+                Complete your saved-record profile
+              </div>
+
+              <div style={{
+                display: 'grid',
+                gap: 14,
+                gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
+              }}>
+                {[
+                  ['firstName', 'First name', 'text'],
+                  ['lastName', 'Last name', 'text'],
+                  ['companyName', 'Company', 'text'],
+                  ['departmentName', 'Department', 'text'],
+                  ['roleName', 'Role / title', 'text'],
+                  ['employeeId', 'Employee / contractor ID', 'text'],
+                ].map(([field, label, type]) => (
+                  <label key={field} style={{ display: 'block' }}>
+                    <div style={{
+                      color: '#BEBEBE',
+                      fontFamily: "'IBM Plex Mono', monospace",
+                      fontSize: 11,
+                      letterSpacing: 1.5,
+                      textTransform: 'uppercase',
+                      marginBottom: 8,
+                    }}>
+                      {label}
+                    </div>
+                    <input
+                      type={type}
+                      value={profile[field] || ''}
+                      onChange={event => handleProfileChange(field, event.target.value)}
+                      style={{
+                        width: '100%',
+                        boxSizing: 'border-box',
+                        borderRadius: 10,
+                        border: '1px solid rgba(255,255,255,0.12)',
+                        background: '#141414',
+                        color: '#FFFFFF',
+                        padding: '12px 14px',
+                        fontSize: 14,
+                        outline: 'none',
+                      }}
+                    />
+                  </label>
+                ))}
+
+                <label style={{ display: 'block' }}>
+                  <div style={{
+                    color: '#BEBEBE',
+                    fontFamily: "'IBM Plex Mono', monospace",
+                    fontSize: 11,
+                    letterSpacing: 1.5,
+                    textTransform: 'uppercase',
+                    marginBottom: 8,
+                  }}>
+                    User type
+                  </div>
+                  <select
+                    value={profile.userType || 'employee'}
+                    onChange={event => handleProfileChange('userType', event.target.value)}
+                    style={{
+                      width: '100%',
+                      boxSizing: 'border-box',
+                      borderRadius: 10,
+                      border: '1px solid rgba(255,255,255,0.12)',
+                      background: '#141414',
+                      color: '#FFFFFF',
+                      padding: '12px 14px',
+                      fontSize: 14,
+                      outline: 'none',
+                    }}
+                  >
+                    <option value="employee">Employee</option>
+                    <option value="contractor">Contractor</option>
+                    <option value="visitor">Visitor</option>
+                    <option value="student">Student</option>
+                    <option value="admin">Admin</option>
+                  </select>
+                </label>
+              </div>
+
+              <div style={{
+                marginTop: 14,
+                color: '#8D8D8D',
+                fontSize: 13,
+                lineHeight: 1.65,
+              }}>
+                Minimum required fields for the saved-record path are first name, last name, role/title, and user type. Company, department, and employee ID can be added now or updated later.
+              </div>
+
+              <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end', flexWrap: 'wrap', marginTop: 18 }}>
+                <HeaderActionButton onClick={() => setStep('acceptance')}>Back</HeaderActionButton>
+                <button
+                  type="button"
+                  onClick={saveProfileAndComplete}
+                  disabled={!profileReady}
+                  style={{
+                    appearance: 'none',
+                    border: '1px solid rgba(34,204,102,0.35)',
+                    background: profileReady ? 'rgba(34,204,102,0.12)' : '#252525',
+                    color: profileReady ? '#9DFFBC' : '#777',
+                    borderRadius: 10,
+                    padding: '9px 12px',
+                    fontFamily: "'IBM Plex Mono', monospace",
+                    fontSize: 11,
+                    letterSpacing: 0.5,
+                    cursor: profileReady ? 'pointer' : 'not-allowed',
+                    whiteSpace: 'nowrap',
+                  }}
+                >
+                  Save Profile
+                </button>
+              </div>
+            </div>
+          )}
+
+          {step === 'complete' && (
+            <div>
+              <div style={{ color: '#FFFFFF', fontFamily: "'Barlow Condensed', sans-serif", fontSize: 28, fontWeight: 800, marginBottom: 12 }}>
+                Saved-record path is ready
+              </div>
+              <div style={{
+                border: '1px solid rgba(34,204,102,0.20)',
+                borderRadius: 14,
+                background: 'rgba(34,204,102,0.06)',
+                padding: 18,
+                color: '#C8F8D6',
+                fontSize: 14,
+                lineHeight: 1.7,
+              }}>
+                Your account is now set up for retained A.I.R.O.N. training records. As the user system goes live, this path will hold your accepted terms, profile information, future scores, and certificates.
+              </div>
+
+              <div style={{
+                display: 'grid',
+                gap: 12,
+                gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+                marginTop: 16,
+              }}>
+                <div style={{ padding: '14px 15px', borderRadius: 12, background: '#111111', border: '1px solid rgba(255,255,255,0.08)' }}>
+                  <div style={{ color: '#BEBEBE', fontFamily: "'IBM Plex Mono', monospace", fontSize: 11, letterSpacing: 1.5, textTransform: 'uppercase', marginBottom: 8 }}>
+                    Account
+                  </div>
+                  <div style={{ color: '#FFFFFF', fontSize: 14, fontWeight: 700 }}>{authState.user?.email}</div>
+                </div>
+                <div style={{ padding: '14px 15px', borderRadius: 12, background: '#111111', border: '1px solid rgba(255,255,255,0.08)' }}>
+                  <div style={{ color: '#BEBEBE', fontFamily: "'IBM Plex Mono', monospace", fontSize: 11, letterSpacing: 1.5, textTransform: 'uppercase', marginBottom: 8 }}>
+                    Profile
+                  </div>
+                  <div style={{ color: '#FFFFFF', fontSize: 14, fontWeight: 700 }}>
+                    {profile.firstName || captureState?.profile?.firstName || 'First'} {profile.lastName || captureState?.profile?.lastName || 'Last'}
+                  </div>
+                  <div style={{ color: '#8C8C8C', fontSize: 13, marginTop: 6 }}>
+                    {(profile.roleName || captureState?.profile?.roleName || 'Role')} · {(profile.userType || captureState?.profile?.userType || 'employee')}
+                  </div>
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end', flexWrap: 'wrap', marginTop: 18 }}>
+                <HeaderActionButton onClick={onClose}>Close</HeaderActionButton>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function ProgramCard({ prog, onOpen }) {
+  return (
+    <div
+      onClick={onOpen}
+      style={{
+        background: '#0f0f0f',
+        border: '1px solid #1e1e1e',
+        borderTop: `3px solid ${prog.color}`,
+        borderRadius: 6,
+        padding: '18px',
+        cursor: 'pointer',
+        transition: 'all 0.15s',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 8,
+      }}
+      onMouseEnter={e => {
+        e.currentTarget.style.background = '#161616'
+        e.currentTarget.style.borderColor = `${prog.color}88`
+        e.currentTarget.style.borderTopColor = prog.color
+      }}
+      onMouseLeave={e => {
+        e.currentTarget.style.background = '#0f0f0f'
+        e.currentTarget.style.borderColor = '#1e1e1e'
+        e.currentTarget.style.borderTopColor = prog.color
+      }}
+    >
+      <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
+        <div style={{
+          width: 40, height: 40,
+          background: `${prog.color}18`,
+          border: `1px solid ${prog.color}44`,
+          borderRadius: 6,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          fontSize: 20, flexShrink: 0,
+        }}>{prog.icon}</div>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{
+            color: prog.color,
+            fontFamily: "'Barlow Condensed', sans-serif",
+            fontWeight: 800, fontSize: 16, letterSpacing: 0.3,
+            lineHeight: 1.2,
+          }}>{prog.label}</div>
+          <div style={{
+            color: '#666', fontSize: 11,
+            fontFamily: "'Barlow Condensed', sans-serif",
+            letterSpacing: 0.5, marginTop: 2,
+          }}>{prog.short}</div>
+        </div>
+      </div>
+
+      <div style={{
+        padding: '8px 10px',
+        background: '#080808',
+        borderRadius: 4,
+        display: 'flex', flexDirection: 'column', gap: 4,
+      }}>
+        <div style={{
+          color: '#777', fontSize: 11,
+          fontFamily: "'IBM Plex Mono', monospace",
+        }}>{prog.regulation}</div>
+        <div style={{ color: '#989898', fontSize: 11 }}>
+          {prog.audience}
+        </div>
+      </div>
+
+      <div style={{
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginTop: 'auto',
+      }}>
+        <span style={{
+          color: '#666', fontSize: 11,
+          fontFamily: "'IBM Plex Mono', monospace",
+        }}>~{prog.minutes} min</span>
+        <span style={{
+          color: prog.color,
+          fontFamily: "'Barlow Condensed', sans-serif",
+          fontSize: 12, letterSpacing: 2, fontWeight: 700,
+        }}>START →</span>
+      </div>
+    </div>
+  )
+}
+
+function SectionHeading({ title, subtitle }) {
+  return (
+    <div style={{ marginTop: 18, marginBottom: 12 }}>
+      <div style={{
+        color: '#FFD100',
+        fontFamily: "'IBM Plex Mono', monospace",
+        fontSize: 11,
+        letterSpacing: 2,
+        textTransform: 'uppercase',
+      }}>
+        {title}
+      </div>
+      <div style={{
+        color: '#7B7B7B',
+        fontSize: 12,
+        marginTop: 6,
+      }}>
+        {subtitle}
+      </div>
+    </div>
+  )
+}
+
+
+
+function PortalHome({ authState, onSignIn, onSignOut }) {
   const navigate = useNavigate()
   const location = useLocation()
   const [tick, setTick] = useState(0)
+  const [showSignIn, setShowSignIn] = useState(false)
+  const [showAccountPanel, setShowAccountPanel] = useState(false)
+  const [showSetupGate, setShowSetupGate] = useState(false)
+  const [loginEmail, setLoginEmail] = useState('')
+  const [loginPassword, setLoginPassword] = useState('')
+  const [loginBusy, setLoginBusy] = useState(false)
+  const [loginError, setLoginError] = useState('')
+  const [captureState, setCaptureState] = useState(() => getEmptyUserCapture())
 
   useEffect(() => {
     const t = setInterval(() => setTick(x => x + 1), 1000)
     return () => clearInterval(t)
   }, [])
+
+  useEffect(() => {
+    if (authState.user?.email) {
+      setLoginEmail(authState.user.email)
+      const nextCapture = loadUserCapture(authState.user)
+      setCaptureState(nextCapture)
+      if (!isUserCaptureComplete(nextCapture)) {
+        setShowSetupGate(true)
+      }
+    } else {
+      setCaptureState(getEmptyUserCapture())
+      setShowSetupGate(false)
+      setShowAccountPanel(false)
+    }
+  }, [authState.user])
+
+  useEffect(() => {
+    if (authState.user) {
+      setShowSignIn(false)
+      setLoginError('')
+      setLoginPassword('')
+    }
+  }, [authState.user])
 
   const blink = tick % 2 === 0
   const [categoryFilter, setCategoryFilter] = useState(() => parsePortalSearch(location.search).category)
@@ -1872,11 +2899,52 @@ function PortalHome({ authState, onSignOut }) {
     })
   }, [categoryFilter, typeFilter])
 
-  const groupedPrograms = useMemo(
-    () => splitProgramsBySpecificity(filteredPrograms, categoryFilter),
-    [filteredPrograms, categoryFilter]
-  )
+  const groupedPrograms = useMemo(() => splitProgramsForCategory(filteredPrograms, categoryFilter), [filteredPrograms, categoryFilter])
 
+  const handleSignInSubmit = async (event) => {
+    event.preventDefault()
+    setLoginBusy(true)
+    setLoginError('')
+
+    const result = await onSignIn(loginEmail, loginPassword)
+
+    if (result.error) {
+      setLoginError(result.error)
+      setLoginBusy(false)
+      return
+    }
+
+    const nextCapture = loadUserCapture(result.user)
+    setCaptureState(nextCapture)
+    setLoginBusy(false)
+    setLoginPassword('')
+    setShowSignIn(false)
+    setShowAccountPanel(true)
+    if (!isUserCaptureComplete(nextCapture)) {
+      setShowSetupGate(true)
+    }
+  }
+
+  const handleProgramOpen = (prog) => {
+    const portalSearch = buildPortalSearch(categoryFilter, typeFilter)
+    const seriesPaths = filteredPrograms.map(item => item.path)
+    savePortalContext(portalSearch, seriesPaths)
+    navigate(prog.path, {
+      state: {
+        portalSearch,
+        seriesPaths,
+      },
+    })
+  }
+
+  const handleCaptureSave = (partial) => {
+    if (!authState.user) return captureState
+    const next = saveUserCapture(authState.user, partial)
+    setCaptureState(next)
+    return next
+  }
+
+  const setupComplete = isUserCaptureComplete(captureState)
 
   return (
     <div style={{
@@ -1956,13 +3024,13 @@ function PortalHome({ authState, onSignOut }) {
                 letterSpacing: 1.5,
                 textTransform: 'uppercase',
               }}>
-                {authState.error ? 'Auth callback issue' : authState.user ? 'Identity active' : authState.ready ? 'Identity ready' : 'Identity loading'}
+                {authState.error ? 'Auth callback issue' : authState.user ? (setupComplete ? 'Saved record ready' : 'Setup required') : authState.ready ? 'Identity ready' : 'Identity loading'}
               </div>
               <div style={{
                 color: '#D4D4D4',
                 fontSize: 12,
                 lineHeight: 1.3,
-                maxWidth: 260,
+                maxWidth: 280,
                 overflow: 'hidden',
                 textOverflow: 'ellipsis',
                 whiteSpace: 'nowrap',
@@ -1970,27 +3038,21 @@ function PortalHome({ authState, onSignOut }) {
                 {authState.error || authState.user?.email || (authState.ready ? 'Invite links can now complete on-site.' : 'Checking session...')}
               </div>
             </div>
+          </div>
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+            {!authState.user && (
+              <HeaderActionButton accent="primary" onClick={() => setShowSignIn(true)}>
+                Sign In
+              </HeaderActionButton>
+            )}
+            <HeaderActionButton onClick={() => setShowAccountPanel(true)}>
+              Account
+            </HeaderActionButton>
             {authState.user && (
-              <button
-                onClick={async (event) => {
-                  event.stopPropagation()
-                  await onSignOut()
-                }}
-                style={{
-                  appearance: 'none',
-                  border: '1px solid rgba(255,255,255,0.12)',
-                  background: '#101010',
-                  color: '#E6E6E6',
-                  borderRadius: 8,
-                  padding: '7px 10px',
-                  fontFamily: "'IBM Plex Mono', monospace",
-                  fontSize: 11,
-                  cursor: 'pointer',
-                  flexShrink: 0,
-                }}
-              >
-                Sign out
-              </button>
+              <HeaderActionButton onClick={async () => { await onSignOut() }}>
+                Sign Out
+              </HeaderActionButton>
             )}
           </div>
         </div>
@@ -2021,11 +3083,10 @@ function PortalHome({ authState, onSignOut }) {
           color: '#868686',
           fontSize: 14, lineHeight: 1.7,
           marginTop: 14, marginBottom: 0,
-          maxWidth: 640,
+          maxWidth: 680,
         }}>
-          Free industrial learning sessions hosted by Dingfelder Enterprises.
-          Training environments include the Dingfelder Industrial Campus.
-          Select a module below to begin and build operational confidence before the job starts.
+          Free industrial learning sessions hosted by Dingfelder Enterprises. Training environments include the Dingfelder Industrial Campus.
+          Sign in and complete your saved-record setup to begin retaining accepted terms, profile data, future scores, and certificates under your A.I.R.O.N. account.
         </p>
 
         {(authState.message || authState.error) && (
@@ -2041,6 +3102,22 @@ function PortalHome({ authState, onSignOut }) {
             lineHeight: 1.6,
           }}>
             {authState.error || authState.message}
+          </div>
+        )}
+
+        {authState.user && !setupComplete && (
+          <div style={{
+            marginTop: 16,
+            maxWidth: 760,
+            padding: '12px 14px',
+            borderRadius: 12,
+            background: 'rgba(255,209,0,0.08)',
+            border: '1px solid rgba(255,209,0,0.24)',
+            color: '#F6DD83',
+            fontSize: 13,
+            lineHeight: 1.6,
+          }}>
+            Your account is signed in, but your saved-record setup is not complete yet. Review the acceptance policy and finish your profile before launch.
           </div>
         )}
       </div>
@@ -2071,7 +3148,6 @@ function PortalHome({ authState, onSignOut }) {
             flexWrap: 'wrap',
             gap: 8,
             paddingBottom: 4,
-            alignItems: 'stretch',
           }}>
             {CATEGORY_FILTERS.map(filter => {
               const active = categoryFilter === filter.key
@@ -2090,11 +3166,9 @@ function PortalHome({ authState, onSignOut }) {
                     fontSize: 16,
                     fontWeight: 800,
                     letterSpacing: 1,
-                    whiteSpace: 'normal',
-                    lineHeight: 1.15,
-                    minHeight: 46,
-                    flex: '0 1 auto',
+                    lineHeight: 1.1,
                     cursor: 'pointer',
+                    textAlign: 'center',
                   }}
                 >
                   {filter.label}
@@ -2126,10 +3200,7 @@ function PortalHome({ authState, onSignOut }) {
                     fontSize: 11,
                     letterSpacing: 1.2,
                     textTransform: 'uppercase',
-                    whiteSpace: 'normal',
-                    lineHeight: 1.15,
-                    minHeight: 46,
-                    flex: '0 1 auto',
+                    whiteSpace: 'nowrap',
                     cursor: 'pointer',
                   }}
                 >
@@ -2140,169 +3211,55 @@ function PortalHome({ authState, onSignOut }) {
           </div>
         </div>
 
-        {(() => {
-          const renderProgramCard = (prog, seriesPaths) => (
-            <div
-              key={prog.path}
-              onClick={() => {
-                const portalSearch = buildPortalSearch(categoryFilter, typeFilter)
-                savePortalContext(portalSearch, seriesPaths)
-                navigate(prog.path, {
-                  state: {
-                    portalSearch,
-                    seriesPaths,
-                  },
-                })
-              }}
-              style={{
-                background: '#0f0f0f',
-                border: `1px solid #1e1e1e`,
-                borderTop: `3px solid ${prog.color}`,
-                borderRadius: 6,
-                padding: '18px',
-                cursor: 'pointer',
-                transition: 'all 0.15s',
-                display: 'flex',
-                flexDirection: 'column',
-                gap: 8,
-              }}
-              onMouseEnter={e => {
-                e.currentTarget.style.background = '#161616'
-                e.currentTarget.style.borderColor = prog.color + '88'
-                e.currentTarget.style.borderTopColor = prog.color
-              }}
-              onMouseLeave={e => {
-                e.currentTarget.style.background = '#0f0f0f'
-                e.currentTarget.style.borderColor = '#1e1e1e'
-                e.currentTarget.style.borderTopColor = prog.color
-              }}
-            >
-              <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
+        {categoryFilter !== 'all' ? (
+          <>
+            {groupedPrograms.specific.length > 0 && (
+              <>
+                <SectionHeading
+                  title="Specific"
+                  subtitle="Cards written specifically for the selected environment or category."
+                />
                 <div style={{
-                  width: 40, height: 40,
-                  background: `${prog.color}18`,
-                  border: `1px solid ${prog.color}44`,
-                  borderRadius: 6,
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontSize: 20, flexShrink: 0,
-                }}>{prog.icon}</div>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{
-                    color: prog.color,
-                    fontFamily: "'Barlow Condensed', sans-serif",
-                    fontWeight: 800, fontSize: 16, letterSpacing: 0.3,
-                    lineHeight: 1.2,
-                  }}>{prog.label}</div>
-                  <div style={{
-                    color: '#666', fontSize: 11,
-                    fontFamily: "'Barlow Condensed', sans-serif",
-                    letterSpacing: 0.5, marginTop: 2,
-                  }}>{prog.short}</div>
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))',
+                  gap: 12,
+                }}>
+                  {groupedPrograms.specific.map(prog => (
+                    <ProgramCard key={prog.path} prog={prog} onOpen={() => handleProgramOpen(prog)} />
+                  ))}
                 </div>
-              </div>
+              </>
+            )}
 
-              <div style={{
-                padding: '8px 10px',
-                background: '#080808',
-                borderRadius: 4,
-                display: 'flex', flexDirection: 'column', gap: 4,
-              }}>
+            {groupedPrograms.common.length > 0 && (
+              <>
+                <SectionHeading
+                  title="Common"
+                  subtitle="Reusable cards that also apply across other environments or categories."
+                />
                 <div style={{
-                  color: '#777', fontSize: 11,
-                  fontFamily: "'IBM Plex Mono', monospace",
-                }}>{prog.regulation}</div>
-                <div style={{ color: '#989898', fontSize: 11 }}>
-                  {prog.audience}
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))',
+                  gap: 12,
+                }}>
+                  {groupedPrograms.common.map(prog => (
+                    <ProgramCard key={prog.path} prog={prog} onOpen={() => handleProgramOpen(prog)} />
+                  ))}
                 </div>
-              </div>
-
-              <div style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                marginTop: 'auto',
-              }}>
-                <span style={{
-                  color: '#666', fontSize: 11,
-                  fontFamily: "'IBM Plex Mono', monospace",
-                }}>~{prog.minutes} min</span>
-                <span style={{
-                  color: prog.color,
-                  fontFamily: "'Barlow Condensed', sans-serif",
-                  fontSize: 12, letterSpacing: 2, fontWeight: 700,
-                }}>START →</span>
-              </div>
-            </div>
-          )
-
-          const renderGrid = (items) => {
-            const seriesPaths = items.map(item => item.path)
-            return (
-              <div style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))',
-                gap: 12,
-              }}>
-                {items.map(prog => renderProgramCard(prog, seriesPaths))}
-              </div>
-            )
-          }
-
-          const renderSectionHeader = (title, accent, count) => (
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              gap: 12,
-              padding: '10px 12px',
-              borderRadius: 8,
-              border: `1px solid ${accent}33`,
-              background: `${accent}10`,
-              marginBottom: 10,
-            }}>
-              <div style={{
-                color: accent,
-                fontFamily: "'IBM Plex Mono', monospace",
-                fontSize: 11,
-                letterSpacing: 1.6,
-                textTransform: 'uppercase',
-              }}>
-                {title}
-              </div>
-              <div style={{
-                color: '#8f8f8f',
-                fontFamily: "'IBM Plex Mono', monospace",
-                fontSize: 11,
-                letterSpacing: 1.2,
-                textTransform: 'uppercase',
-              }}>
-                {count} card{count === 1 ? '' : 's'}
-              </div>
-            </div>
-          )
-
-          if (categoryFilter === 'all' || categoryFilter === 'campus') {
-            return renderGrid(filteredPrograms)
-          }
-
-          return (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-              {groupedPrograms.specific.length > 0 && (
-                <div>
-                  {renderSectionHeader('Specific', '#FFB000', groupedPrograms.specific.length)}
-                  {renderGrid(groupedPrograms.specific)}
-                </div>
-              )}
-
-              {groupedPrograms.common.length > 0 && (
-                <div>
-                  {renderSectionHeader('Common', '#22CC66', groupedPrograms.common.length)}
-                  {renderGrid(groupedPrograms.common)}
-                </div>
-              )}
-            </div>
-          )
-        })()}
+              </>
+            )}
+          </>
+        ) : (
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))',
+            gap: 12,
+          }}>
+            {filteredPrograms.map(prog => (
+              <ProgramCard key={prog.path} prog={prog} onOpen={() => handleProgramOpen(prog)} />
+            ))}
+          </div>
+        )}
 
         {filteredPrograms.length === 0 && (
           <div style={{
@@ -2339,6 +3296,41 @@ function PortalHome({ authState, onSignOut }) {
           fontSize: 11, letterSpacing: 1,
         }}>{new Date().getFullYear()} · TRAINING ENVIRONMENTS INCLUDE THE DINGFELDER INDUSTRIAL CAMPUS</span>
       </div>
+
+      <SignInPanel
+        open={showSignIn}
+        email={loginEmail}
+        password={loginPassword}
+        busy={loginBusy}
+        error={loginError}
+        onEmailChange={setLoginEmail}
+        onPasswordChange={setLoginPassword}
+        onClose={() => setShowSignIn(false)}
+        onSubmit={handleSignInSubmit}
+      />
+
+      <AccountPanel
+        open={showAccountPanel}
+        authState={authState}
+        captureState={captureState}
+        onClose={() => setShowAccountPanel(false)}
+        onOpenSignIn={() => {
+          setShowAccountPanel(false)
+          setShowSignIn(true)
+        }}
+        onOpenSetup={() => {
+          setShowAccountPanel(false)
+          setShowSetupGate(true)
+        }}
+      />
+
+      <UserCaptureGate
+        open={showSetupGate}
+        authState={authState}
+        captureState={captureState}
+        onClose={() => setShowSetupGate(false)}
+        onSave={handleCaptureSave}
+      />
     </div>
   )
 }
@@ -2356,10 +3348,10 @@ const forceScrollTop = () => {
   setTimeout(apply, 0);
 };
 
-function AppRoutes({ authState, onSignOut }) {
+function AppRoutes({ authState, onSignIn, onSignOut }) {
   return (
     <Routes>
-      <Route path="/" element={<PortalHome authState={authState} onSignOut={onSignOut} />} />
+      <Route path="/" element={<PortalHome authState={authState} onSignIn={onSignIn} onSignOut={onSignOut} />} />
       <Route path="/landing" element={<AIRONLanding />} />
       {PROGRAMS.map(prog => (
         <Route
@@ -2368,7 +3360,7 @@ function AppRoutes({ authState, onSignOut }) {
           element={<prog.Component />}
         />
       ))}
-      <Route path="*" element={<PortalHome authState={authState} onSignOut={onSignOut} />} />
+      <Route path="*" element={<PortalHome authState={authState} onSignIn={onSignIn} onSignOut={onSignOut} />} />
     </Routes>
   )
 }
@@ -2440,6 +3432,17 @@ export default function App() {
     }
   }
 
+  const handleSignIn = async (email, password) => {
+    const result = await signInNetlifyIdentity(email, password)
+    setAuthState({
+      ready: true,
+      user: result.user,
+      message: result.message,
+      error: result.error,
+    })
+    return result
+  }
+
   const handleSignOut = async () => {
     const result = await signOutNetlifyIdentity()
     setAuthState({
@@ -2454,5 +3457,5 @@ export default function App() {
     return <AIRONSplash onDone={handleSplashDone} />
   }
 
-  return <AppRoutes authState={authState} onSignOut={handleSignOut} />
+  return <AppRoutes authState={authState} onSignIn={handleSignIn} onSignOut={handleSignOut} />
 }

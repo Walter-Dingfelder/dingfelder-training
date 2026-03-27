@@ -872,6 +872,35 @@ const CATEGORY_FILTERS = [
   { key: 'medical', label: 'Medical' },
 ]
 
+
+const GROUPABLE_CATEGORY_KEYS = CATEGORY_FILTERS
+  .map(filter => filter.key)
+  .filter(key => key !== 'all' && key !== 'campus')
+
+function splitProgramsBySpecificity(programs, activeCategory) {
+  if (activeCategory === 'all' || activeCategory === 'campus') {
+    return { specific: programs, common: [] }
+  }
+
+  const specific = []
+  const common = []
+
+  programs.forEach(prog => {
+    const categories = getProgramCategories(prog.path)
+    const otherRecognizedCategories = categories.filter(
+      key => key !== activeCategory && key !== 'campus' && GROUPABLE_CATEGORY_KEYS.includes(key)
+    )
+
+    if (otherRecognizedCategories.length === 0) {
+      specific.push(prog)
+    } else {
+      common.push(prog)
+    }
+  })
+
+  return { specific, common }
+}
+
 const TYPE_FILTERS = [
   { key: 'all', label: 'All Types' },
   { key: 'awareness', label: 'Awareness' },
@@ -1843,6 +1872,12 @@ function PortalHome({ authState, onSignOut }) {
     })
   }, [categoryFilter, typeFilter])
 
+  const groupedPrograms = useMemo(
+    () => splitProgramsBySpecificity(filteredPrograms, categoryFilter),
+    [filteredPrograms, categoryFilter]
+  )
+
+
   return (
     <div style={{
       minHeight: '100vh',
@@ -2056,10 +2091,8 @@ function PortalHome({ authState, onSignOut }) {
                     fontWeight: 800,
                     letterSpacing: 1,
                     whiteSpace: 'normal',
-                    lineHeight: 1.1,
-                    textAlign: 'center',
-                    minHeight: 44,
-                    maxWidth: '100%',
+                    lineHeight: 1.15,
+                    minHeight: 46,
                     flex: '0 1 auto',
                     cursor: 'pointer',
                   }}
@@ -2093,7 +2126,10 @@ function PortalHome({ authState, onSignOut }) {
                     fontSize: 11,
                     letterSpacing: 1.2,
                     textTransform: 'uppercase',
-                    whiteSpace: 'nowrap',
+                    whiteSpace: 'normal',
+                    lineHeight: 1.15,
+                    minHeight: 46,
+                    flex: '0 1 auto',
                     cursor: 'pointer',
                   }}
                 >
@@ -2104,17 +2140,12 @@ function PortalHome({ authState, onSignOut }) {
           </div>
         </div>
 
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))',
-          gap: 12,
-        }}>
-          {filteredPrograms.map(prog => (
+        {(() => {
+          const renderProgramCard = (prog, seriesPaths) => (
             <div
               key={prog.path}
               onClick={() => {
                 const portalSearch = buildPortalSearch(categoryFilter, typeFilter)
-                const seriesPaths = filteredPrograms.map(item => item.path)
                 savePortalContext(portalSearch, seriesPaths)
                 navigate(prog.path, {
                   state: {
@@ -2202,8 +2233,76 @@ function PortalHome({ authState, onSignOut }) {
                 }}>START →</span>
               </div>
             </div>
-          ))}
-        </div>
+          )
+
+          const renderGrid = (items) => {
+            const seriesPaths = items.map(item => item.path)
+            return (
+              <div style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))',
+                gap: 12,
+              }}>
+                {items.map(prog => renderProgramCard(prog, seriesPaths))}
+              </div>
+            )
+          }
+
+          const renderSectionHeader = (title, accent, count) => (
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              gap: 12,
+              padding: '10px 12px',
+              borderRadius: 8,
+              border: `1px solid ${accent}33`,
+              background: `${accent}10`,
+              marginBottom: 10,
+            }}>
+              <div style={{
+                color: accent,
+                fontFamily: "'IBM Plex Mono', monospace",
+                fontSize: 11,
+                letterSpacing: 1.6,
+                textTransform: 'uppercase',
+              }}>
+                {title}
+              </div>
+              <div style={{
+                color: '#8f8f8f',
+                fontFamily: "'IBM Plex Mono', monospace",
+                fontSize: 11,
+                letterSpacing: 1.2,
+                textTransform: 'uppercase',
+              }}>
+                {count} card{count === 1 ? '' : 's'}
+              </div>
+            </div>
+          )
+
+          if (categoryFilter === 'all' || categoryFilter === 'campus') {
+            return renderGrid(filteredPrograms)
+          }
+
+          return (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+              {groupedPrograms.specific.length > 0 && (
+                <div>
+                  {renderSectionHeader('Specific', '#FFB000', groupedPrograms.specific.length)}
+                  {renderGrid(groupedPrograms.specific)}
+                </div>
+              )}
+
+              {groupedPrograms.common.length > 0 && (
+                <div>
+                  {renderSectionHeader('Common', '#22CC66', groupedPrograms.common.length)}
+                  {renderGrid(groupedPrograms.common)}
+                </div>
+              )}
+            </div>
+          )
+        })()}
 
         {filteredPrograms.length === 0 && (
           <div style={{

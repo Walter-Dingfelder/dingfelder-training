@@ -1,4 +1,6 @@
 import { useState, useEffect, useRef } from "react";
+import { useLocation } from "react-router-dom";
+import { persistTrainingRecordNetlifyIdentity } from "../auth/netlifyIdentity.js";
 
 // ─── PALETTE & CONSTANTS ──────────────────────────────────────────────────────
 const Y = "#FFD100";      // hazard yellow
@@ -638,6 +640,10 @@ function VisitorPass({ name }) {
 // ─── MAIN APP ─────────────────────────────────────────────────────────────────
 export default function SATOrientation() {
   const [screen, setScreen] = useState("welcome"); // welcome | training | complete
+  const location = useLocation();
+  const activeCategory = typeof location.state?.activeCategory === "string" ? location.state.activeCategory : "campus";
+  const [recordStatus, setRecordStatus] = useState({ busy: false, message: "", error: "" });
+  const recordSavedRef = useRef(false);
   const [name, setName] = useState("");
   const [nameInput, setNameInput] = useState("");
   const [sectionIdx, setSectionIdx] = useState(0);
@@ -720,6 +726,55 @@ export default function SATOrientation() {
   );
 
   // ── COMPLETE SCREEN ───────────────────────────────────────────
+
+  useEffect(() => {
+    if (screen !== "complete") {
+      recordSavedRef.current = false;
+      setRecordStatus({ busy: false, message: "", error: "" });
+      return;
+    }
+
+    if (recordSavedRef.current) return;
+    recordSavedRef.current = true;
+
+    let cancelled = false;
+    setRecordStatus({ busy: true, message: "", error: "" });
+
+    persistTrainingRecordNetlifyIdentity(null, {
+      attemptId: `/sat:${Date.now()}:${Math.random().toString(36).slice(2, 8)}`,
+      modulePath: "/sat",
+      moduleTitle: "S.A.T. Visitor Orientation",
+      categoryKey: activeCategory,
+      categoryLabel: "Campus",
+      score: SECTIONS.length,
+      quizCorrect: SECTIONS.length,
+      quizTotal: SECTIONS.length,
+      passed: true,
+      completedAt: new Date().toISOString(),
+      runtimeMinutes: 15,
+      certificateClass: "Portal Completion Record",
+      certificateEligible: true,
+      source: "custom-module",
+    }).then((result) => {
+      if (cancelled) return;
+      if (result?.skipped) {
+        setRecordStatus({ busy: false, message: "", error: "" });
+      } else if (result?.error) {
+        setRecordStatus({ busy: false, message: "", error: result.error });
+      } else {
+        setRecordStatus({
+          busy: false,
+          message: result?.message || "Retained training record saved to your A.I.R.O.N. account.",
+          error: "",
+        });
+      }
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [screen, activeCategory]);
+
   if (screen === "complete") return (
     <div style={{ minHeight: "100vh", background: BK, fontFamily: "'Source Serif 4', serif", position: "relative", overflow: "hidden" }}>
       <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Source+Serif+4:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet" />
@@ -740,6 +795,17 @@ export default function SATOrientation() {
         </div>
 
         <VisitorPass name={name} />
+
+      {recordStatus.message ? (
+        <div style={{ padding:"12px 14px", background:"rgba(34,204,102,0.10)", border:"1px solid rgba(34,204,102,0.35)", borderRadius:8, color:"#9AF0B9", fontSize:13, lineHeight:1.6, maxWidth:520, marginBottom:16 }}>
+          {recordStatus.message}
+        </div>
+      ) : null}
+      {recordStatus.error ? (
+        <div style={{ padding:"12px 14px", background:"rgba(255,107,0,0.10)", border:"1px solid rgba(255,107,0,0.35)", borderRadius:8, color:"#FFB27A", fontSize:13, lineHeight:1.6, maxWidth:520, marginBottom:16 }}>
+          {recordStatus.error}
+        </div>
+      ) : null}
 
         <div style={{ marginTop: 20, padding: "14px", background: "#141209", border: "1px solid #3a3018", borderRadius: 3 }}>
           <p style={{ fontFamily: "'Oswald', sans-serif", fontSize: 11, letterSpacing: 2, color: "#6a5e30", margin: 0, lineHeight: 1.8 }}>

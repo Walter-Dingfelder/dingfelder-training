@@ -1,5 +1,6 @@
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { persistTrainingRecordNetlifyIdentity } from "../auth/netlifyIdentity.js";
 import { useLocation, useNavigate } from "react-router-dom";
 
 const PAGE_BG = "#080808";
@@ -78,6 +79,15 @@ function getPortalContext(locationState) {
 }
 
 
+
+
+function labelizeCategoryKey(categoryKey) {
+  if (!categoryKey || categoryKey === "all") return "General"
+  return categoryKey
+    .split("-")
+    .map((part) => (part ? part.charAt(0).toUpperCase() + part.slice(1) : part))
+    .join(" ")
+}
 
 function normalizeQuizItem(item) {
   const prompt =
@@ -223,12 +233,15 @@ export default function TrainingModuleShell({ module }) {
   const [quizIndex, setQuizIndex] = useState(0);
   const [answers, setAnswers] = useState({});
   const [submitted, setSubmitted] = useState(false);
+  const [recordStatus, setRecordStatus] = useState({ busy: false, message: "", error: "" });
+  const recordAttemptRef = useRef("");
 
   const portalContext = useMemo(() => getPortalContext(location.state), [location.state]);
   const portalSearch = portalContext.portalSearch;
   const seriesPaths = portalContext.seriesPaths;
   const currentSeriesIndex = seriesPaths.indexOf(module.path);
   const nextModulePath = currentSeriesIndex >= 0 ? seriesPaths[currentSeriesIndex + 1] : null;
+  const activeCategory = typeof location.state?.activeCategory === "string" ? location.state.activeCategory : "";
 
   const returnToPortal = () => {
     writeStoredPortalContext(portalSearch, seriesPaths);
@@ -244,6 +257,7 @@ export default function TrainingModuleShell({ module }) {
       state: {
         portalSearch,
         seriesPaths,
+        activeCategory,
       },
     });
   };
@@ -255,6 +269,58 @@ export default function TrainingModuleShell({ module }) {
   useEffect(() => {
     forceScrollTop();
   }, [slideIndex, quizIndex, submitted]);
+
+  useEffect(() => {
+    if (!submitted) {
+      recordAttemptRef.current = "";
+      setRecordStatus({ busy: false, message: "", error: "" });
+      return;
+    }
+
+    if (recordAttemptRef.current) return;
+
+    const attemptId = `${module.path || module.label}:${Date.now()}:${Math.random().toString(36).slice(2, 8)}`;
+    recordAttemptRef.current = attemptId;
+
+    let cancelled = false;
+    const passedNow = score >= Math.ceil(quiz.length * 0.7);
+
+    setRecordStatus({ busy: true, message: "", error: "" });
+
+    persistTrainingRecordNetlifyIdentity(null, {
+      attemptId,
+      modulePath: module.path || "",
+      moduleTitle: module.label || "",
+      categoryKey: activeCategory || "",
+      categoryLabel: labelizeCategoryKey(activeCategory),
+      score,
+      quizCorrect: score,
+      quizTotal: quiz.length,
+      passed: passedNow,
+      completedAt: new Date().toISOString(),
+      runtimeMinutes: Number(module.minutes) || null,
+      certificateClass: "Portal Completion Record",
+      certificateEligible: Boolean(passedNow),
+      source: "shared-shell",
+    }).then((result) => {
+      if (cancelled) return;
+      if (result?.skipped) {
+        setRecordStatus({ busy: false, message: "", error: "" });
+      } else if (result?.error) {
+        setRecordStatus({ busy: false, message: "", error: result.error });
+      } else {
+        setRecordStatus({
+          busy: false,
+          message: result?.message || "Retained training record saved to your A.I.R.O.N. account.",
+          error: "",
+        });
+      }
+    });
+
+    return () => {
+      cancelled = true
+    };
+  }, [submitted, module.path, module.label, module.minutes, activeCategory, score, quiz.length]);
 
   const slides = module.slides || [];
   const quiz = useMemo(() => (module.quiz || []).map(normalizeQuizItem), [module.quiz]);
@@ -322,6 +388,38 @@ export default function TrainingModuleShell({ module }) {
                 ? "Training record generated. The portal can now return to the catalog."
                 : "The module is still available. Review your answers and retake when ready."}
             </p>
+
+            {recordStatus.message ? (
+              <div
+                style={{
+                  marginTop: 14,
+                  padding: "12px 14px",
+                  borderRadius: 10,
+                  border: "1px solid rgba(34,204,102,0.35)",
+                  background: "rgba(34,204,102,0.10)",
+                  color: "#8CF0B1",
+                  lineHeight: 1.6,
+                }}
+              >
+                {recordStatus.message}
+              </div>
+            ) : null}
+
+            {recordStatus.error ? (
+              <div
+                style={{
+                  marginTop: 14,
+                  padding: "12px 14px",
+                  borderRadius: 10,
+                  border: "1px solid rgba(255,107,0,0.35)",
+                  background: "rgba(255,107,0,0.10)",
+                  color: "#FFB27A",
+                  lineHeight: 1.6,
+                }}
+              >
+                {recordStatus.error}
+              </div>
+            ) : null}
 
             <div
               style={{

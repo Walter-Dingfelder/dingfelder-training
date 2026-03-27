@@ -140,6 +140,140 @@ export async function persistUserCaptureNetlifyIdentity(user, capture) {
   }
 }
 
+
+
+function normalizeTrainingRecordShape(rawRecord) {
+  if (!rawRecord || typeof rawRecord !== 'object') return null
+
+  const toNumberOrNull = (value) => {
+    const num = Number(value)
+    return Number.isFinite(num) ? num : null
+  }
+
+  return {
+    attemptId: typeof rawRecord?.attemptId === 'string' ? rawRecord.attemptId : '',
+    modulePath: typeof rawRecord?.modulePath === 'string' ? rawRecord.modulePath : '',
+    moduleTitle: typeof rawRecord?.moduleTitle === 'string' ? rawRecord.moduleTitle : '',
+    categoryKey: typeof rawRecord?.categoryKey === 'string' ? rawRecord.categoryKey : '',
+    categoryLabel: typeof rawRecord?.categoryLabel === 'string' ? rawRecord.categoryLabel : '',
+    score: toNumberOrNull(rawRecord?.score),
+    quizCorrect: toNumberOrNull(rawRecord?.quizCorrect),
+    quizTotal: toNumberOrNull(rawRecord?.quizTotal),
+    passed: Boolean(rawRecord?.passed),
+    completedAt:
+      typeof rawRecord?.completedAt === 'string' && rawRecord.completedAt.trim()
+        ? rawRecord.completedAt
+        : new Date().toISOString(),
+    runtimeMinutes: toNumberOrNull(rawRecord?.runtimeMinutes),
+    certificateClass:
+      typeof rawRecord?.certificateClass === 'string' && rawRecord.certificateClass.trim()
+        ? rawRecord.certificateClass.trim()
+        : 'Portal Completion Record',
+    certificateEligible: Boolean(rawRecord?.certificateEligible),
+    source:
+      typeof rawRecord?.source === 'string' && rawRecord.source.trim()
+        ? rawRecord.source.trim()
+        : 'portal',
+  }
+}
+
+async function callTrainingRecordsFunction(method, user, record) {
+  const currentUser = user || await getUser()
+  const token = await getAccessTokenFromIdentityUser(currentUser)
+
+  const response = await fetch('/.netlify/functions/airon-training-records', {
+    method,
+    credentials: 'include',
+    headers: {
+      'Content-Type': 'application/json',
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
+    ...(method === 'GET' ? {} : { body: JSON.stringify({ record }) }),
+  })
+
+  let payload = null
+  try {
+    payload = await response.json()
+  } catch (error) {
+    payload = null
+  }
+
+  if (!response.ok) {
+    const serverError =
+      (payload && typeof payload.error === 'string' && payload.error.trim()) ||
+      'Unable to save your training record right now.'
+    throw new Error(serverError)
+  }
+
+  return payload || {}
+}
+
+export async function persistTrainingRecordNetlifyIdentity(user, record) {
+  const currentUser = user || await getUser().catch(() => null)
+  const normalizedRecord = normalizeTrainingRecordShape(record)
+
+  if (!currentUser) {
+    return {
+      user: null,
+      record: normalizedRecord,
+      saved: false,
+      skipped: true,
+      message: '',
+      error: '',
+    }
+  }
+
+  try {
+    const payload = await callTrainingRecordsFunction('POST', currentUser, normalizedRecord)
+    return {
+      user: currentUser,
+      record: normalizeTrainingRecordShape(payload?.record) || normalizedRecord,
+      saved: true,
+      skipped: false,
+      message: 'Retained training record saved to your A.I.R.O.N. account.',
+      error: '',
+    }
+  } catch (error) {
+    return {
+      user: currentUser,
+      record: normalizedRecord,
+      saved: false,
+      skipped: false,
+      message: '',
+      error: normalizeIdentityError(error),
+    }
+  }
+}
+
+export async function loadTrainingRecordsNetlifyIdentity(user) {
+  const currentUser = user || await getUser().catch(() => null)
+
+  if (!currentUser) {
+    return {
+      user: null,
+      records: [],
+      message: '',
+      error: '',
+    }
+  }
+
+  try {
+    const payload = await callTrainingRecordsFunction('GET', currentUser)
+    return {
+      user: currentUser,
+      records: Array.isArray(payload?.records) ? payload.records.map(normalizeTrainingRecordShape).filter(Boolean) : [],
+      message: '',
+      error: '',
+    }
+  } catch (error) {
+    return {
+      user: currentUser,
+      records: [],
+      message: '',
+      error: normalizeIdentityError(error),
+    }
+  }
+}
 export async function bootstrapNetlifyIdentity() {
   let callbackResult = null
 

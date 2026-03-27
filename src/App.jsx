@@ -3287,6 +3287,8 @@ function PortalHome({ authState, onSignIn, onSignOut, onCreateAccount }) {
       state: {
         portalSearch,
         seriesPaths,
+        activeCategory: categoryFilter,
+        activeType: typeFilter,
       },
     })
   }

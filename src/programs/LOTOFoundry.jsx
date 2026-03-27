@@ -1,4 +1,6 @@
 import { useState, useEffect, useRef } from "react";
+import { useLocation } from "react-router-dom";
+import { persistTrainingRecordNetlifyIdentity } from "../auth/netlifyIdentity.js";
 
 // ─── DATA ────────────────────────────────────────────────────────────────────
 
@@ -425,6 +427,10 @@ const QuizView = ({ questions, moduleColor, onComplete, moduleName }) => {
 
 export default function LOTOTraining() {
   const [screen, setScreen] = useState("home"); // home | module | complete
+  const location = useLocation();
+  const activeCategory = typeof location.state?.activeCategory === "string" ? location.state.activeCategory : "loto";
+  const [recordStatus, setRecordStatus] = useState({ busy: false, message: "", error: "" });
+  const recordSavedRef = useRef(false);
   const [moduleIdx, setModuleIdx] = useState(0);
   const [slideIdx, setSlideIdx] = useState(0);
   const [phase, setPhase] = useState("slides"); // slides | quiz
@@ -532,6 +538,55 @@ export default function LOTOTraining() {
   );
 
   // ── COMPLETE ───────────────────────────────────────────────────────────────
+
+  useEffect(() => {
+    if (screen !== "complete") {
+      recordSavedRef.current = false;
+      setRecordStatus({ busy: false, message: "", error: "" });
+      return;
+    }
+
+    if (recordSavedRef.current) return;
+    recordSavedRef.current = true;
+
+    let cancelled = false;
+    setRecordStatus({ busy: true, message: "", error: "" });
+
+    persistTrainingRecordNetlifyIdentity(null, {
+      attemptId: `/loto:${Date.now()}:${Math.random().toString(36).slice(2, 8)}`,
+      modulePath: "/loto",
+      moduleTitle: "LOTO — Foundry Focus",
+      categoryKey: activeCategory,
+      categoryLabel: "LOTO",
+      score: MODULES.length,
+      quizCorrect: MODULES.length,
+      quizTotal: MODULES.length,
+      passed: true,
+      completedAt: new Date().toISOString(),
+      runtimeMinutes: 20,
+      certificateClass: "Portal Completion Record",
+      certificateEligible: true,
+      source: "custom-module",
+    }).then((result) => {
+      if (cancelled) return;
+      if (result?.skipped) {
+        setRecordStatus({ busy: false, message: "", error: "" });
+      } else if (result?.error) {
+        setRecordStatus({ busy: false, message: "", error: result.error });
+      } else {
+        setRecordStatus({
+          busy: false,
+          message: result?.message || "Retained training record saved to your A.I.R.O.N. account.",
+          error: "",
+        });
+      }
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [screen, activeCategory]);
+
   if (screen === "complete") return (
     <div style={{
       minHeight: "100vh", background: "#0a0a0a", display: "flex",
@@ -556,6 +611,17 @@ export default function LOTOTraining() {
       <div style={{ color: "#444", fontSize: 12, fontFamily: "'Barlow Condensed', sans-serif", letterSpacing: 2 }}>
         DINGFELDER SAFETY TRAINING · OSHA 29 CFR 1910.147 · {new Date().toLocaleDateString()}
       </div>
+
+      {recordStatus.message ? (
+        <div style={{ padding:"12px 14px", background:"rgba(34,204,102,0.10)", border:"1px solid rgba(34,204,102,0.35)", borderRadius:8, color:"#9AF0B9", fontSize:13, lineHeight:1.6, maxWidth:520, marginBottom:16 }}>
+          {recordStatus.message}
+        </div>
+      ) : null}
+      {recordStatus.error ? (
+        <div style={{ padding:"12px 14px", background:"rgba(255,107,0,0.10)", border:"1px solid rgba(255,107,0,0.35)", borderRadius:8, color:"#FFB27A", fontSize:13, lineHeight:1.6, maxWidth:520, marginBottom:16 }}>
+          {recordStatus.error}
+        </div>
+      ) : null}
     </div>
   );
 

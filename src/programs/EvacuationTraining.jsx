@@ -1,4 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
+import { useLocation } from "react-router-dom";
+import { persistTrainingRecordNetlifyIdentity } from "../auth/netlifyIdentity.js";
 
 // ─── ROLE → FACILITY & MUSTER MAP ────────────────────────────────────────────
 const ROLE_MAP = {
@@ -389,6 +391,10 @@ export default function EvacuationTraining() {
   const roleCtx = ROLE_MAP[playerRole] || ROLE_MAP["default"];
 
   const [screen,setScreen]=useState("home");
+  const location = useLocation();
+  const activeCategory = typeof location.state?.activeCategory === "string" ? location.state.activeCategory : "campus";
+  const [recordStatus, setRecordStatus] = useState({ busy: false, message: "", error: "" });
+  const recordSavedRef = useRef(false);
   const [modIdx,setModIdx]=useState(0);
   const [slideIdx,setSlideIdx]=useState(0);
   const [phase,setPhase]=useState("slides");
@@ -439,6 +445,55 @@ export default function EvacuationTraining() {
     </div>
   );
 
+
+  useEffect(() => {
+    if (screen !== "complete") {
+      recordSavedRef.current = false;
+      setRecordStatus({ busy: false, message: "", error: "" });
+      return;
+    }
+
+    if (recordSavedRef.current) return;
+    recordSavedRef.current = true;
+
+    let cancelled = false;
+    setRecordStatus({ busy: true, message: "", error: "" });
+
+    persistTrainingRecordNetlifyIdentity(null, {
+      attemptId: `/evacuation:${Date.now()}:${Math.random().toString(36).slice(2, 8)}`,
+      modulePath: "/evacuation",
+      moduleTitle: "Emergency Evacuation & Muster",
+      categoryKey: activeCategory,
+      categoryLabel: "Campus",
+      score: MODULES.length,
+      quizCorrect: MODULES.length,
+      quizTotal: MODULES.length,
+      passed: true,
+      completedAt: new Date().toISOString(),
+      runtimeMinutes: 20,
+      certificateClass: "Portal Completion Record",
+      certificateEligible: true,
+      source: "custom-module",
+    }).then((result) => {
+      if (cancelled) return;
+      if (result?.skipped) {
+        setRecordStatus({ busy: false, message: "", error: "" });
+      } else if (result?.error) {
+        setRecordStatus({ busy: false, message: "", error: result.error });
+      } else {
+        setRecordStatus({
+          busy: false,
+          message: result?.message || "Retained training record saved to your A.I.R.O.N. account.",
+          error: "",
+        });
+      }
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [screen, activeCategory]);
+
   if(screen==="complete") return (
     <div style={{minHeight:"100vh",background:"#030a04",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:28,textAlign:"center"}}>
       <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet"/>
@@ -451,6 +506,17 @@ export default function EvacuationTraining() {
       </div>
       <p style={{color:"#446644",fontSize:13,fontFamily:"'IBM Plex Sans',sans-serif",marginBottom:20,lineHeight:1.6,maxWidth:440}}>Role: <strong style={{color:"#22CC66"}}>{playerRole}</strong> · Facility: <strong style={{color:"#22CC66"}}>{roleCtx.facility}</strong><br />Annual recertification required. Evacuation drill participation mandatory.</p>
       <div style={{color:"#224422",fontSize:10,fontFamily:"'Barlow Condensed',sans-serif",letterSpacing:2}}>DINGFELDER SAFETY · OSHA 29 CFR 1910.38 · {new Date().toLocaleDateString()}</div>
+
+      {recordStatus.message ? (
+        <div style={{ padding:"12px 14px", background:"rgba(34,204,102,0.10)", border:"1px solid rgba(34,204,102,0.35)", borderRadius:8, color:"#9AF0B9", fontSize:13, lineHeight:1.6, maxWidth:520, marginBottom:16 }}>
+          {recordStatus.message}
+        </div>
+      ) : null}
+      {recordStatus.error ? (
+        <div style={{ padding:"12px 14px", background:"rgba(255,107,0,0.10)", border:"1px solid rgba(255,107,0,0.35)", borderRadius:8, color:"#FFB27A", fontSize:13, lineHeight:1.6, maxWidth:520, marginBottom:16 }}>
+          {recordStatus.error}
+        </div>
+      ) : null}
       <button onClick={()=>{setCompleted({});setScreen("home");}} style={{marginTop:20,padding:"10px 24px",background:"transparent",border:"1px solid #0d1a0d",borderRadius:3,color:"#224422",cursor:"pointer",fontFamily:"'Barlow Condensed',sans-serif",fontSize:12,letterSpacing:2}}>RESTART</button>
     </div>
   );

@@ -41,6 +41,25 @@ function buildUserMetadata(currentUser, capture) {
   }
 }
 
+function isUuid(value) {
+  return typeof value === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value)
+}
+
+async function resolveTargetUser(currentUser) {
+  if (currentUser && isUuid(currentUser.id)) return currentUser
+  if (currentUser && isUuid(currentUser.sub)) return { ...currentUser, id: currentUser.sub }
+
+  const email = typeof currentUser?.email === 'string' ? currentUser.email.trim().toLowerCase() : ''
+  if (!email) return null
+
+  const users = await admin.listUsers()
+  const matched = Array.isArray(users)
+    ? users.find((user) => typeof user?.email === 'string' && user.email.trim().toLowerCase() === email && isUuid(user.id))
+    : null
+
+  return matched || null
+}
+
 export default async (req, context) => {
   const currentUser = await getUser()
 
@@ -76,9 +95,18 @@ export default async (req, context) => {
       })
     }
 
+    const targetUser = await resolveTargetUser(currentUser)
+
+    if (!targetUser || !isUuid(targetUser.id)) {
+      return new Response(JSON.stringify({ error: 'Unable to resolve a valid Identity user ID for this account.' }), {
+        status: 500,
+        headers: { 'Content-Type': 'application/json' },
+      })
+    }
+
     const updated = await admin.updateUser(
-      { id: currentUser.id },
-      { user_metadata: buildUserMetadata(currentUser, capture) }
+      targetUser,
+      { user_metadata: buildUserMetadata(targetUser, capture) }
     )
 
     const updatedUser = updated?.data || updated || {}

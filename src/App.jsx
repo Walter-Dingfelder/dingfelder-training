@@ -2,7 +2,7 @@
 import { Routes, Route, useNavigate, useLocation } from 'react-router-dom'
 import { useState, useEffect, useMemo } from 'react'
 import aironSplash from './assets/airon-splash.png'
-import { bootstrapNetlifyIdentity, signInNetlifyIdentity, signOutNetlifyIdentity } from './auth/netlifyIdentity.js'
+import { bootstrapNetlifyIdentity, signInNetlifyIdentity, signOutNetlifyIdentity, createAccountNetlifyIdentity } from './auth/netlifyIdentity.js'
 
 // ─── Training Programs ────────────────────────────────────────────────────────
 import LOTOFoundry     from './programs/LOTOFoundry.jsx'
@@ -1969,6 +1969,7 @@ function SignInPanel({
   onPasswordChange,
   onClose,
   onSubmit,
+  onOpenCreateAccount,
 }) {
   if (!open) return null
 
@@ -2114,11 +2115,241 @@ function SignInPanel({
             </div>
           )}
 
-          <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end', flexWrap: 'wrap' }}>
-            <HeaderActionButton onClick={onClose}>Close</HeaderActionButton>
-            <HeaderActionButton type="submit" accent="primary">
-              {busy ? 'Signing In…' : 'Sign In'}
-            </HeaderActionButton>
+          <div style={{
+            marginTop: 10,
+            color: '#8D8D8D',
+            fontSize: 13,
+            lineHeight: 1.6,
+          }}>
+            New here? Create your account first, then complete the A.I.R.O.N. acceptance and profile setup.
+          </div>
+
+          <div style={{ display: 'flex', gap: 10, justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', marginTop: 18 }}>
+            <button
+              type="button"
+              onClick={onOpenCreateAccount}
+              style={{
+                appearance: 'none',
+                border: '1px solid rgba(255,209,0,0.35)',
+                background: 'rgba(255,209,0,0.08)',
+                color: '#FFD100',
+                borderRadius: 10,
+                padding: '9px 12px',
+                fontFamily: "'IBM Plex Mono', monospace",
+                fontSize: 11,
+                letterSpacing: 0.5,
+                cursor: 'pointer',
+                whiteSpace: 'nowrap',
+              }}
+            >
+              Create Account
+            </button>
+            <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end', flexWrap: 'wrap' }}>
+              <HeaderActionButton onClick={onClose}>Close</HeaderActionButton>
+              <HeaderActionButton type="submit" accent="primary">
+                {busy ? 'Signing In…' : 'Sign In'}
+              </HeaderActionButton>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  )
+}
+
+
+function CreateAccountPanel({
+  open,
+  email,
+  password,
+  confirmPassword,
+  busy,
+  error,
+  onEmailChange,
+  onPasswordChange,
+  onConfirmPasswordChange,
+  onClose,
+  onSubmit,
+  onOpenSignIn,
+}) {
+  if (!open) return null
+
+  const passwordsMatch = password && confirmPassword && password === confirmPassword
+  const ready = Boolean(email.trim() && password && confirmPassword && passwordsMatch)
+
+  return (
+    <div style={{
+      position: 'fixed',
+      inset: 0,
+      background: 'rgba(0,0,0,0.74)',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: 24,
+      zIndex: 2000,
+    }}>
+      <div style={{
+        width: '100%',
+        maxWidth: 520,
+        borderRadius: 18,
+        border: '1px solid rgba(255,209,0,0.22)',
+        background: '#0D0D0D',
+        boxShadow: '0 18px 60px rgba(0,0,0,0.45)',
+        overflow: 'hidden',
+      }}>
+        <div style={{
+          padding: '18px 20px 14px',
+          borderBottom: '1px solid rgba(255,255,255,0.08)',
+          background: 'linear-gradient(180deg, rgba(255,209,0,0.06), rgba(255,209,0,0.00))',
+        }}>
+          <div style={{
+            color: '#FFD100',
+            fontFamily: "'IBM Plex Mono', monospace",
+            fontSize: 11,
+            letterSpacing: 2,
+            textTransform: 'uppercase',
+            marginBottom: 8,
+          }}>
+            Create account
+          </div>
+          <div style={{
+            color: '#FFFFFF',
+            fontFamily: "'Barlow Condensed', sans-serif",
+            fontSize: 28,
+            lineHeight: 1,
+            fontWeight: 800,
+          }}>
+            Start your saved-record path
+          </div>
+          <div style={{
+            color: '#A0A0A0',
+            fontSize: 13,
+            lineHeight: 1.6,
+            marginTop: 10,
+            maxWidth: 420,
+          }}>
+            Create your A.I.R.O.N. account first. After that, you will complete the acceptance and profile steps before using the retained-record path.
+          </div>
+        </div>
+
+        <form onSubmit={onSubmit} style={{ padding: 20 }}>
+          {[
+            ['Email', email, onEmailChange, 'email', 'email'],
+            ['Password', password, onPasswordChange, 'password', 'new-password'],
+            ['Confirm password', confirmPassword, onConfirmPasswordChange, 'password', 'new-password'],
+          ].map(([label, value, onChange, type, autoComplete]) => (
+            <label key={label} style={{ display: 'block', marginBottom: 14 }}>
+              <div style={{
+                color: '#BEBEBE',
+                fontFamily: "'IBM Plex Mono', monospace",
+                fontSize: 11,
+                letterSpacing: 1.5,
+                textTransform: 'uppercase',
+                marginBottom: 8,
+              }}>
+                {label}
+              </div>
+              <input
+                type={type}
+                value={value}
+                onChange={event => onChange(event.target.value)}
+                autoComplete={autoComplete}
+                required
+                style={{
+                  width: '100%',
+                  boxSizing: 'border-box',
+                  borderRadius: 10,
+                  border: '1px solid rgba(255,255,255,0.12)',
+                  background: '#141414',
+                  color: '#FFFFFF',
+                  padding: '12px 14px',
+                  fontSize: 14,
+                  outline: 'none',
+                }}
+              />
+            </label>
+          ))}
+
+          {!!confirmPassword && password !== confirmPassword && (
+            <div style={{
+              marginBottom: 14,
+              padding: '10px 12px',
+              borderRadius: 12,
+              background: 'rgba(255,107,0,0.10)',
+              border: '1px solid rgba(255,107,0,0.24)',
+              color: '#FFB48F',
+              fontSize: 13,
+              lineHeight: 1.5,
+            }}>
+              Passwords do not match yet.
+            </div>
+          )}
+
+          {error && (
+            <div style={{
+              marginBottom: 14,
+              padding: '10px 12px',
+              borderRadius: 12,
+              background: 'rgba(255,107,0,0.10)',
+              border: '1px solid rgba(255,107,0,0.24)',
+              color: '#FFB48F',
+              fontSize: 13,
+              lineHeight: 1.5,
+            }}>
+              {error}
+            </div>
+          )}
+
+          <div style={{
+            color: '#8D8D8D',
+            fontSize: 13,
+            lineHeight: 1.6,
+          }}>
+            Already have an account? Sign in instead.
+          </div>
+
+          <div style={{ display: 'flex', gap: 10, justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', marginTop: 18 }}>
+            <button
+              type="button"
+              onClick={onOpenSignIn}
+              style={{
+                appearance: 'none',
+                border: '1px solid rgba(255,209,0,0.35)',
+                background: 'rgba(255,209,0,0.08)',
+                color: '#FFD100',
+                borderRadius: 10,
+                padding: '9px 12px',
+                fontFamily: "'IBM Plex Mono', monospace",
+                fontSize: 11,
+                letterSpacing: 0.5,
+                cursor: 'pointer',
+                whiteSpace: 'nowrap',
+              }}
+            >
+              Sign In Instead
+            </button>
+            <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end', flexWrap: 'wrap' }}>
+              <HeaderActionButton onClick={onClose}>Close</HeaderActionButton>
+              <button
+                type="submit"
+                disabled={!ready || busy}
+                style={{
+                  appearance: 'none',
+                  border: '1px solid rgba(255,209,0,0.35)',
+                  background: ready && !busy ? 'rgba(255,209,0,0.12)' : '#252525',
+                  color: ready && !busy ? '#FFD100' : '#777',
+                  borderRadius: 10,
+                  padding: '9px 12px',
+                  fontFamily: "'IBM Plex Mono', monospace",
+                  fontSize: 11,
+                  letterSpacing: 0.5,
+                  cursor: ready && !busy ? 'pointer' : 'not-allowed',
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                {busy ? 'Creating...' : 'Create Account'}
+              </button>
+            </div>
           </div>
         </form>
       </div>
@@ -2833,17 +3064,23 @@ function SectionHeading({ title, subtitle }) {
 
 
 
-function PortalHome({ authState, onSignIn, onSignOut }) {
+function PortalHome({ authState, onSignIn, onSignOut, onCreateAccount }) {
   const navigate = useNavigate()
   const location = useLocation()
   const [tick, setTick] = useState(0)
   const [showSignIn, setShowSignIn] = useState(false)
+  const [showCreateAccount, setShowCreateAccount] = useState(false)
   const [showAccountPanel, setShowAccountPanel] = useState(false)
   const [showSetupGate, setShowSetupGate] = useState(false)
   const [loginEmail, setLoginEmail] = useState('')
   const [loginPassword, setLoginPassword] = useState('')
   const [loginBusy, setLoginBusy] = useState(false)
   const [loginError, setLoginError] = useState('')
+  const [createEmail, setCreateEmail] = useState('')
+  const [createPassword, setCreatePassword] = useState('')
+  const [createConfirmPassword, setCreateConfirmPassword] = useState('')
+  const [createBusy, setCreateBusy] = useState(false)
+  const [createError, setCreateError] = useState('')
   const [captureState, setCaptureState] = useState(() => getEmptyUserCapture())
 
   useEffect(() => {
@@ -2854,6 +3091,7 @@ function PortalHome({ authState, onSignIn, onSignOut }) {
   useEffect(() => {
     if (authState.user?.email) {
       setLoginEmail(authState.user.email)
+      setCreateEmail(authState.user.email)
       const nextCapture = loadUserCapture(authState.user)
       setCaptureState(nextCapture)
       if (!isUserCaptureComplete(nextCapture)) {
@@ -2863,14 +3101,19 @@ function PortalHome({ authState, onSignIn, onSignOut }) {
       setCaptureState(getEmptyUserCapture())
       setShowSetupGate(false)
       setShowAccountPanel(false)
+      setShowCreateAccount(false)
     }
   }, [authState.user])
 
   useEffect(() => {
     if (authState.user) {
       setShowSignIn(false)
+      setShowCreateAccount(false)
       setLoginError('')
+      setCreateError('')
       setLoginPassword('')
+      setCreatePassword('')
+      setCreateConfirmPassword('')
     }
   }, [authState.user])
 
@@ -2919,6 +3162,38 @@ function PortalHome({ authState, onSignIn, onSignOut }) {
     setLoginBusy(false)
     setLoginPassword('')
     setShowSignIn(false)
+    setShowAccountPanel(true)
+    if (!isUserCaptureComplete(nextCapture)) {
+      setShowSetupGate(true)
+    }
+  }
+
+
+  const handleCreateAccountSubmit = async (event) => {
+    event.preventDefault()
+    setCreateBusy(true)
+    setCreateError('')
+
+    if (createPassword !== createConfirmPassword) {
+      setCreateError('Passwords do not match.')
+      setCreateBusy(false)
+      return
+    }
+
+    const result = await onCreateAccount(createEmail, createPassword)
+
+    if (result.error) {
+      setCreateError(result.error)
+      setCreateBusy(false)
+      return
+    }
+
+    const nextCapture = loadUserCapture(result.user)
+    setCaptureState(nextCapture)
+    setCreateBusy(false)
+    setCreatePassword('')
+    setCreateConfirmPassword('')
+    setShowCreateAccount(false)
     setShowAccountPanel(true)
     if (!isUserCaptureComplete(nextCapture)) {
       setShowSetupGate(true)
@@ -3042,9 +3317,14 @@ function PortalHome({ authState, onSignIn, onSignOut }) {
 
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
             {!authState.user && (
-              <HeaderActionButton accent="primary" onClick={() => setShowSignIn(true)}>
-                Sign In
-              </HeaderActionButton>
+              <>
+                <HeaderActionButton accent="primary" onClick={() => setShowSignIn(true)}>
+                  Sign In
+                </HeaderActionButton>
+                <HeaderActionButton onClick={() => setShowCreateAccount(true)}>
+                  Create Account
+                </HeaderActionButton>
+              </>
             )}
             <HeaderActionButton onClick={() => setShowAccountPanel(true)}>
               Account
@@ -3307,6 +3587,30 @@ function PortalHome({ authState, onSignIn, onSignOut }) {
         onPasswordChange={setLoginPassword}
         onClose={() => setShowSignIn(false)}
         onSubmit={handleSignInSubmit}
+        onOpenCreateAccount={() => {
+          setShowSignIn(false)
+          setCreateEmail(loginEmail)
+          setShowCreateAccount(true)
+        }}
+      />
+
+      <CreateAccountPanel
+        open={showCreateAccount}
+        email={createEmail}
+        password={createPassword}
+        confirmPassword={createConfirmPassword}
+        busy={createBusy}
+        error={createError}
+        onEmailChange={setCreateEmail}
+        onPasswordChange={setCreatePassword}
+        onConfirmPasswordChange={setCreateConfirmPassword}
+        onClose={() => setShowCreateAccount(false)}
+        onSubmit={handleCreateAccountSubmit}
+        onOpenSignIn={() => {
+          setShowCreateAccount(false)
+          setLoginEmail(createEmail)
+          setShowSignIn(true)
+        }}
       />
 
       <AccountPanel
@@ -3348,10 +3652,10 @@ const forceScrollTop = () => {
   setTimeout(apply, 0);
 };
 
-function AppRoutes({ authState, onSignIn, onSignOut }) {
+function AppRoutes({ authState, onSignIn, onSignOut, onCreateAccount }) {
   return (
     <Routes>
-      <Route path="/" element={<PortalHome authState={authState} onSignIn={onSignIn} onSignOut={onSignOut} />} />
+      <Route path="/" element={<PortalHome authState={authState} onSignIn={onSignIn} onSignOut={onSignOut} onCreateAccount={onCreateAccount} />} />
       <Route path="/landing" element={<AIRONLanding />} />
       {PROGRAMS.map(prog => (
         <Route
@@ -3360,7 +3664,7 @@ function AppRoutes({ authState, onSignIn, onSignOut }) {
           element={<prog.Component />}
         />
       ))}
-      <Route path="*" element={<PortalHome authState={authState} onSignIn={onSignIn} onSignOut={onSignOut} />} />
+      <Route path="*" element={<PortalHome authState={authState} onSignIn={onSignIn} onSignOut={onSignOut} onCreateAccount={onCreateAccount} />} />
     </Routes>
   )
 }
@@ -3453,9 +3757,21 @@ export default function App() {
     })
   }
 
+
+  const handleCreateAccount = async (email, password) => {
+    const result = await createAccountNetlifyIdentity(email, password)
+    setAuthState({
+      ready: true,
+      user: result.user,
+      message: result.message,
+      error: result.error,
+    })
+    return result
+  }
+
   if (showSplash) {
     return <AIRONSplash onDone={handleSplashDone} />
   }
 
-  return <AppRoutes authState={authState} onSignIn={handleSignIn} onSignOut={handleSignOut} />
+  return <AppRoutes authState={authState} onSignIn={handleSignIn} onSignOut={handleSignOut} onCreateAccount={handleCreateAccount} />
 }

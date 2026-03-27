@@ -56,7 +56,7 @@ const MODULES = [
     quiz:[
       { q:"An arc flash requires you to physically touch an energized conductor to be injured.", options:["True — contact is required for injury","False — arc flash releases energy outward and injures by proximity"], answer:1 },
       { q:"The arc flash label on an MCC says 'Incident Energy: 18 cal/cm².' This means:", options:["The panel runs at 18 volts","You need PPE rated for at least 18 cal/cm² and must not get closer than the listed working distance","18 people can work on this panel safely","The panel was last inspected 18 months ago"], answer:1 },
-      { q:"There is no arc flash label on a panel you need to open. You should:", options:["Open it carefully using standard rubber gloves","Do NOT open it — contact a qualified electrician to label it first","Assume it's low-voltage and safe","Ask your supervisor for verbal clearance"], answer:2 }
+      { q:"There is no arc flash label on a panel you need to open. You should:", options:["Open it carefully using standard rubber gloves","Do NOT open it — contact a qualified electrician to label it first","Assume it's low-voltage and safe","Ask your supervisor for verbal clearance"], answer:1 }
     ]
   },
   {

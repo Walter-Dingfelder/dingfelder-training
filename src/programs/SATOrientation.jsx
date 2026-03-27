@@ -493,7 +493,7 @@ function SlideView({ slide, color, onNext, onPrev, isFirst, isLast, sectionIdx, 
       {slide.callout && (
         <div style={{ padding: "12px 14px", background: `${slide.callout.color}15`, border: `1px solid ${slide.callout.color}50`, borderLeft: `4px solid ${slide.callout.color}`, borderRadius: 3, marginBottom: 14 }}>
           <span style={{ fontFamily: "'Oswald', sans-serif", fontSize: 10, letterSpacing: 4, color: slide.callout.color, display: "block", marginBottom: 4 }}>{slide.callout.label}</span>
-          <span style={{ fontFamily: "'Source Serif 4', serif", fontSize: 13.5, color: Lt, lineHeight: 1.5, color: "#ddd" }}>{slide.callout.text}</span>
+          <span style={{ fontFamily: "'Source Serif 4', serif", fontSize: 13.5, lineHeight: 1.5, color: "#ddd" }}>{slide.callout.text}</span>
         </div>
       )}
 

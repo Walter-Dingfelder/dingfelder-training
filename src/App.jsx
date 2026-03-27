@@ -2032,10 +2032,11 @@ function PortalHome({ authState, onSignOut }) {
           marginBottom: 18,
         }}>
           <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))',
+            display: 'flex',
+            flexWrap: 'wrap',
             gap: 8,
             paddingBottom: 4,
+            alignItems: 'stretch',
           }}>
             {CATEGORY_FILTERS.map(filter => {
               const active = categoryFilter === filter.key
@@ -2054,7 +2055,12 @@ function PortalHome({ authState, onSignOut }) {
                     fontSize: 16,
                     fontWeight: 800,
                     letterSpacing: 1,
-                    whiteSpace: 'nowrap',
+                    whiteSpace: 'normal',
+                    lineHeight: 1.1,
+                    textAlign: 'center',
+                    minHeight: 44,
+                    maxWidth: '100%',
+                    flex: '0 1 auto',
                     cursor: 'pointer',
                   }}
                 >

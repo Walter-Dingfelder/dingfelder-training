@@ -132,6 +132,29 @@ function Callout({ callout, color }) {
   );
 }
 
+
+
+function normalizeQuizItem(question) {
+  const prompt =
+    typeof question?.q === "string"
+      ? question.q
+      : typeof question?.question === "string"
+      ? question.question
+      : "";
+
+  const options = Array.isArray(question?.options)
+    ? question.options
+    : Array.isArray(question?.choices)
+    ? question.choices
+    : [];
+
+  return {
+    prompt,
+    options,
+    answer: typeof question?.answer === "number" ? question.answer : null,
+  };
+}
+
 function QuizCard({ question, qIndex, answers, setAnswers, color }) {
   const selected = answers[qIndex];
   return (
@@ -163,10 +186,10 @@ function QuizCard({ question, qIndex, answers, setAnswers, color }) {
           lineHeight: 1.45,
         }}
       >
-        {question.q}
+        {normalizeQuizItem(question).prompt}
       </div>
       <div style={{ display: "grid", gap: 10 }}>
-        {question.options.map((option, idx) => {
+        {normalizeQuizItem(question).options.map((option, idx) => {
           const active = selected === idx;
           return (
             <button
@@ -232,16 +255,17 @@ export default function TrainingModuleShell({ module }) {
     forceScrollTop();
   }, [slideIndex, submitted]);
 
-  const slides = module.slides || [];
-  const progress = Math.round(((slideIndex + 1) / slides.length) * 100);
-  const allAnswered = module.quiz.every((_, idx) => answers[idx] !== undefined);
+  const slides = Array.isArray(module?.slides) ? module.slides : [];
+  const quiz = Array.isArray(module?.quiz) ? module.quiz.map(normalizeQuizItem) : [];
+  const progress = slides.length > 0 ? Math.round(((slideIndex + 1) / slides.length) * 100) : 0;
+  const allAnswered = quiz.every((_, idx) => answers[idx] !== undefined);
   const score = useMemo(
-    () => module.quiz.reduce((sum, q, idx) => sum + (answers[idx] === q.answer ? 1 : 0), 0),
-    [answers, module.quiz]
+    () => quiz.reduce((sum, q, idx) => sum + (answers[idx] === q.answer ? 1 : 0), 0),
+    [answers, quiz]
   );
 
   if (submitted) {
-    const passed = score >= Math.ceil(module.quiz.length * 0.7);
+    const passed = score >= Math.ceil(quiz.length * 0.7);
     return (
       <div
         style={{
@@ -439,7 +463,7 @@ export default function TrainingModuleShell({ module }) {
               Answer each checkpoint to complete the module record.
             </p>
             <div style={{ display: "grid", gap: 14 }}>
-              {module.quiz.map((question, idx) => (
+              {quiz.map((question, idx) => (
                 <QuizCard
                   key={idx}
                   question={question}

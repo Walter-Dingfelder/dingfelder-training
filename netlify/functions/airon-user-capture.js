@@ -1,4 +1,4 @@
-import { getUser, admin } from '@netlify/identity'
+import { getUser } from '@netlify/identity'
 
 function normalizeUserCaptureShape(rawCapture) {
   if (!rawCapture || typeof rawCapture !== 'object') return null
@@ -45,19 +45,56 @@ function isUuid(value) {
   return typeof value === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value)
 }
 
-async function resolveTargetUser(currentUser) {
-  if (currentUser && isUuid(currentUser.id)) return currentUser
-  if (currentUser && isUuid(currentUser.sub)) return { ...currentUser, id: currentUser.sub }
+function getIdentityContext(context) {
+  const identity = context?.clientContext?.identity || {}
+  const user = context?.clientContext?.user || {}
 
-  const email = typeof currentUser?.email === 'string' ? currentUser.email.trim().toLowerCase() : ''
-  if (!email) return null
+  return {
+    identityUrl: typeof identity?.url === 'string' ? identity.url : '',
+    adminToken: typeof identity?.token === 'string' ? identity.token : '',
+    userId: typeof user?.sub === 'string' ? user.sub : '',
+  }
+}
 
-  const users = await admin.listUsers()
-  const matched = Array.isArray(users)
-    ? users.find((user) => typeof user?.email === 'string' && user.email.trim().toLowerCase() === email && isUuid(user.id))
-    : null
+async function updateIdentityUserMetadata(context, currentUser, capture) {
+  const { identityUrl, adminToken, userId } = getIdentityContext(context)
 
-  return matched || null
+  if (!identityUrl || !adminToken) {
+    throw new Error('Identity admin context is not available in this function.')
+  }
+
+  if (!isUuid(userId)) {
+    throw new Error('Unable to resolve a valid Identity user ID for this account.')
+  }
+
+  const response = await fetch(`${identityUrl}/admin/users/${userId}`, {
+    method: 'PUT',
+    headers: {
+      Authorization: `Bearer ${adminToken}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      user_metadata: buildUserMetadata(currentUser, capture),
+    }),
+  })
+
+  let payload = null
+  try {
+    payload = await response.json()
+  } catch (error) {
+    payload = null
+  }
+
+  if (!response.ok) {
+    const errorMessage =
+      (payload && typeof payload.msg === 'string' && payload.msg) ||
+      (payload && typeof payload.error === 'string' && payload.error) ||
+      (payload && typeof payload.message === 'string' && payload.message) ||
+      `Identity admin update failed with status ${response.status}.`
+    throw new Error(errorMessage)
+  }
+
+  return payload?.data || payload || {}
 }
 
 export default async (req, context) => {
@@ -95,21 +132,8 @@ export default async (req, context) => {
       })
     }
 
-    const targetUser = await resolveTargetUser(currentUser)
+    const updatedUser = await updateIdentityUserMetadata(context, currentUser, capture)
 
-    if (!targetUser || !isUuid(targetUser.id)) {
-      return new Response(JSON.stringify({ error: 'Unable to resolve a valid Identity user ID for this account.' }), {
-        status: 500,
-        headers: { 'Content-Type': 'application/json' },
-      })
-    }
-
-    const updated = await admin.updateUser(
-      targetUser,
-      { user_metadata: buildUserMetadata(targetUser, capture) }
-    )
-
-    const updatedUser = updated?.data || updated || {}
     return Response.json({
       capture: normalizeUserCaptureShape(updatedUser?.user_metadata?.airon_capture) || capture,
       userMetadata: updatedUser?.user_metadata || {},

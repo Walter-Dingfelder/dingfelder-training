@@ -2,7 +2,7 @@
 import { Routes, Route, useNavigate, useLocation } from 'react-router-dom'
 import { useState, useEffect, useMemo } from 'react'
 import aironSplash from './assets/airon-splash.png'
-import { bootstrapNetlifyIdentity, signInNetlifyIdentity, signOutNetlifyIdentity, createAccountNetlifyIdentity } from './auth/netlifyIdentity.js'
+import { bootstrapNetlifyIdentity, signInNetlifyIdentity, signOutNetlifyIdentity, createAccountNetlifyIdentity, getUserCaptureFromIdentityUser, loadCurrentUserCaptureNetlifyIdentity, persistUserCaptureNetlifyIdentity } from './auth/netlifyIdentity.js'
 
 // ─── Training Programs ────────────────────────────────────────────────────────
 import LOTOFoundry     from './programs/LOTOFoundry.jsx'
@@ -1837,41 +1837,45 @@ function getEmptyUserCapture() {
   }
 }
 
-function loadUserCapture(user) {
-  const empty = getEmptyUserCapture()
-  if (typeof window === 'undefined') return empty
-  const key = getUserCaptureStorageKey(user)
-  if (!key) return empty
 
-  try {
-    const parsed = JSON.parse(window.localStorage.getItem(key) || '{}')
-    return {
-      acceptance: {
-        ...empty.acceptance,
-        ...(parsed.acceptance || {}),
-      },
-      profile: {
-        ...empty.profile,
-        ...(parsed.profile || {}),
-      },
-    }
-  } catch {
-    return empty
+function mergeUserCaptureData(baseCapture, overlayCapture) {
+  const empty = getEmptyUserCapture()
+  return {
+    acceptance: {
+      ...empty.acceptance,
+      ...(baseCapture?.acceptance || {}),
+      ...(overlayCapture?.acceptance || {}),
+    },
+    profile: {
+      ...empty.profile,
+      ...(baseCapture?.profile || {}),
+      ...(overlayCapture?.profile || {}),
+    },
   }
 }
 
-function saveUserCapture(user, nextPartial) {
-  const current = loadUserCapture(user)
-  const merged = {
-    acceptance: {
-      ...current.acceptance,
-      ...(nextPartial.acceptance || {}),
-    },
-    profile: {
-      ...current.profile,
-      ...(nextPartial.profile || {}),
-    },
+function loadUserCapture(user) {
+  const empty = getEmptyUserCapture()
+  const identityCapture = getUserCaptureFromIdentityUser(user)
+  let localCapture = null
+
+  if (typeof window !== 'undefined') {
+    const key = getUserCaptureStorageKey(user)
+    if (key) {
+      try {
+        localCapture = JSON.parse(window.localStorage.getItem(key) || 'null')
+      } catch {
+        localCapture = null
+      }
+    }
   }
+
+  return mergeUserCaptureData(mergeUserCaptureData(empty, localCapture), identityCapture)
+}
+
+function saveUserCaptureToLocalCache(user, nextPartial) {
+  const current = loadUserCapture(user)
+  const merged = mergeUserCaptureData(current, nextPartial)
 
   if (typeof window !== 'undefined') {
     const key = getUserCaptureStorageKey(user)
@@ -2544,13 +2548,17 @@ function UserCaptureGate({
   captureState,
   onClose,
   onSave,
+  saving = false,
+  error = '',
 }) {
   const [step, setStep] = useState('acceptance')
   const [acceptChecked, setAcceptChecked] = useState(false)
   const [profile, setProfile] = useState(() => captureState?.profile || getEmptyUserCapture().profile)
+  const [localError, setLocalError] = useState('')
 
   useEffect(() => {
     if (!open) return
+    setLocalError('')
     setProfile(captureState?.profile || getEmptyUserCapture().profile)
     if (hasAcceptedUserCapture(captureState)) {
       setAcceptChecked(true)
@@ -2574,22 +2582,36 @@ function UserCaptureGate({
     setProfile(prev => ({ ...prev, [field]: value }))
   }
 
-  const saveAcceptanceAndContinue = () => {
-    const next = onSave({
+  const saveAcceptanceAndContinue = async () => {
+    setLocalError('')
+    const next = await onSave({
       acceptance: {
         accepted: true,
         version: USER_CAPTURE_VERSION,
         acceptedAt: new Date().toISOString(),
       },
     })
+
+    if (!next) {
+      setLocalError('Unable to save your acceptance right now.')
+      return
+    }
+
     setAcceptChecked(true)
     setStep(hasCompletedUserProfile(next.profile || {}) ? 'complete' : 'profile')
   }
 
-  const saveProfileAndComplete = () => {
-    onSave({
+  const saveProfileAndComplete = async () => {
+    setLocalError('')
+    const next = await onSave({
       profile,
     })
+
+    if (!next) {
+      setLocalError('Unable to save your profile right now.')
+      return
+    }
+
     setStep('complete')
   }
 
@@ -2685,6 +2707,22 @@ function UserCaptureGate({
             })}
           </div>
 
+
+          {(error || localError) && (
+            <div style={{
+              marginBottom: 16,
+              padding: '12px 14px',
+              borderRadius: 12,
+              background: 'rgba(255,107,0,0.10)',
+              border: '1px solid rgba(255,107,0,0.26)',
+              color: '#FFB48F',
+              fontSize: 13,
+              lineHeight: 1.6,
+            }}>
+              {error || localError}
+            </div>
+          )}
+
           {step === 'acceptance' && (
             <div>
               <div style={{ color: '#FFFFFF', fontFamily: "'Barlow Condensed', sans-serif", fontSize: 28, fontWeight: 800, marginBottom: 12 }}>
@@ -2760,7 +2798,7 @@ function UserCaptureGate({
                 <button
                   type="button"
                   onClick={saveAcceptanceAndContinue}
-                  disabled={!acceptChecked}
+                  disabled={!acceptChecked || saving}
                   style={{
                     appearance: 'none',
                     border: '1px solid rgba(255,209,0,0.35)',
@@ -2771,11 +2809,11 @@ function UserCaptureGate({
                     fontFamily: "'IBM Plex Mono', monospace",
                     fontSize: 11,
                     letterSpacing: 0.5,
-                    cursor: acceptChecked ? 'pointer' : 'not-allowed',
+                    cursor: acceptChecked && !saving ? 'pointer' : 'not-allowed',
                     whiteSpace: 'nowrap',
                   }}
                 >
-                  Accept and Continue
+                  {saving ? 'Saving…' : 'Accept and Continue'}
                 </button>
               </div>
             </div>
@@ -2879,7 +2917,7 @@ function UserCaptureGate({
                 <button
                   type="button"
                   onClick={saveProfileAndComplete}
-                  disabled={!profileReady}
+                  disabled={!profileReady || saving}
                   style={{
                     appearance: 'none',
                     border: '1px solid rgba(34,204,102,0.35)',
@@ -2890,11 +2928,11 @@ function UserCaptureGate({
                     fontFamily: "'IBM Plex Mono', monospace",
                     fontSize: 11,
                     letterSpacing: 0.5,
-                    cursor: profileReady ? 'pointer' : 'not-allowed',
+                    cursor: profileReady && !saving ? 'pointer' : 'not-allowed',
                     whiteSpace: 'nowrap',
                   }}
                 >
-                  Save Profile
+                  {saving ? 'Saving…' : 'Save Profile'}
                 </button>
               </div>
             </div>
@@ -3082,6 +3120,9 @@ function PortalHome({ authState, onSignIn, onSignOut, onCreateAccount }) {
   const [createBusy, setCreateBusy] = useState(false)
   const [createError, setCreateError] = useState('')
   const [captureState, setCaptureState] = useState(() => getEmptyUserCapture())
+  const [captureHydrating, setCaptureHydrating] = useState(false)
+  const [captureSaving, setCaptureSaving] = useState(false)
+  const [captureError, setCaptureError] = useState('')
 
   useEffect(() => {
     const t = setInterval(() => setTick(x => x + 1), 1000)
@@ -3089,19 +3130,61 @@ function PortalHome({ authState, onSignIn, onSignOut, onCreateAccount }) {
   }, [])
 
   useEffect(() => {
-    if (authState.user?.email) {
-      setLoginEmail(authState.user.email)
-      setCreateEmail(authState.user.email)
-      const nextCapture = loadUserCapture(authState.user)
-      setCaptureState(nextCapture)
-      if (!isUserCaptureComplete(nextCapture)) {
-        setShowSetupGate(true)
+    let cancelled = false
+
+    async function hydrateSavedRecord() {
+      if (authState.user?.email) {
+        setLoginEmail(authState.user.email)
+        setCreateEmail(authState.user.email)
+        setCaptureError('')
+
+        const localOrIdentityCapture = loadUserCapture(authState.user)
+        setCaptureState(localOrIdentityCapture)
+        setCaptureHydrating(true)
+
+        const remote = await loadCurrentUserCaptureNetlifyIdentity(authState.user)
+        if (cancelled) return
+
+        let nextCapture = localOrIdentityCapture
+
+        if (remote.capture) {
+          nextCapture = saveUserCaptureToLocalCache(remote.user || authState.user, remote.capture)
+        }
+
+        if (!remote.capture && isUserCaptureComplete(localOrIdentityCapture)) {
+          const migrated = await persistUserCaptureNetlifyIdentity(authState.user, localOrIdentityCapture)
+          if (cancelled) return
+          if (migrated.capture) {
+            nextCapture = saveUserCaptureToLocalCache(migrated.user || authState.user, migrated.capture)
+          }
+          if (migrated.error) {
+            setCaptureError(migrated.error)
+          }
+        } else if (remote.error) {
+          setCaptureError(remote.error)
+        }
+
+        setCaptureState(nextCapture)
+        setCaptureHydrating(false)
+
+        if (!isUserCaptureComplete(nextCapture)) {
+          setShowSetupGate(true)
+        }
+      } else {
+        setCaptureState(getEmptyUserCapture())
+        setCaptureHydrating(false)
+        setCaptureSaving(false)
+        setCaptureError('')
+        setShowSetupGate(false)
+        setShowAccountPanel(false)
+        setShowCreateAccount(false)
       }
-    } else {
-      setCaptureState(getEmptyUserCapture())
-      setShowSetupGate(false)
-      setShowAccountPanel(false)
-      setShowCreateAccount(false)
+    }
+
+    hydrateSavedRecord()
+
+    return () => {
+      cancelled = true
     }
   }, [authState.user])
 
@@ -3159,13 +3242,11 @@ function PortalHome({ authState, onSignIn, onSignOut, onCreateAccount }) {
 
     const nextCapture = loadUserCapture(result.user)
     setCaptureState(nextCapture)
+    setCaptureHydrating(true)
     setLoginBusy(false)
     setLoginPassword('')
     setShowSignIn(false)
     setShowAccountPanel(true)
-    if (!isUserCaptureComplete(nextCapture)) {
-      setShowSetupGate(true)
-    }
   }
 
 
@@ -3190,14 +3271,12 @@ function PortalHome({ authState, onSignIn, onSignOut, onCreateAccount }) {
 
     const nextCapture = loadUserCapture(result.user)
     setCaptureState(nextCapture)
+    setCaptureHydrating(true)
     setCreateBusy(false)
     setCreatePassword('')
     setCreateConfirmPassword('')
     setShowCreateAccount(false)
     setShowAccountPanel(true)
-    if (!isUserCaptureComplete(nextCapture)) {
-      setShowSetupGate(true)
-    }
   }
 
   const handleProgramOpen = (prog) => {
@@ -3212,11 +3291,24 @@ function PortalHome({ authState, onSignIn, onSignOut, onCreateAccount }) {
     })
   }
 
-  const handleCaptureSave = (partial) => {
-    if (!authState.user) return captureState
-    const next = saveUserCapture(authState.user, partial)
-    setCaptureState(next)
-    return next
+  const handleCaptureSave = async (partial) => {
+    if (!authState.user) return null
+
+    const nextCapture = mergeUserCaptureData(captureState, partial)
+    setCaptureSaving(true)
+    setCaptureError('')
+
+    const persisted = await persistUserCaptureNetlifyIdentity(authState.user, nextCapture)
+    setCaptureSaving(false)
+
+    if (persisted.error) {
+      setCaptureError(persisted.error)
+      return null
+    }
+
+    const durableNext = saveUserCaptureToLocalCache(persisted.user || authState.user, persisted.capture || nextCapture)
+    setCaptureState(durableNext)
+    return durableNext
   }
 
   const setupComplete = isUserCaptureComplete(captureState)
@@ -3299,7 +3391,7 @@ function PortalHome({ authState, onSignIn, onSignOut, onCreateAccount }) {
                 letterSpacing: 1.5,
                 textTransform: 'uppercase',
               }}>
-                {authState.error ? 'Auth callback issue' : authState.user ? (setupComplete ? 'Saved record ready' : 'Setup required') : authState.ready ? 'Identity ready' : 'Identity loading'}
+                {authState.error ? 'Auth callback issue' : authState.user ? (captureHydrating ? 'Checking saved record' : (setupComplete ? 'Saved record ready' : 'Setup required')) : authState.ready ? 'Identity ready' : 'Identity loading'}
               </div>
               <div style={{
                 color: '#D4D4D4',
@@ -3382,6 +3474,38 @@ function PortalHome({ authState, onSignIn, onSignOut, onCreateAccount }) {
             lineHeight: 1.6,
           }}>
             {authState.error || authState.message}
+          </div>
+        )}
+
+        {authState.user && captureHydrating && (
+          <div style={{
+            marginTop: 16,
+            maxWidth: 760,
+            padding: '12px 14px',
+            borderRadius: 12,
+            background: 'rgba(255,209,0,0.08)',
+            border: '1px solid rgba(255,209,0,0.24)',
+            color: '#F6DD83',
+            fontSize: 13,
+            lineHeight: 1.6,
+          }}>
+            Checking your saved-record setup from the A.I.R.O.N. account record.
+          </div>
+        )}
+
+        {authState.user && captureError && (
+          <div style={{
+            marginTop: 16,
+            maxWidth: 760,
+            padding: '12px 14px',
+            borderRadius: 12,
+            background: 'rgba(255,107,0,0.10)',
+            border: '1px solid rgba(255,107,0,0.24)',
+            color: '#FFB48F',
+            fontSize: 13,
+            lineHeight: 1.6,
+          }}>
+            {captureError}
           </div>
         )}
 
@@ -3634,6 +3758,8 @@ function PortalHome({ authState, onSignIn, onSignOut, onCreateAccount }) {
         captureState={captureState}
         onClose={() => setShowSetupGate(false)}
         onSave={handleCaptureSave}
+        saving={captureSaving}
+        error={captureError}
       />
     </div>
   )

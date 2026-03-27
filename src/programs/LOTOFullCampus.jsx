@@ -746,7 +746,7 @@ export default function LOTOFullCampus() {
       <div style={{ fontSize: 72, marginBottom: 20 }}>🏆</div>
       <h1 style={{ color: "#FF6B00", fontFamily: "'Barlow Condensed',sans-serif", fontSize: 34, fontWeight: 900, margin: "0 0 10px" }}>FULL CAMPUS LOTO<br />TRAINING COMPLETE</h1>
       <p style={{ color: "#888", fontSize: 14, marginBottom: 28, lineHeight: 1.7, maxWidth: 480 }}>
-        You have completed all 9 LOTO training modules covering the entire Dingfelder Industrial Campus. This session satisfies awareness training requirements under OSHA 29 CFR 1910.147. Present this record to your supervisor and Safety Department. Authorized Employee certification requires hands-on verification in addition to this course.
+        You have completed all 9 LOTO training modules covering the entire A.I.R.O.N. training environment at the Dingfelder Industrial Campus. This session satisfies awareness training requirements under OSHA 29 CFR 1910.147. Present this record to your supervisor and Safety Department. Authorized Employee certification requires hands-on verification in addition to this course.
       </p>
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8, width: "100%", maxWidth: 520, marginBottom: 28 }}>
         {MODULES.map(m => (

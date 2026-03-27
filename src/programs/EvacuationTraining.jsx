@@ -183,7 +183,7 @@ const MODULES = [
         body:"In any emergency at Dingfelder, you have multiple ways to reach help. Use all available channels — do not assume someone else has already called.",
         icon:"📞",
         list:[
-          "📞 911 — Always appropriate for immediate life threat. Give: Dingfelder Industrial Campus + your building code + the nature of the emergency",
+          "📞 911 — Always appropriate for immediate life threat. Give: A.I.R.O.N. / Dingfelder Industrial Campus + your building code + the nature of the emergency",
           "📞 Campus Emergency Line — posted at all building entrances and on your IRIS badge",
           "📻 Radio — if you have a campus radio, Channel 1 is the emergency channel",
           "🏥 Medical: Call 911 first. Then Campus Emergency Line. Do NOT move an injured person unless they are in immediate additional danger",

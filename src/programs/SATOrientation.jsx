@@ -18,7 +18,7 @@ const SECTIONS = [
     id: "welcome",
     zone: "GATE",
     icon: "🏭",
-    title: "Welcome to Dingfelder Industrial Campus",
+    title: "Welcome to A.I.R.O.N. Safety Training",
     color: Y,
     slides: [
       {

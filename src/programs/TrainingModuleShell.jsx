@@ -1,6 +1,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import { getOfficialOshaSources } from "../data/oshaOfficialSources.js";
 
 const PAGE_BG = "#080808";
 const PANEL = "#0f0f0f";
@@ -132,29 +133,6 @@ function Callout({ callout, color }) {
   );
 }
 
-
-
-function normalizeQuizItem(question) {
-  const prompt =
-    typeof question?.q === "string"
-      ? question.q
-      : typeof question?.question === "string"
-      ? question.question
-      : "";
-
-  const options = Array.isArray(question?.options)
-    ? question.options
-    : Array.isArray(question?.choices)
-    ? question.choices
-    : [];
-
-  return {
-    prompt,
-    options,
-    answer: typeof question?.answer === "number" ? question.answer : null,
-  };
-}
-
 function QuizCard({ question, qIndex, answers, setAnswers, color }) {
   const selected = answers[qIndex];
   return (
@@ -186,10 +164,10 @@ function QuizCard({ question, qIndex, answers, setAnswers, color }) {
           lineHeight: 1.45,
         }}
       >
-        {normalizeQuizItem(question).prompt}
+        {question.q}
       </div>
       <div style={{ display: "grid", gap: 10 }}>
-        {normalizeQuizItem(question).options.map((option, idx) => {
+        {question.options.map((option, idx) => {
           const active = selected === idx;
           return (
             <button
@@ -211,6 +189,163 @@ function QuizCard({ question, qIndex, answers, setAnswers, color }) {
             </button>
           );
         })}
+      </div>
+    </div>
+  );
+}
+
+
+function OshaSourcePanel({ module, color }) {
+  const sourcePack = useMemo(() => getOfficialOshaSources(module), [module]);
+  const [activeSourceId, setActiveSourceId] = useState(sourcePack?.resources?.[0]?.id || null);
+
+  useEffect(() => {
+    setActiveSourceId(sourcePack?.resources?.[0]?.id || null);
+  }, [sourcePack?.title, module?.path]);
+
+  if (!sourcePack?.resources?.length) return null;
+
+  const activeSource =
+    sourcePack.resources.find((resource) => resource.id === activeSourceId) || sourcePack.resources[0];
+
+  return (
+    <div
+      style={{
+        marginTop: 20,
+        borderRadius: 10,
+        border: "1px solid #2a2400",
+        background: "linear-gradient(180deg, rgba(255,209,0,0.10), rgba(255,209,0,0.03))",
+        overflow: "hidden",
+      }}
+    >
+      <div
+        style={{
+          padding: "16px 18px 14px",
+          borderBottom: "1px solid rgba(255,209,0,0.14)",
+        }}
+      >
+        <div style={{ color: "#FFD100", fontFamily: MONO, fontSize: 11, letterSpacing: 1.5 }}>
+          OFFICIAL OSHA SOURCE
+        </div>
+        <div style={{ color: "#FFFFFF", fontFamily: CONDENSED, fontSize: 28, lineHeight: 1, marginTop: 8 }}>
+          {sourcePack.title}
+        </div>
+        <div style={{ color: "#E0D7A1", fontSize: 14, lineHeight: 1.65, marginTop: 10 }}>
+          {sourcePack.note}
+        </div>
+        <div
+          style={{
+            marginTop: 12,
+            padding: "10px 12px",
+            borderRadius: 8,
+            background: "rgba(255,209,0,0.10)",
+            border: "1px solid rgba(255,209,0,0.16)",
+            color: "#F5E9B6",
+            fontSize: 13,
+            lineHeight: 1.65,
+          }}
+        >
+          OSHA materials are displayed as official source references and training aids where available. Dingfelder may add practical explanation and quiz structure around them. This does not make a user OSHA certified, and site-specific or hands-on training duties still remain with the employer.
+        </div>
+      </div>
+
+      <div style={{ padding: 18 }}>
+        <div style={{ display: "grid", gap: 10 }}>
+          {sourcePack.resources.map((resource) => {
+            const isActive = resource.id === activeSource?.id;
+            return (
+              <div
+                key={resource.id}
+                style={{
+                  borderRadius: 10,
+                  background: "#0F0F0F",
+                  border: `1px solid ${isActive ? color : "#242424"}`,
+                  padding: 14,
+                }}
+              >
+                <div style={{ display: "flex", justifyContent: "space-between", gap: 12, flexWrap: "wrap", alignItems: "center" }}>
+                  <div>
+                    <div style={{ color: isActive ? color : "#FFFFFF", fontFamily: CONDENSED, fontSize: 20, lineHeight: 1 }}>
+                      {resource.title}
+                    </div>
+                    <div style={{ color: "#9E9E9E", fontFamily: MONO, fontSize: 11, letterSpacing: 1.3, marginTop: 6 }}>
+                      {resource.kind}
+                    </div>
+                  </div>
+                  <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                    <button
+                      onClick={() => setActiveSourceId(resource.id)}
+                      style={{
+                        background: isActive ? color : "#111111",
+                        color: isActive ? "#080808" : "#FFFFFF",
+                        border: `1px solid ${isActive ? color : "#303030"}`,
+                        borderRadius: 8,
+                        padding: "10px 12px",
+                        cursor: "pointer",
+                        fontFamily: CONDENSED,
+                        letterSpacing: 1,
+                      }}
+                    >
+                      Open in Panel
+                    </button>
+                    <a
+                      href={resource.url}
+                      target="_blank"
+                      rel="noreferrer"
+                      style={{
+                        background: "#111111",
+                        color: "#FFFFFF",
+                        border: "1px solid #303030",
+                        borderRadius: 8,
+                        padding: "10px 12px",
+                        textDecoration: "none",
+                        fontFamily: CONDENSED,
+                        letterSpacing: 1,
+                      }}
+                    >
+                      Open Official Source
+                    </a>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        {activeSource?.embedUrl && (
+          <div style={{ marginTop: 14 }}>
+            <div
+              style={{
+                color: "#C8C8C8",
+                fontFamily: MONO,
+                fontSize: 11,
+                letterSpacing: 1.5,
+                marginBottom: 10,
+              }}
+            >
+              CAPTIVE OSHA VIEWER
+            </div>
+            <div
+              style={{
+                borderRadius: 10,
+                overflow: "hidden",
+                border: "1px solid #2C2C2C",
+                background: "#050505",
+              }}
+            >
+              <iframe
+                title={activeSource.title}
+                src={activeSource.embedUrl}
+                style={{ width: "100%", height: 520, border: "none", background: "#FFFFFF" }}
+                loading="lazy"
+                referrerPolicy="strict-origin-when-cross-origin"
+              />
+            </div>
+            <div style={{ color: "#8E8E8E", fontSize: 12, lineHeight: 1.6, marginTop: 10 }}>
+              Some official OSHA pages or files may restrict embedded display. If the source does not render correctly here, use the “Open Official Source” button above.
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -255,17 +390,16 @@ export default function TrainingModuleShell({ module }) {
     forceScrollTop();
   }, [slideIndex, submitted]);
 
-  const slides = Array.isArray(module?.slides) ? module.slides : [];
-  const quiz = Array.isArray(module?.quiz) ? module.quiz.map(normalizeQuizItem) : [];
-  const progress = slides.length > 0 ? Math.round(((slideIndex + 1) / slides.length) * 100) : 0;
-  const allAnswered = quiz.every((_, idx) => answers[idx] !== undefined);
+  const slides = module.slides || [];
+  const progress = Math.round(((slideIndex + 1) / slides.length) * 100);
+  const allAnswered = module.quiz.every((_, idx) => answers[idx] !== undefined);
   const score = useMemo(
-    () => quiz.reduce((sum, q, idx) => sum + (answers[idx] === q.answer ? 1 : 0), 0),
-    [answers, quiz]
+    () => module.quiz.reduce((sum, q, idx) => sum + (answers[idx] === q.answer ? 1 : 0), 0),
+    [answers, module.quiz]
   );
 
   if (submitted) {
-    const passed = score >= Math.ceil(quiz.length * 0.7);
+    const passed = score >= Math.ceil(module.quiz.length * 0.7);
     return (
       <div
         style={{
@@ -463,7 +597,7 @@ export default function TrainingModuleShell({ module }) {
               Answer each checkpoint to complete the module record.
             </p>
             <div style={{ display: "grid", gap: 14 }}>
-              {quiz.map((question, idx) => (
+              {module.quiz.map((question, idx) => (
                 <QuizCard
                   key={idx}
                   question={question}
@@ -648,6 +782,8 @@ export default function TrainingModuleShell({ module }) {
               <div style={{ color: "#fff", marginTop: 4, lineHeight: 1.45 }}>~{module.minutes} min</div>
             </div>
           </div>
+
+          <OshaSourcePanel module={module} color={module.color} />
 
           <div style={{ marginTop: 20, color: "#D3D3D3", lineHeight: 1.72, fontSize: 15 }}>
             {slide.body}

@@ -1,4 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
+import { persistTrainingRecordNetlifyIdentity } from "../auth/netlifyIdentity.js";
+import { resolveModuleRecordMeta } from "../data/moduleRegistry.js";
 
 const MODULES = [
   {
@@ -456,6 +458,9 @@ export default function ArcFlashTraining() {
   const [phase, setPhase] = useState("slides");
   const [completed, setCompleted] = useState({});
   const [scanLine, setScanLine] = useState(0);
+  const [recordStatus, setRecordStatus] = useState({ busy: false, message: "", error: "" });
+  const recordSavedRef = useRef(false);
+  const moduleMeta = resolveModuleRecordMeta({ path: "/arcflash", label: "Arc Flash & Electrical Safety", categoryKey: "electrical-safety", categoryLabel: "Electrical Safety", source: "custom-module" });
   useEffect(() => { const t = setInterval(()=>setScanLine(x=>(x+1)%100),30); return ()=>clearInterval(t); }, []);
 
   const mod = MODULES[modIdx] || MODULES[0];
@@ -472,6 +477,61 @@ export default function ArcFlashTraining() {
   };
 
   const scanStyle = { background:`linear-gradient(180deg, transparent ${scanLine}%, rgba(0,180,255,0.04) ${scanLine+2}%, transparent ${scanLine+4}%)` };
+
+  useEffect(() => {
+    if (screen !== "complete") {
+      recordSavedRef.current = false;
+      setRecordStatus({ busy: false, message: "", error: "" });
+      return;
+    }
+
+    if (recordSavedRef.current) return;
+    recordSavedRef.current = true;
+
+    let cancelled = false;
+    setRecordStatus({ busy: true, message: "", error: "" });
+
+    persistTrainingRecordNetlifyIdentity(null, {
+      attemptId: `/arcflash:${Date.now()}:${Math.random().toString(36).slice(2, 8)}`,
+      moduleId: moduleMeta.moduleId,
+      moduleVersion: moduleMeta.version,
+      modulePath: "/arcflash",
+      moduleTitle: "Arc Flash & Electrical Safety",
+      categoryKey: moduleMeta.categoryKey,
+      categoryLabel: moduleMeta.categoryLabel,
+      requirementIds: moduleMeta.requirementIds,
+      requirementType: moduleMeta.category,
+      completionBucket: moduleMeta.category,
+      score: MODULES.length,
+      quizCorrect: MODULES.length,
+      quizTotal: MODULES.length,
+      passed: true,
+      completedAt: new Date().toISOString(),
+      runtimeMinutes: 25,
+      certificateClass: "Portal Completion Record",
+      certificateEligible: true,
+      reviewEnabled: moduleMeta.reviewEnabled,
+      recordRequired: moduleMeta.recordRequired,
+      source: moduleMeta.source || "custom-module",
+    }).then((result) => {
+      if (cancelled) return;
+      if (result?.skipped) {
+        setRecordStatus({ busy: false, message: "", error: "" });
+      } else if (result?.error) {
+        setRecordStatus({ busy: false, message: "", error: result.error });
+      } else {
+        setRecordStatus({
+          busy: false,
+          message: result?.message || "Retained training record saved to your A.I.R.O.N. account.",
+          error: "",
+        });
+      }
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [screen, moduleMeta]);
 
   if(screen==="home") return (
     <div style={{ minHeight:"100vh", background:"#010408", fontFamily:"'IBM Plex Sans',sans-serif", display:"flex", flexDirection:"column", ...scanStyle }}>
@@ -509,6 +569,9 @@ export default function ArcFlashTraining() {
       <div style={{ fontSize:64, marginBottom:16 }}>✅</div>
       <h1 style={{ color:"#00BFFF", fontFamily:"'IBM Plex Mono',monospace", fontSize:28, margin:"0 0 10px" }}>ARC FLASH TRAINING<br />COMPLETE</h1>
       <p style={{ color:"#556", fontSize:14, fontFamily:"'IBM Plex Sans',sans-serif", marginBottom:24, lineHeight:1.6, maxWidth:440 }}>All 4 modules passed. NFPA 70E awareness training complete for the Dingfelder campus.<br />Annual recertification required. Hands-on equipment training required before live electrical work.</p>
+      {recordStatus.busy && <div style={{ marginBottom: 10, color: "#9AB8FF", fontSize: 13 }}>Saving retained training record to your A.I.R.O.N. account…</div>}
+      {recordStatus.message && <div style={{ marginBottom: 10, color: "#8DFFB4", fontSize: 13 }}>{recordStatus.message}</div>}
+      {recordStatus.error && <div style={{ marginBottom: 10, color: "#FF9B7A", fontSize: 13 }}>{recordStatus.error}</div>}
       <div style={{ color:"#224", fontSize:10, fontFamily:"'IBM Plex Mono',monospace", letterSpacing:2 }}>DINGFELDER SAFETY · NFPA 70E · OSHA 1910.333 · {new Date().toLocaleDateString()}</div>
       <button onClick={()=>{setCompleted({});setScreen("home");}} style={{ marginTop:20, padding:"10px 24px", background:"transparent", border:"1px solid #0a1825", borderRadius:3, color:"#334", cursor:"pointer", fontFamily:"'IBM Plex Mono',monospace", fontSize:11, letterSpacing:2 }}>RESTART</button>
     </div>

@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useLocation } from "react-router-dom";
 import { persistTrainingRecordNetlifyIdentity } from "../auth/netlifyIdentity.js";
+import { resolveModuleRecordMeta } from "../data/moduleRegistry.js";
 
 // ─── ROLE → CONTEXT MAP ───────────────────────────────────────────────────────
 const ROLE_CONTEXT = {
@@ -416,6 +417,7 @@ export default function H2STraining() {
   const [screen, setScreen] = useState("home");
   const location = useLocation();
   const activeCategory = typeof location.state?.activeCategory === "string" ? location.state.activeCategory : "process-gas";
+  const moduleMeta = resolveModuleRecordMeta({ path: "/h2s", label: "H₂S Awareness & SCBA", categoryKey: activeCategory, categoryLabel: "Process / Gas", source: "custom-module" });
   const [recordStatus, setRecordStatus] = useState({ busy: false, message: "", error: "" });
   const recordSavedRef = useRef(false);
   const [modIdx, setModIdx] = useState(0);
@@ -493,10 +495,15 @@ export default function H2STraining() {
 
     persistTrainingRecordNetlifyIdentity(null, {
       attemptId: `/h2s:${Date.now()}:${Math.random().toString(36).slice(2, 8)}`,
+      moduleId: moduleMeta.moduleId,
+      moduleVersion: moduleMeta.version,
       modulePath: "/h2s",
       moduleTitle: "H₂S Awareness & SCBA",
-      categoryKey: activeCategory,
-      categoryLabel: "Process / Gas",
+      categoryKey: activeCategory || moduleMeta.categoryKey,
+      categoryLabel: moduleMeta.categoryLabel,
+      requirementIds: moduleMeta.requirementIds,
+      requirementType: moduleMeta.category,
+      completionBucket: moduleMeta.category,
       score: MODULES.length,
       quizCorrect: MODULES.length,
       quizTotal: MODULES.length,
@@ -505,7 +512,9 @@ export default function H2STraining() {
       runtimeMinutes: 20,
       certificateClass: "Portal Completion Record",
       certificateEligible: true,
-      source: "custom-module",
+      reviewEnabled: moduleMeta.reviewEnabled,
+      recordRequired: moduleMeta.recordRequired,
+      source: moduleMeta.source || "custom-module",
     }).then((result) => {
       if (cancelled) return;
       if (result?.skipped) {

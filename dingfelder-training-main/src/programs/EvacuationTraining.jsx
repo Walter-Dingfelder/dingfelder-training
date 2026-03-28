@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useLocation } from "react-router-dom";
 import { persistTrainingRecordNetlifyIdentity } from "../auth/netlifyIdentity.js";
+import { resolveModuleRecordMeta } from "../data/moduleRegistry.js";
 
 // ─── ROLE → FACILITY & MUSTER MAP ────────────────────────────────────────────
 const ROLE_MAP = {
@@ -393,6 +394,7 @@ export default function EvacuationTraining() {
   const [screen,setScreen]=useState("home");
   const location = useLocation();
   const activeCategory = typeof location.state?.activeCategory === "string" ? location.state.activeCategory : "campus";
+  const moduleMeta = resolveModuleRecordMeta({ path: "/evacuation", label: "Emergency Evacuation & Muster", categoryKey: activeCategory, categoryLabel: "Campus", source: "custom-module" });
   const [recordStatus, setRecordStatus] = useState({ busy: false, message: "", error: "" });
   const recordSavedRef = useRef(false);
   const [modIdx,setModIdx]=useState(0);
@@ -461,10 +463,15 @@ export default function EvacuationTraining() {
 
     persistTrainingRecordNetlifyIdentity(null, {
       attemptId: `/evacuation:${Date.now()}:${Math.random().toString(36).slice(2, 8)}`,
+      moduleId: moduleMeta.moduleId,
+      moduleVersion: moduleMeta.version,
       modulePath: "/evacuation",
       moduleTitle: "Emergency Evacuation & Muster",
-      categoryKey: activeCategory,
-      categoryLabel: "Campus",
+      categoryKey: activeCategory || moduleMeta.categoryKey,
+      categoryLabel: moduleMeta.categoryLabel,
+      requirementIds: moduleMeta.requirementIds,
+      requirementType: moduleMeta.category,
+      completionBucket: moduleMeta.category,
       score: MODULES.length,
       quizCorrect: MODULES.length,
       quizTotal: MODULES.length,
@@ -473,7 +480,9 @@ export default function EvacuationTraining() {
       runtimeMinutes: 20,
       certificateClass: "Portal Completion Record",
       certificateEligible: true,
-      source: "custom-module",
+      reviewEnabled: moduleMeta.reviewEnabled,
+      recordRequired: moduleMeta.recordRequired,
+      source: moduleMeta.source || "custom-module",
     }).then((result) => {
       if (cancelled) return;
       if (result?.skipped) {

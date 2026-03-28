@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
-import { useLocation } from "react-router-dom";
 import { persistTrainingRecordNetlifyIdentity } from "../auth/netlifyIdentity.js";
+import { resolveModuleRecordMeta } from "../data/moduleRegistry.js";
 
 // ─── FULL MODULE DATA ──────────────────────────────────────────────────────────
 
@@ -643,70 +643,22 @@ function QuizView({ questions, color, moduleName, onComplete }) {
   );
 }
 
-function formatCategoryLabel(categoryKey) {
-  if (typeof categoryKey !== "string" || !categoryKey.trim()) return "A.I.R.O.N. training";
-  return categoryKey
-    .replace(/[-_]+/g, " ")
-    .replace(/\b\w/g, (match) => match.toUpperCase());
-}
-
 // ─── MAIN APP ─────────────────────────────────────────────────────────────────
 
 export default function LOTOFullCampus() {
-  const location = useLocation();
   const [screen, setScreen] = useState("home");
   const [filter, setFilter] = useState("ALL");
   const [modIdx, setModIdx] = useState(0);
   const [slideIdx, setSlideIdx] = useState(0);
   const [phase, setPhase] = useState("slides");
   const [completed, setCompleted] = useState({});
+  const [recordStatus, setRecordStatus] = useState({ busy: false, message: "", error: "" });
   const recordSavedRef = useRef(false);
-  const activeCategory = typeof location.state?.activeCategory === "string" ? location.state.activeCategory : "campus";
+  const moduleMeta = resolveModuleRecordMeta({ path: "/loto-campus", label: "LOTO — Full Campus", categoryKey: "loto", categoryLabel: "LOTO", source: "custom-module" });
 
   const mod = MODULES[modIdx] || MODULES[0];
   const allComplete = MODULES.every(m => completed[m.id]);
   const completedCount = Object.keys(completed).length;
-
-  useEffect(() => {
-    if (screen !== "complete") {
-      recordSavedRef.current = false;
-      return;
-    }
-
-    if (recordSavedRef.current) return;
-    recordSavedRef.current = true;
-
-    let cancelled = false;
-
-    persistTrainingRecordNetlifyIdentity(null, {
-      attemptId: `/loto-campus:${Date.now()}:${Math.random().toString(36).slice(2, 8)}`,
-      modulePath: "/loto-campus",
-      moduleTitle: "LOTO — Full Campus",
-      categoryKey: activeCategory,
-      categoryLabel: formatCategoryLabel(activeCategory),
-      score: MODULES.length,
-      quizCorrect: MODULES.length,
-      quizTotal: MODULES.length,
-      passed: true,
-      completedAt: new Date().toISOString(),
-      runtimeMinutes: 35,
-      certificateClass: "Portal Completion Record",
-      certificateEligible: true,
-      source: "custom-module",
-    })
-      .then((result) => {
-        if (cancelled || !result?.error) return;
-        console.error("A.I.R.O.N. retained record write failed.", result.error);
-      })
-      .catch((error) => {
-        if (cancelled) return;
-        console.error("A.I.R.O.N. retained record write failed.", error);
-      });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [activeCategory, screen]);
 
   const startMod = (idx) => { setModIdx(idx); setSlideIdx(0); setPhase("slides"); setScreen("module"); };
 
@@ -725,6 +677,61 @@ export default function LOTOFullCampus() {
   };
 
   const filtered = filter === "ALL" ? MODULES : MODULES.filter(m => m.category === filter);
+
+  useEffect(() => {
+    if (screen !== "complete") {
+      recordSavedRef.current = false;
+      setRecordStatus({ busy: false, message: "", error: "" });
+      return;
+    }
+
+    if (recordSavedRef.current) return;
+    recordSavedRef.current = true;
+
+    let cancelled = false;
+    setRecordStatus({ busy: true, message: "", error: "" });
+
+    persistTrainingRecordNetlifyIdentity(null, {
+      attemptId: `/loto-campus:${Date.now()}:${Math.random().toString(36).slice(2, 8)}`,
+      moduleId: moduleMeta.moduleId,
+      moduleVersion: moduleMeta.version,
+      modulePath: "/loto-campus",
+      moduleTitle: "LOTO — Full Campus",
+      categoryKey: moduleMeta.categoryKey,
+      categoryLabel: moduleMeta.categoryLabel,
+      requirementIds: moduleMeta.requirementIds,
+      requirementType: moduleMeta.category,
+      completionBucket: moduleMeta.category,
+      score: MODULES.length,
+      quizCorrect: MODULES.length,
+      quizTotal: MODULES.length,
+      passed: true,
+      completedAt: new Date().toISOString(),
+      runtimeMinutes: 35,
+      certificateClass: "Portal Completion Record",
+      certificateEligible: true,
+      reviewEnabled: moduleMeta.reviewEnabled,
+      recordRequired: moduleMeta.recordRequired,
+      source: moduleMeta.source || "custom-module",
+    }).then((result) => {
+      if (cancelled) return;
+      if (result?.skipped) {
+        setRecordStatus({ busy: false, message: "", error: "" });
+      } else if (result?.error) {
+        setRecordStatus({ busy: false, message: "", error: result.error });
+      } else {
+        setRecordStatus({
+          busy: false,
+          message: result?.message || "Retained training record saved to your A.I.R.O.N. account.",
+          error: "",
+        });
+      }
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [screen, moduleMeta]);
 
   // ── HOME ──────────────────────────────────────────────────────
   if (screen === "home") return (
@@ -820,6 +827,9 @@ export default function LOTOFullCampus() {
           </div>
         ))}
       </div>
+      {recordStatus.busy && <div style={{ marginBottom: 10, color: "#9AB8FF", fontSize: 13 }}>Saving retained training record to your A.I.R.O.N. account…</div>}
+      {recordStatus.message && <div style={{ marginBottom: 10, color: "#8DFFB4", fontSize: 13 }}>{recordStatus.message}</div>}
+      {recordStatus.error && <div style={{ marginBottom: 10, color: "#FF9B7A", fontSize: 13 }}>{recordStatus.error}</div>}
       <div style={{ color: "#2a2a2a", fontSize: 11, fontFamily: "'Barlow Condensed',sans-serif", letterSpacing: 2 }}>
         DINGFELDER · OSHA 29 CFR 1910.147 · NFPA 58 · {new Date().toLocaleDateString()}
       </div>

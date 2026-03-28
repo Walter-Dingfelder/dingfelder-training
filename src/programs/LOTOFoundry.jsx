@@ -1,6 +1,4 @@
 import { useState, useEffect, useRef } from "react";
-import { useLocation } from "react-router-dom";
-import { persistTrainingRecordNetlifyIdentity } from "../auth/netlifyIdentity.js";
 
 // ─── DATA ────────────────────────────────────────────────────────────────────
 
@@ -235,8 +233,9 @@ const EnergyIcon = ({ type }) => {
 };
 
 const SlideView = ({ slide, moduleColor, onNext, onPrev, isFirst, isLast }) => {
+  const safeSlide = slide || { heading: "LOTO Module", body: "This slide could not be loaded.", visual: "lock" };
   const [visible, setVisible] = useState(false);
-  useEffect(() => { setVisible(false); const t = setTimeout(() => setVisible(true), 50); return () => clearTimeout(t); }, [slide]);
+  useEffect(() => { setVisible(false); const t = setTimeout(() => setVisible(true), 50); return () => clearTimeout(t); }, [safeSlide.heading]);
 
   return (
     <div style={{
@@ -245,21 +244,21 @@ const SlideView = ({ slide, moduleColor, onNext, onPrev, isFirst, isLast }) => {
       transition: "all 0.35s ease"
     }}>
       {/* Step badge */}
-      {slide.step && (
+      {safeSlide.step && (
         <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16 }}>
           <div style={{
             width: 40, height: 40, borderRadius: "50%", background: moduleColor,
             display: "flex", alignItems: "center", justifyContent: "center",
             fontSize: 18, fontWeight: 900, color: "#000", fontFamily: "'Barlow Condensed', sans-serif"
-          }}>{slide.step}</div>
+          }}>{safeSlide.step}</div>
           <div style={{ height: 2, flex: 1, background: `${moduleColor}33` }} />
-          <span style={{ color: moduleColor, fontSize: 11, fontFamily: "'Barlow Condensed', sans-serif", letterSpacing: 3, textTransform: "uppercase" }}>Step {slide.step} of 8</span>
+          <span style={{ color: moduleColor, fontSize: 11, fontFamily: "'Barlow Condensed', sans-serif", letterSpacing: 3, textTransform: "uppercase" }}>Step {safeSlide.step} of 8</span>
         </div>
       )}
 
       {/* Visual icon */}
       <div style={{ textAlign: "center", marginBottom: 20 }}>
-        <EnergyIcon type={slide.visual} />
+        <EnergyIcon type={safeSlide.visual} />
       </div>
 
       {/* Heading */}
@@ -267,18 +266,18 @@ const SlideView = ({ slide, moduleColor, onNext, onPrev, isFirst, isLast }) => {
         margin: "0 0 14px", fontSize: 26, fontWeight: 800,
         fontFamily: "'Barlow Condensed', sans-serif",
         color: "#fff", letterSpacing: 0.5, lineHeight: 1.2
-      }}>{slide.heading}</h2>
+      }}>{safeSlide.heading}</h2>
 
       {/* Body */}
       <p style={{
         margin: "0 0 16px", fontSize: 15, lineHeight: 1.7,
         color: "#bbb", fontFamily: "'IBM Plex Sans', sans-serif"
-      }}>{slide.body}</p>
+      }}>{safeSlide.body}</p>
 
       {/* List */}
-      {slide.list && (
+      {safeSlide.list && (
         <ul style={{ margin: "0 0 16px", padding: 0, listStyle: "none" }}>
-          {slide.list.map((item, i) => (
+          {safeSlide.list.map((item, i) => (
             <li key={i} style={{
               padding: "7px 12px", marginBottom: 6,
               background: "#111", border: `1px solid #2a2a2a`,
@@ -291,14 +290,14 @@ const SlideView = ({ slide, moduleColor, onNext, onPrev, isFirst, isLast }) => {
       )}
 
       {/* Fact callout */}
-      {slide.fact && (
+      {safeSlide.fact && (
         <div style={{
           padding: "12px 16px", background: `${moduleColor}15`,
           border: `1px solid ${moduleColor}40`, borderRadius: 6,
           marginBottom: 16
         }}>
           <span style={{ fontSize: 12, color: moduleColor, fontFamily: "'Barlow Condensed', sans-serif", letterSpacing: 2, textTransform: "uppercase", display: "block", marginBottom: 4 }}>⚠ KEY FACT</span>
-          <span style={{ fontSize: 13, color: "#ddd", fontFamily: "'IBM Plex Sans', sans-serif", lineHeight: 1.5 }}>{slide.fact}</span>
+          <span style={{ fontSize: 13, color: "#ddd", fontFamily: "'IBM Plex Sans', sans-serif", lineHeight: 1.5 }}>{safeSlide.fact}</span>
         </div>
       )}
 
@@ -328,7 +327,8 @@ const QuizView = ({ questions, moduleColor, onComplete, moduleName }) => {
   const [score, setScore] = useState(0);
   const [done, setDone] = useState(false);
 
-  const q = questions[current];
+  const safeQuestions = Array.isArray(questions) ? questions : [];
+  const q = safeQuestions[current];
 
   const handleSelect = (idx) => {
     if (revealed) return;
@@ -338,13 +338,24 @@ const QuizView = ({ questions, moduleColor, onComplete, moduleName }) => {
   };
 
   const handleNext = () => {
-    if (current + 1 >= questions.length) { setDone(true); return; }
+    if (current + 1 >= safeQuestions.length) { setDone(true); return; }
     setCurrent(c => c + 1);
     setSelected(null);
     setRevealed(false);
   };
 
   const passed = score >= 2;
+
+  if (!q) {
+    return (
+      <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textAlign: "center" }}>
+        <div style={{ fontSize: 64, marginBottom: 16 }}>⚠️</div>
+        <h2 style={{ color: moduleColor, fontFamily: "'Barlow Condensed', sans-serif", fontSize: 30, margin: "0 0 8px" }}>QUIZ UNAVAILABLE</h2>
+        <p style={{ color: "#aaa", fontFamily: "'IBM Plex Sans', sans-serif", fontSize: 15, marginBottom: 24 }}>The selected LOTO quiz items could not be loaded for this module.</p>
+        <button onClick={() => onComplete(false)} style={{ padding: "12px 32px", background: "transparent", border: `1px solid ${moduleColor}`, borderRadius: 6, color: moduleColor, cursor: "pointer", fontFamily: "'Barlow Condensed', sans-serif", fontSize: 15, letterSpacing: 2, fontWeight: 700 }}>RETURN</button>
+      </div>
+    );
+  }
 
   if (done) {
     return (
@@ -354,7 +365,7 @@ const QuizView = ({ questions, moduleColor, onComplete, moduleName }) => {
           {passed ? "MODULE PASSED" : "REVIEW REQUIRED"}
         </h2>
         <p style={{ color: "#aaa", fontFamily: "'IBM Plex Sans', sans-serif", fontSize: 15, marginBottom: 24 }}>
-          You answered {score} of {questions.length} questions correctly.
+          You answered {score} of {safeQuestions.length} questions correctly.
           {!passed && " You must score 2/3 or better to proceed. Please review the slides."}
         </p>
         <div style={{
@@ -362,7 +373,7 @@ const QuizView = ({ questions, moduleColor, onComplete, moduleName }) => {
           borderRadius: 8, marginBottom: 16
         }}>
           <span style={{ color: "#000", fontWeight: 800, fontSize: 24, fontFamily: "'Barlow Condensed', sans-serif" }}>
-            {score}/{questions.length}
+            {score}/{safeQuestions.length}
           </span>
         </div>
         <button onClick={() => onComplete(passed)} style={{
@@ -427,17 +438,13 @@ const QuizView = ({ questions, moduleColor, onComplete, moduleName }) => {
 
 export default function LOTOTraining() {
   const [screen, setScreen] = useState("home"); // home | module | complete
-  const location = useLocation();
-  const activeCategory = typeof location.state?.activeCategory === "string" ? location.state.activeCategory : "loto";
-  const [recordStatus, setRecordStatus] = useState({ busy: false, message: "", error: "" });
-  const recordSavedRef = useRef(false);
   const [moduleIdx, setModuleIdx] = useState(0);
   const [slideIdx, setSlideIdx] = useState(0);
   const [phase, setPhase] = useState("slides"); // slides | quiz
   const [completedModules, setCompletedModules] = useState({});
   const [allDone, setAllDone] = useState(false);
 
-  const mod = MODULES[moduleIdx];
+  const mod = MODULES[moduleIdx] || MODULES[0];
 
   const startModule = (idx) => {
     setModuleIdx(idx);
@@ -476,8 +483,8 @@ export default function LOTOTraining() {
       <div style={{ background: "#0d0d0d", borderBottom: "1px solid #1e1e1e", padding: "16px 24px", display: "flex", alignItems: "center", gap: 14 }}>
         <div style={{ width: 40, height: 40, background: "#FF6B00", borderRadius: 6, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20 }}>⚡</div>
         <div>
-          <div style={{ color: "#fff", fontFamily: "'Barlow Condensed', sans-serif", fontSize: 18, fontWeight: 800, letterSpacing: 1 }}>DINGFELDER INDUSTRIAL</div>
-          <div style={{ color: "#555", fontSize: 11, letterSpacing: 3, textTransform: "uppercase" }}>Safety Training Division</div>
+          <div style={{ color: "#fff", fontFamily: "'Barlow Condensed', sans-serif", fontSize: 18, fontWeight: 800, letterSpacing: 1 }}>A.I.R.O.N. SAFETY TRAINING</div>
+          <div style={{ color: "#555", fontSize: 11, letterSpacing: 3, textTransform: "uppercase" }}>LOTO — FOUNDRY FOCUS</div>
         </div>
         <div style={{ marginLeft: "auto", padding: "4px 12px", background: "#FF6B0022", border: "1px solid #FF6B0044", borderRadius: 4 }}>
           <span style={{ color: "#FF6B00", fontSize: 11, fontFamily: "'Barlow Condensed', sans-serif", letterSpacing: 2 }}>OSHA 29 CFR 1910.147</span>
@@ -538,55 +545,6 @@ export default function LOTOTraining() {
   );
 
   // ── COMPLETE ───────────────────────────────────────────────────────────────
-
-  useEffect(() => {
-    if (screen !== "complete") {
-      recordSavedRef.current = false;
-      setRecordStatus({ busy: false, message: "", error: "" });
-      return;
-    }
-
-    if (recordSavedRef.current) return;
-    recordSavedRef.current = true;
-
-    let cancelled = false;
-    setRecordStatus({ busy: true, message: "", error: "" });
-
-    persistTrainingRecordNetlifyIdentity(null, {
-      attemptId: `/loto:${Date.now()}:${Math.random().toString(36).slice(2, 8)}`,
-      modulePath: "/loto",
-      moduleTitle: "LOTO — Foundry Focus",
-      categoryKey: activeCategory,
-      categoryLabel: "LOTO",
-      score: MODULES.length,
-      quizCorrect: MODULES.length,
-      quizTotal: MODULES.length,
-      passed: true,
-      completedAt: new Date().toISOString(),
-      runtimeMinutes: 20,
-      certificateClass: "Portal Completion Record",
-      certificateEligible: true,
-      source: "custom-module",
-    }).then((result) => {
-      if (cancelled) return;
-      if (result?.skipped) {
-        setRecordStatus({ busy: false, message: "", error: "" });
-      } else if (result?.error) {
-        setRecordStatus({ busy: false, message: "", error: result.error });
-      } else {
-        setRecordStatus({
-          busy: false,
-          message: result?.message || "Retained training record saved to your A.I.R.O.N. account.",
-          error: "",
-        });
-      }
-    });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [screen, activeCategory]);
-
   if (screen === "complete") return (
     <div style={{
       minHeight: "100vh", background: "#0a0a0a", display: "flex",
@@ -611,17 +569,6 @@ export default function LOTOTraining() {
       <div style={{ color: "#444", fontSize: 12, fontFamily: "'Barlow Condensed', sans-serif", letterSpacing: 2 }}>
         DINGFELDER SAFETY TRAINING · OSHA 29 CFR 1910.147 · {new Date().toLocaleDateString()}
       </div>
-
-      {recordStatus.message ? (
-        <div style={{ padding:"12px 14px", background:"rgba(34,204,102,0.10)", border:"1px solid rgba(34,204,102,0.35)", borderRadius:8, color:"#9AF0B9", fontSize:13, lineHeight:1.6, maxWidth:520, marginBottom:16 }}>
-          {recordStatus.message}
-        </div>
-      ) : null}
-      {recordStatus.error ? (
-        <div style={{ padding:"12px 14px", background:"rgba(255,107,0,0.10)", border:"1px solid rgba(255,107,0,0.35)", borderRadius:8, color:"#FFB27A", fontSize:13, lineHeight:1.6, maxWidth:520, marginBottom:16 }}>
-          {recordStatus.error}
-        </div>
-      ) : null}
     </div>
   );
 

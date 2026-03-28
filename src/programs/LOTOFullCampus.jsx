@@ -1,6 +1,4 @@
-import { useState, useEffect, useRef } from "react";
-import { useLocation } from "react-router-dom";
-import { persistTrainingRecordNetlifyIdentity } from "../auth/netlifyIdentity.js";
+import { useState, useEffect } from "react";
 
 // ─── FULL MODULE DATA ──────────────────────────────────────────────────────────
 
@@ -536,29 +534,30 @@ function FadeIn({ children, deps }) {
 // ─── SLIDE VIEW ───────────────────────────────────────────────────────────────
 
 function SlideView({ slide, color, onNext, onPrev, isFirst, isLast }) {
+  const safeSlide = slide || { heading: 'LOTO Full Campus Module', body: 'This slide could not be loaded.', visual: '⚠️' };
   return (
-    <FadeIn deps={[slide.heading]}>
-      {slide.step && (
+    <FadeIn deps={[safeSlide.heading]}>
+      {safeSlide.step && (
         <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14 }}>
-          <div style={{ width: 36, height: 36, borderRadius: "50%", background: color, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16, fontWeight: 900, color: "#000", fontFamily: "'Barlow Condensed',sans-serif", flexShrink: 0 }}>{slide.step}</div>
+          <div style={{ width: 36, height: 36, borderRadius: "50%", background: color, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16, fontWeight: 900, color: "#000", fontFamily: "'Barlow Condensed',sans-serif", flexShrink: 0 }}>{safeSlide.step}</div>
           <div style={{ flex: 1, height: 1, background: `${color}33` }} />
-          <span style={{ color: color, fontSize: 10, fontFamily: "'Barlow Condensed',sans-serif", letterSpacing: 3 }}>STEP {slide.step} OF 8</span>
+          <span style={{ color: color, fontSize: 10, fontFamily: "'Barlow Condensed',sans-serif", letterSpacing: 3 }}>STEP {safeSlide.step} OF 8</span>
         </div>
       )}
-      <div style={{ textAlign: "center", fontSize: 52, marginBottom: 14, filter: "drop-shadow(0 0 16px rgba(255,255,255,0.15))" }}>{slide.visual}</div>
-      <h2 style={{ margin: "0 0 12px", fontSize: 23, fontWeight: 800, fontFamily: "'Barlow Condensed',sans-serif", color: "#fff", lineHeight: 1.2 }}>{slide.heading}</h2>
-      <p style={{ margin: "0 0 14px", fontSize: 14, lineHeight: 1.7, color: "#bbb", fontFamily: "'IBM Plex Sans',sans-serif" }}>{slide.body}</p>
-      {slide.list && (
+      <div style={{ textAlign: "center", fontSize: 52, marginBottom: 14, filter: "drop-shadow(0 0 16px rgba(255,255,255,0.15))" }}>{safeSlide.visual}</div>
+      <h2 style={{ margin: "0 0 12px", fontSize: 23, fontWeight: 800, fontFamily: "'Barlow Condensed',sans-serif", color: "#fff", lineHeight: 1.2 }}>{safeSlide.heading}</h2>
+      <p style={{ margin: "0 0 14px", fontSize: 14, lineHeight: 1.7, color: "#bbb", fontFamily: "'IBM Plex Sans',sans-serif" }}>{safeSlide.body}</p>
+      {safeSlide.list && (
         <ul style={{ margin: "0 0 14px", padding: 0, listStyle: "none" }}>
-          {slide.list.map((item, i) => (
+          {safeSlide.list.map((item, i) => (
             <li key={i} style={{ padding: "7px 12px", marginBottom: 5, background: "#111", border: "1px solid #222", borderLeft: `3px solid ${color}`, borderRadius: 4, fontSize: 12.5, color: "#ccc", fontFamily: "'IBM Plex Sans',sans-serif", lineHeight: 1.5 }}>{item}</li>
           ))}
         </ul>
       )}
-      {slide.fact && (
+      {safeSlide.fact && (
         <div style={{ padding: "11px 14px", background: `${color}18`, border: `1px solid ${color}44`, borderRadius: 6, marginBottom: 14 }}>
           <span style={{ fontSize: 10, color: color, fontFamily: "'Barlow Condensed',sans-serif", letterSpacing: 2, display: "block", marginBottom: 3 }}>⚠ KEY FACT</span>
-          <span style={{ fontSize: 13, color: "#ddd", fontFamily: "'IBM Plex Sans',sans-serif", lineHeight: 1.5 }}>{slide.fact}</span>
+          <span style={{ fontSize: 13, color: "#ddd", fontFamily: "'IBM Plex Sans',sans-serif", lineHeight: 1.5 }}>{safeSlide.fact}</span>
         </div>
       )}
       <div style={{ display: "flex", gap: 8, marginTop: "auto", paddingTop: 14 }}>
@@ -577,21 +576,31 @@ function QuizView({ questions, color, moduleName, onComplete }) {
   const [rev, setRev] = useState(false);
   const [score, setScore] = useState(0);
   const [done, setDone] = useState(false);
-  const q = questions[cur];
+  const safeQuestions = Array.isArray(questions) ? questions : [];
+  const q = safeQuestions[cur];
   const passed = score >= 2;
 
+  if (!q) return (
+    <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textAlign: "center" }}>
+      <div style={{ fontSize: 64, marginBottom: 14 }}>⚠️</div>
+      <h2 style={{ color, fontFamily: "\'Barlow Condensed\',sans-serif", fontSize: 28, margin: "0 0 8px" }}>QUIZ UNAVAILABLE</h2>
+      <p style={{ color: "#888", fontSize: 14, fontFamily: "\'IBM Plex Sans\',sans-serif", marginBottom: 20, lineHeight: 1.5 }}>The selected LOTO Full Campus quiz items could not be loaded.</p>
+      <button onClick={() => onComplete(false)} style={{ padding: "12px 28px", background: "transparent", border: `1px solid ${color}`, borderRadius: 6, color, cursor: "pointer", fontFamily: "\'Barlow Condensed\',sans-serif", fontSize: 14, letterSpacing: 2, fontWeight: 700 }}>RETURN</button>
+    </div>
+  );
+
   const pick = (i) => { if (rev) return; setSel(i); setRev(true); if (i === q.answer) setScore(s => s + 1); };
-  const next = () => { if (cur + 1 >= questions.length) { setDone(true); return; } setCur(c => c + 1); setSel(null); setRev(false); };
+  const next = () => { if (cur + 1 >= safeQuestions.length) { setDone(true); return; } setCur(c => c + 1); setSel(null); setRev(false); };
 
   if (done) return (
     <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textAlign: "center" }}>
       <div style={{ fontSize: 64, marginBottom: 14 }}>{passed ? "✅" : "❌"}</div>
       <h2 style={{ color, fontFamily: "'Barlow Condensed',sans-serif", fontSize: 28, margin: "0 0 8px" }}>{passed ? "MODULE PASSED" : "REVIEW REQUIRED"}</h2>
       <p style={{ color: "#888", fontSize: 14, fontFamily: "'IBM Plex Sans',sans-serif", marginBottom: 20, lineHeight: 1.5 }}>
-        {score}/{questions.length} correct.{!passed && " Score 2/3 or better to pass. Please review the slides."}
+        {score}/{safeQuestions.length} correct.{!passed && " Score 2/3 or better to pass. Please review the slides."}
       </p>
       <div style={{ padding: "14px 28px", background: passed ? color : "#222", borderRadius: 8, marginBottom: 20 }}>
-        <span style={{ color: "#000", fontWeight: 900, fontSize: 22, fontFamily: "'Barlow Condensed',sans-serif" }}>{score}/{questions.length}</span>
+        <span style={{ color: "#000", fontWeight: 900, fontSize: 22, fontFamily: "'Barlow Condensed',sans-serif" }}>{score}/{safeQuestions.length}</span>
       </div>
       <button onClick={() => onComplete(passed)} style={{ padding: "12px 28px", background: passed ? color : "transparent", border: passed ? "none" : `1px solid ${color}`, borderRadius: 6, color: passed ? "#000" : color, cursor: "pointer", fontFamily: "'Barlow Condensed',sans-serif", fontSize: 14, letterSpacing: 2, fontWeight: 700 }}>
         {passed ? "CONTINUE →" : "RETAKE MODULE"}
@@ -602,12 +611,12 @@ function QuizView({ questions, color, moduleName, onComplete }) {
   return (
     <FadeIn deps={[cur]}>
       <div style={{ marginBottom: 16 }}>
-        <span style={{ color, fontFamily: "'Barlow Condensed',sans-serif", fontSize: 11, letterSpacing: 3 }}>QUIZ — {moduleName.toUpperCase()} · Q{cur + 1}/{questions.length}</span>
-        <ProgressBar current={cur} total={questions.length} color={color} />
+        <span style={{ color, fontFamily: "'Barlow Condensed',sans-serif", fontSize: 11, letterSpacing: 3 }}>QUIZ — {moduleName.toUpperCase()} · Q{cur + 1}/{safeQuestions.length}</span>
+        <ProgressBar current={cur} total={safeQuestions.length} color={color} />
       </div>
       <h2 style={{ color: "#fff", fontFamily: "'Barlow Condensed',sans-serif", fontSize: 20, margin: "0 0 20px", lineHeight: 1.3 }}>{q.q}</h2>
       <div style={{ display: "flex", flexDirection: "column", gap: 8, flex: 1 }}>
-        {q.options.map((opt, i) => {
+        {(Array.isArray(q.options) ? q.options : []).map((opt, i) => {
           let bg = "#111", bdr = "#222", clr = "#bbb";
           if (rev) {
             if (i === q.answer) { bg = `${color}22`; bdr = color; clr = "#fff"; }
@@ -636,17 +645,13 @@ function QuizView({ questions, color, moduleName, onComplete }) {
 
 export default function LOTOFullCampus() {
   const [screen, setScreen] = useState("home");
-  const location = useLocation();
-  const activeCategory = typeof location.state?.activeCategory === "string" ? location.state.activeCategory : "loto";
-  const [recordStatus, setRecordStatus] = useState({ busy: false, message: "", error: "" });
-  const recordSavedRef = useRef(false);
   const [filter, setFilter] = useState("ALL");
   const [modIdx, setModIdx] = useState(0);
   const [slideIdx, setSlideIdx] = useState(0);
   const [phase, setPhase] = useState("slides");
   const [completed, setCompleted] = useState({});
 
-  const mod = MODULES[modIdx];
+  const mod = MODULES[modIdx] || MODULES[0];
   const allComplete = MODULES.every(m => completed[m.id]);
   const completedCount = Object.keys(completed).length;
 
@@ -677,7 +682,7 @@ export default function LOTOFullCampus() {
       <div style={{ background: "#0c0c0c", borderBottom: "1px solid #1a1a1a", padding: "14px 20px", display: "flex", alignItems: "center", gap: 12 }}>
         <div style={{ width: 38, height: 38, background: "#FF6B00", borderRadius: 6, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18 }}>⚡</div>
         <div>
-          <div style={{ color: "#fff", fontFamily: "'Barlow Condensed',sans-serif", fontSize: 17, fontWeight: 800, letterSpacing: 1 }}>DINGFELDER INDUSTRIAL CAMPUS</div>
+          <div style={{ color: "#fff", fontFamily: "'Barlow Condensed',sans-serif", fontSize: 17, fontWeight: 800, letterSpacing: 1 }}>A.I.R.O.N. SAFETY TRAINING</div>
           <div style={{ color: "#444", fontSize: 10, letterSpacing: 3 }}>LOCKOUT / TAGOUT · FULL CAMPUS TRAINING · 29 CFR 1910.147</div>
         </div>
         <div style={{ marginLeft: "auto", textAlign: "right" }}>
@@ -746,55 +751,6 @@ export default function LOTOFullCampus() {
   );
 
   // ── COMPLETE ───────────────────────────────────────────────────
-
-  useEffect(() => {
-    if (screen !== "complete") {
-      recordSavedRef.current = false;
-      setRecordStatus({ busy: false, message: "", error: "" });
-      return;
-    }
-
-    if (recordSavedRef.current) return;
-    recordSavedRef.current = true;
-
-    let cancelled = false;
-    setRecordStatus({ busy: true, message: "", error: "" });
-
-    persistTrainingRecordNetlifyIdentity(null, {
-      attemptId: `/loto-campus:${Date.now()}:${Math.random().toString(36).slice(2, 8)}`,
-      modulePath: "/loto-campus",
-      moduleTitle: "LOTO — Full Campus",
-      categoryKey: activeCategory,
-      categoryLabel: "LOTO",
-      score: MODULES.length,
-      quizCorrect: MODULES.length,
-      quizTotal: MODULES.length,
-      passed: true,
-      completedAt: new Date().toISOString(),
-      runtimeMinutes: 35,
-      certificateClass: "Portal Completion Record",
-      certificateEligible: true,
-      source: "custom-module",
-    }).then((result) => {
-      if (cancelled) return;
-      if (result?.skipped) {
-        setRecordStatus({ busy: false, message: "", error: "" });
-      } else if (result?.error) {
-        setRecordStatus({ busy: false, message: "", error: result.error });
-      } else {
-        setRecordStatus({
-          busy: false,
-          message: result?.message || "Retained training record saved to your A.I.R.O.N. account.",
-          error: "",
-        });
-      }
-    });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [screen, activeCategory]);
-
   if (screen === "complete") return (
     <div style={{ minHeight: "100vh", background: "#080808", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: 28, textAlign: "center" }}>
       <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;700;800;900&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
@@ -814,17 +770,6 @@ export default function LOTOFullCampus() {
       <div style={{ color: "#2a2a2a", fontSize: 11, fontFamily: "'Barlow Condensed',sans-serif", letterSpacing: 2 }}>
         DINGFELDER · OSHA 29 CFR 1910.147 · NFPA 58 · {new Date().toLocaleDateString()}
       </div>
-
-      {recordStatus.message ? (
-        <div style={{ padding:"12px 14px", background:"rgba(34,204,102,0.10)", border:"1px solid rgba(34,204,102,0.35)", borderRadius:8, color:"#9AF0B9", fontSize:13, lineHeight:1.6, maxWidth:520, marginBottom:16 }}>
-          {recordStatus.message}
-        </div>
-      ) : null}
-      {recordStatus.error ? (
-        <div style={{ padding:"12px 14px", background:"rgba(255,107,0,0.10)", border:"1px solid rgba(255,107,0,0.35)", borderRadius:8, color:"#FFB27A", fontSize:13, lineHeight:1.6, maxWidth:520, marginBottom:16 }}>
-          {recordStatus.error}
-        </div>
-      ) : null}
       <button onClick={() => { setCompleted({}); setScreen("home"); }} style={{ marginTop: 20, padding: "10px 24px", background: "transparent", border: "1px solid #333", borderRadius: 6, color: "#444", cursor: "pointer", fontFamily: "'Barlow Condensed',sans-serif", fontSize: 12, letterSpacing: 2 }}>RESTART TRAINING</button>
     </div>
   );

@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useLocation } from "react-router-dom";
 import { persistTrainingRecordNetlifyIdentity } from "../auth/netlifyIdentity.js";
-import { resolveModuleRecordMeta } from "../data/moduleRegistry.js";
 
 // ─── PALETTE & CONSTANTS ──────────────────────────────────────────────────────
 const Y = "#FFD100";      // hazard yellow
@@ -643,7 +642,6 @@ export default function SATOrientation() {
   const [screen, setScreen] = useState("welcome"); // welcome | training | complete
   const location = useLocation();
   const activeCategory = typeof location.state?.activeCategory === "string" ? location.state.activeCategory : "campus";
-  const moduleMeta = resolveModuleRecordMeta({ path: "/sat", label: "S.A.T. Visitor Orientation", categoryKey: activeCategory, categoryLabel: "Campus", source: "custom-module" });
   const [recordStatus, setRecordStatus] = useState({ busy: false, message: "", error: "" });
   const recordSavedRef = useRef(false);
   const [name, setName] = useState("");
@@ -691,15 +689,10 @@ export default function SATOrientation() {
 
     persistTrainingRecordNetlifyIdentity(null, {
       attemptId: `/sat:${Date.now()}:${Math.random().toString(36).slice(2, 8)}`,
-      moduleId: moduleMeta.moduleId,
-      moduleVersion: moduleMeta.version,
       modulePath: "/sat",
       moduleTitle: "S.A.T. Visitor Orientation",
-      categoryKey: activeCategory || moduleMeta.categoryKey,
-      categoryLabel: moduleMeta.categoryLabel,
-      requirementIds: moduleMeta.requirementIds,
-      requirementType: moduleMeta.category,
-      completionBucket: moduleMeta.category,
+      categoryKey: activeCategory,
+      categoryLabel: "Campus",
       score: SECTIONS.length,
       quizCorrect: SECTIONS.length,
       quizTotal: SECTIONS.length,
@@ -708,9 +701,7 @@ export default function SATOrientation() {
       runtimeMinutes: 15,
       certificateClass: "Portal Completion Record",
       certificateEligible: true,
-      reviewEnabled: moduleMeta.reviewEnabled,
-      recordRequired: moduleMeta.recordRequired,
-      source: moduleMeta.source || "custom-module",
+      source: "custom-module",
     }).then((result) => {
       if (cancelled) return;
       if (result?.skipped) {
@@ -729,7 +720,7 @@ export default function SATOrientation() {
     return () => {
       cancelled = true;
     };
-  }, [screen, activeCategory, moduleMeta]);
+  }, [screen, activeCategory]);
 
 
   // ── WELCOME SCREEN ────────────────────────────────────────────
@@ -784,6 +775,8 @@ export default function SATOrientation() {
       </div>
     </div>
   );
+
+  // ── COMPLETE SCREEN ───────────────────────────────────────────
 
   if (screen === "complete") return (
     <div style={{ minHeight: "100vh", background: BK, fontFamily: "'Source Serif 4', serif", position: "relative", overflow: "hidden" }}>

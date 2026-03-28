@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useLocation } from "react-router-dom";
 import { persistTrainingRecordNetlifyIdentity } from "../auth/netlifyIdentity.js";
-import { resolveModuleRecordMeta } from "../data/moduleRegistry.js";
+import CompletionResultScreen from "../components/CompletionResultScreen.jsx";
 
 // ─── ROLE → CONTEXT MAP ───────────────────────────────────────────────────────
 const ROLE_CONTEXT = {
@@ -417,8 +417,7 @@ export default function H2STraining() {
   const [screen, setScreen] = useState("home");
   const location = useLocation();
   const activeCategory = typeof location.state?.activeCategory === "string" ? location.state.activeCategory : "process-gas";
-  const moduleMeta = resolveModuleRecordMeta({ path: "/h2s", label: "H₂S Awareness & SCBA", categoryKey: activeCategory, categoryLabel: "Process / Gas", source: "custom-module" });
-  const [recordStatus, setRecordStatus] = useState({ busy: false, message: "", error: "" });
+  const [recordStatus, setRecordStatus] = useState({ busy: false, message: "", error: "", saved: false, record: null, user: null });
   const recordSavedRef = useRef(false);
   const [modIdx, setModIdx] = useState(0);
   const [slideIdx, setSlideIdx] = useState(0);
@@ -480,85 +479,77 @@ export default function H2STraining() {
   );
 
 
-  useEffect(() => {
-    if (screen !== "complete") {
-      recordSavedRef.current = false;
-      setRecordStatus({ busy: false, message: "", error: "" });
-      return;
+  
+useEffect(() => {
+  if (screen !== "complete") {
+    recordSavedRef.current = false;
+    setRecordStatus({ busy: false, message: "", error: "", saved: false, record: null, user: null });
+    return;
+  }
+
+  if (recordSavedRef.current) return;
+  recordSavedRef.current = true;
+
+  let cancelled = false;
+  const completionRecord = {
+  attemptId: `/h2s:${Date.now()}:${Math.random().toString(36).slice(2, 8)}`,
+  modulePath: "/h2s",
+  moduleTitle: "H₂S Awareness & SCBA",
+  categoryKey: activeCategory,
+  categoryLabel: "Process / Gas",
+  score: MODULES.length,
+  quizCorrect: MODULES.length,
+  quizTotal: MODULES.length,
+  passed: true,
+  completedAt: new Date().toISOString(),
+  runtimeMinutes: 20,
+  certificateClass: "Portal Completion Record",
+  certificateEligible: true,
+  source: "custom-module",
+};
+
+  setRecordStatus({ busy: true, message: "", error: "", saved: false, record: completionRecord, user: null });
+
+  persistTrainingRecordNetlifyIdentity(null, completionRecord).then((result) => {
+    if (cancelled) return;
+    if (result?.skipped) {
+      setRecordStatus({ busy: false, message: "", error: "", saved: false, record: completionRecord, user: result?.user || null });
+    } else if (result?.error) {
+      setRecordStatus({ busy: false, message: "", error: result.error, saved: false, record: completionRecord, user: result?.user || null });
+    } else {
+      setRecordStatus({
+        busy: false,
+        message: result?.message || "Retained training record saved to your A.I.R.O.N. account.",
+        error: "",
+        saved: Boolean(result?.saved),
+        record: result?.record || completionRecord,
+        user: result?.user || null,
+      });
     }
+  });
 
-    if (recordSavedRef.current) return;
-    recordSavedRef.current = true;
+  return () => {
+    cancelled = true;
+  };
+}, [screen, activeCategory]);
 
-    let cancelled = false;
-    setRecordStatus({ busy: true, message: "", error: "" });
-
-    persistTrainingRecordNetlifyIdentity(null, {
-      attemptId: `/h2s:${Date.now()}:${Math.random().toString(36).slice(2, 8)}`,
-      moduleId: moduleMeta.moduleId,
-      moduleVersion: moduleMeta.version,
-      modulePath: "/h2s",
-      moduleTitle: "H₂S Awareness & SCBA",
-      categoryKey: activeCategory || moduleMeta.categoryKey,
-      categoryLabel: moduleMeta.categoryLabel,
-      requirementIds: moduleMeta.requirementIds,
-      requirementType: moduleMeta.category,
-      completionBucket: moduleMeta.category,
-      score: MODULES.length,
-      quizCorrect: MODULES.length,
-      quizTotal: MODULES.length,
-      passed: true,
-      completedAt: new Date().toISOString(),
-      runtimeMinutes: 20,
-      certificateClass: "Portal Completion Record",
-      certificateEligible: true,
-      reviewEnabled: moduleMeta.reviewEnabled,
-      recordRequired: moduleMeta.recordRequired,
-      source: moduleMeta.source || "custom-module",
-    }).then((result) => {
-      if (cancelled) return;
-      if (result?.skipped) {
-        setRecordStatus({ busy: false, message: "", error: "" });
-      } else if (result?.error) {
-        setRecordStatus({ busy: false, message: "", error: result.error });
-      } else {
-        setRecordStatus({
-          busy: false,
-          message: result?.message || "Retained training record saved to your A.I.R.O.N. account.",
-          error: "",
-        });
-      }
-    });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [screen, activeCategory]);
-
-  if(screen==="complete") return (
-    <div style={{ minHeight:"100vh", background:"#050400", display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", padding:28, textAlign:"center" }}>
-      <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=Share+Tech+Mono&display=swap" rel="stylesheet" />
-      <div style={{ fontSize:64, marginBottom:16 }}>✅</div>
-      <h1 style={{ color:"#FF8800", fontFamily:"'Oswald',sans-serif", fontSize:30, margin:"0 0 10px" }}>H₂S TRAINING COMPLETE</h1>
-      <p style={{ color:"#888", fontSize:14, fontFamily:"'IBM Plex Sans',sans-serif", marginBottom:24, lineHeight:1.6, maxWidth:440 }}>
-        You have completed all H₂S Awareness and SCBA modules for the Dingfelder campus.<br />
-        Role: <strong style={{ color:"#FF8800" }}>{playerRole}</strong> · Facility: <strong style={{ color:"#FF8800" }}>{ctx.facility}</strong><br /><br />
-        Present this completion record to your supervisor. Annual recertification required.
-      </p>
-      <div style={{ color:"#333", fontSize:11, fontFamily:"'Share Tech Mono',monospace", letterSpacing:2 }}>DINGFELDER SAFETY · OSHA 29 CFR 1910.134 · {new Date().toLocaleDateString()}</div>
-
-      {recordStatus.message ? (
-        <div style={{ padding:"12px 14px", background:"rgba(34,204,102,0.10)", border:"1px solid rgba(34,204,102,0.35)", borderRadius:8, color:"#9AF0B9", fontSize:13, lineHeight:1.6, maxWidth:520, marginBottom:16 }}>
-          {recordStatus.message}
-        </div>
-      ) : null}
-      {recordStatus.error ? (
-        <div style={{ padding:"12px 14px", background:"rgba(255,107,0,0.10)", border:"1px solid rgba(255,107,0,0.35)", borderRadius:8, color:"#FFB27A", fontSize:13, lineHeight:1.6, maxWidth:520, marginBottom:16 }}>
-          {recordStatus.error}
-        </div>
-      ) : null}
-      <button onClick={()=>{setCompleted({});setScreen("home");}} style={{ marginTop:20, padding:"10px 24px", background:"transparent", border:"1px solid #333", borderRadius:3, color:"#444", cursor:"pointer", fontFamily:"'Oswald',sans-serif", fontSize:12, letterSpacing:2 }}>RESTART</button>
-    </div>
+  
+if(screen==="complete") return (
+    <CompletionResultScreen
+      accentColor="#FF8800"
+      title="H₂S Awareness & SCBA"
+      modulePath="/h2s"
+      passed={true}
+      score={MODULES.length}
+      quizCorrect={MODULES.length}
+      quizTotal={MODULES.length}
+      runtimeMinutes={20}
+      completedAt={recordStatus?.record?.completedAt || new Date().toISOString()}
+      recordStatus={recordStatus}
+      statusLabel="Requirement met"
+      subtitle={`All H₂S awareness checkpoints are complete for ${playerRole} at ${ctx.facility}. Review the retained record, then continue or issue the certificate.`}
+      onRestart={()=>{setCompleted({});setScreen("home");}}
+    />
   );
 
   return (

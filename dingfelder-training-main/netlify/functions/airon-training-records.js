@@ -11,23 +11,10 @@ function normalizeTrainingRecordShape(rawRecord) {
 
   return {
     attemptId: typeof rawRecord?.attemptId === 'string' ? rawRecord.attemptId : '',
-    moduleId: typeof rawRecord?.moduleId === 'string' ? rawRecord.moduleId : '',
-    moduleVersion: typeof rawRecord?.moduleVersion === 'string' ? rawRecord.moduleVersion : '',
     modulePath: typeof rawRecord?.modulePath === 'string' ? rawRecord.modulePath : '',
     moduleTitle: typeof rawRecord?.moduleTitle === 'string' ? rawRecord.moduleTitle : '',
     categoryKey: typeof rawRecord?.categoryKey === 'string' ? rawRecord.categoryKey : '',
     categoryLabel: typeof rawRecord?.categoryLabel === 'string' ? rawRecord.categoryLabel : '',
-    requirementIds: Array.isArray(rawRecord?.requirementIds)
-      ? rawRecord.requirementIds.filter(item => typeof item === 'string' && item.trim())
-      : [],
-    requirementType:
-      typeof rawRecord?.requirementType === 'string' && rawRecord.requirementType.trim()
-        ? rawRecord.requirementType.trim()
-        : '',
-    completionBucket:
-      typeof rawRecord?.completionBucket === 'string' && rawRecord.completionBucket.trim()
-        ? rawRecord.completionBucket.trim()
-        : '',
     score: toNumberOrNull(rawRecord?.score),
     quizCorrect: toNumberOrNull(rawRecord?.quizCorrect),
     quizTotal: toNumberOrNull(rawRecord?.quizTotal),
@@ -42,8 +29,6 @@ function normalizeTrainingRecordShape(rawRecord) {
         ? rawRecord.certificateClass.trim()
         : 'Portal Completion Record',
     certificateEligible: Boolean(rawRecord?.certificateEligible),
-    reviewEnabled: Boolean(rawRecord?.reviewEnabled),
-    recordRequired: rawRecord?.recordRequired !== false,
     source:
       typeof rawRecord?.source === 'string' && rawRecord.source.trim()
         ? rawRecord.source.trim()

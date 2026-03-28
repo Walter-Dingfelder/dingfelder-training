@@ -2,7 +2,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { persistTrainingRecordNetlifyIdentity } from "../auth/netlifyIdentity.js";
-import { resolveModuleRecordMeta } from "../data/moduleRegistry.js";
 
 const PAGE_BG = "#080808";
 const PANEL = "#0f0f0f";
@@ -77,6 +76,13 @@ function getPortalContext(locationState) {
       : stored.seriesPaths;
 
   return { portalSearch, seriesPaths };
+}
+
+function formatCategoryLabel(categoryKey) {
+  if (typeof categoryKey !== "string" || !categoryKey.trim()) return "A.I.R.O.N. training";
+  return categoryKey
+    .replace(/[-_]+/g, " ")
+    .replace(/\b\w/g, (match) => match.toUpperCase());
 }
 
 
@@ -224,36 +230,14 @@ export default function TrainingModuleShell({ module }) {
   const [slideIndex, setSlideIndex] = useState(0);
   const [answers, setAnswers] = useState({});
   const [submitted, setSubmitted] = useState(false);
-  const [recordStatus, setRecordStatus] = useState({ busy: false, message: "", error: "" });
   const recordSavedRef = useRef(false);
 
+  const activeCategory = typeof location.state?.activeCategory === "string" ? location.state.activeCategory : "campus";
   const portalContext = useMemo(() => getPortalContext(location.state), [location.state]);
   const portalSearch = portalContext.portalSearch;
   const seriesPaths = portalContext.seriesPaths;
   const currentSeriesIndex = seriesPaths.indexOf(module.path);
   const nextModulePath = currentSeriesIndex >= 0 ? seriesPaths[currentSeriesIndex + 1] : null;
-  const activeCategory = useMemo(() => {
-    try {
-      const params = new URLSearchParams(portalSearch || "");
-      const value = params.get("category");
-      return value && value !== "all" ? value : "";
-    } catch {
-      return "";
-    }
-  }, [portalSearch]);
-  const moduleMeta = useMemo(
-    () =>
-      resolveModuleRecordMeta({
-        path: module.path,
-        label: module.label,
-        categoryKey: activeCategory,
-        categoryLabel: activeCategory
-          ? activeCategory.replace(/-/g, " ").replace(/\b\w/g, c => c.toUpperCase())
-          : "",
-        source: "shared-shell",
-      }),
-    [module.path, module.label, activeCategory]
-  );
 
   const returnToPortal = () => {
     writeStoredPortalContext(portalSearch, seriesPaths);
@@ -289,66 +273,56 @@ export default function TrainingModuleShell({ module }) {
     () => quiz.reduce((sum, q, idx) => sum + (answers[idx] === q.answer ? 1 : 0), 0),
     [answers, quiz]
   );
+  const passThreshold = Math.ceil(quiz.length * 0.7);
+  const passed = score >= passThreshold;
 
   useEffect(() => {
-    if (!submitted) {
+    if (!submitted || !passed) {
       recordSavedRef.current = false;
-      setRecordStatus({ busy: false, message: "", error: "" });
       return;
     }
 
-    const passed = score >= Math.ceil(quiz.length * 0.7);
-    if (!passed) return;
     if (recordSavedRef.current) return;
     recordSavedRef.current = true;
 
     let cancelled = false;
-    setRecordStatus({ busy: true, message: "", error: "" });
 
     persistTrainingRecordNetlifyIdentity(null, {
-      attemptId: `${module.path || module.label}:${Date.now()}:${Math.random().toString(36).slice(2, 8)}`,
-      moduleId: moduleMeta.moduleId,
-      moduleVersion: moduleMeta.version,
-      modulePath: module.path,
-      moduleTitle: module.label,
-      categoryKey: moduleMeta.categoryKey || activeCategory,
-      categoryLabel: moduleMeta.categoryLabel,
-      requirementIds: moduleMeta.requirementIds,
-      requirementType: moduleMeta.category,
-      completionBucket: moduleMeta.category,
+      attemptId: `${module.path || module.label || "training-module"}:${Date.now()}:${Math.random().toString(36).slice(2, 8)}`,
+      modulePath: typeof module.path === "string" ? module.path : "",
+      moduleTitle:
+        typeof module.label === "string" && module.label.trim()
+          ? module.label.trim()
+          : typeof module.short === "string" && module.short.trim()
+          ? module.short.trim()
+          : "A.I.R.O.N. training module",
+      categoryKey: activeCategory,
+      categoryLabel: formatCategoryLabel(activeCategory),
       score,
       quizCorrect: score,
       quizTotal: quiz.length,
       passed: true,
       completedAt: new Date().toISOString(),
-      runtimeMinutes: module.minutes,
+      runtimeMinutes: Number.isFinite(Number(module.minutes)) ? Number(module.minutes) : null,
       certificateClass: "Portal Completion Record",
       certificateEligible: true,
-      reviewEnabled: moduleMeta.reviewEnabled,
-      recordRequired: moduleMeta.recordRequired,
-      source: moduleMeta.source || "shared-shell",
-    }).then((result) => {
-      if (cancelled) return;
-      if (result?.skipped) {
-        setRecordStatus({ busy: false, message: "", error: "" });
-      } else if (result?.error) {
-        setRecordStatus({ busy: false, message: "", error: result.error });
-      } else {
-        setRecordStatus({
-          busy: false,
-          message: result?.message || "Retained training record saved to your A.I.R.O.N. account.",
-          error: "",
-        });
-      }
-    });
+      source: "shared-shell",
+    })
+      .then((result) => {
+        if (cancelled || !result?.error) return;
+        console.error("A.I.R.O.N. retained record write failed.", result.error);
+      })
+      .catch((error) => {
+        if (cancelled) return;
+        console.error("A.I.R.O.N. retained record write failed.", error);
+      });
 
     return () => {
       cancelled = true;
     };
-  }, [submitted, score, quiz.length, module.path, module.label, module.minutes, moduleMeta, activeCategory]);
+  }, [activeCategory, module.label, module.minutes, module.path, module.short, passed, quiz.length, score, submitted]);
 
   if (submitted) {
-    const passed = score >= Math.ceil(quiz.length * 0.7);
     return (
       <div
         style={{
@@ -401,21 +375,6 @@ export default function TrainingModuleShell({ module }) {
                 ? "Training record generated. The portal can now return to the catalog."
                 : "The module is still available. Review your answers and retake when ready."}
             </p>
-            {passed && recordStatus.busy && (
-              <div style={{ marginTop: 10, color: "#9AB8FF", fontSize: 13 }}>
-                Saving retained training record to your A.I.R.O.N. account…
-              </div>
-            )}
-            {passed && recordStatus.message && (
-              <div style={{ marginTop: 10, color: "#8DFFB4", fontSize: 13 }}>
-                {recordStatus.message}
-              </div>
-            )}
-            {passed && recordStatus.error && (
-              <div style={{ marginTop: 10, color: "#FF9B7A", fontSize: 13 }}>
-                {recordStatus.error}
-              </div>
-            )}
 
             <div
               style={{

@@ -672,6 +672,57 @@ export default function SATOrientation() {
     setSectionIdx(i => i + 1); setSlideIdx(0); setPhase("slides");
   };
 
+  // ── COMPLETE SCREEN ───────────────────────────────────────────
+
+  useEffect(() => {
+    if (screen !== "complete") {
+      recordSavedRef.current = false;
+      setRecordStatus({ busy: false, message: "", error: "" });
+      return;
+    }
+
+    if (recordSavedRef.current) return;
+    recordSavedRef.current = true;
+
+    let cancelled = false;
+    setRecordStatus({ busy: true, message: "", error: "" });
+
+    persistTrainingRecordNetlifyIdentity(null, {
+      attemptId: `/sat:${Date.now()}:${Math.random().toString(36).slice(2, 8)}`,
+      modulePath: "/sat",
+      moduleTitle: "S.A.T. Visitor Orientation",
+      categoryKey: activeCategory,
+      categoryLabel: "Campus",
+      score: SECTIONS.length,
+      quizCorrect: SECTIONS.length,
+      quizTotal: SECTIONS.length,
+      passed: true,
+      completedAt: new Date().toISOString(),
+      runtimeMinutes: 15,
+      certificateClass: "Portal Completion Record",
+      certificateEligible: true,
+      source: "custom-module",
+    }).then((result) => {
+      if (cancelled) return;
+      if (result?.skipped) {
+        setRecordStatus({ busy: false, message: "", error: "" });
+      } else if (result?.error) {
+        setRecordStatus({ busy: false, message: "", error: result.error });
+      } else {
+        setRecordStatus({
+          busy: false,
+          message: result?.message || "Retained training record saved to your A.I.R.O.N. account.",
+          error: "",
+        });
+      }
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [screen, activeCategory]);
+
+
   // ── WELCOME SCREEN ────────────────────────────────────────────
   if (screen === "welcome") return (
     <div style={{ minHeight: "100vh", background: BK, display: "flex", flexDirection: "column", fontFamily: "'Source Serif 4', serif", position: "relative", overflow: "hidden" }}>
@@ -726,54 +777,6 @@ export default function SATOrientation() {
   );
 
   // ── COMPLETE SCREEN ───────────────────────────────────────────
-
-  useEffect(() => {
-    if (screen !== "complete") {
-      recordSavedRef.current = false;
-      setRecordStatus({ busy: false, message: "", error: "" });
-      return;
-    }
-
-    if (recordSavedRef.current) return;
-    recordSavedRef.current = true;
-
-    let cancelled = false;
-    setRecordStatus({ busy: true, message: "", error: "" });
-
-    persistTrainingRecordNetlifyIdentity(null, {
-      attemptId: `/sat:${Date.now()}:${Math.random().toString(36).slice(2, 8)}`,
-      modulePath: "/sat",
-      moduleTitle: "S.A.T. Visitor Orientation",
-      categoryKey: activeCategory,
-      categoryLabel: "Campus",
-      score: SECTIONS.length,
-      quizCorrect: SECTIONS.length,
-      quizTotal: SECTIONS.length,
-      passed: true,
-      completedAt: new Date().toISOString(),
-      runtimeMinutes: 15,
-      certificateClass: "Portal Completion Record",
-      certificateEligible: true,
-      source: "custom-module",
-    }).then((result) => {
-      if (cancelled) return;
-      if (result?.skipped) {
-        setRecordStatus({ busy: false, message: "", error: "" });
-      } else if (result?.error) {
-        setRecordStatus({ busy: false, message: "", error: result.error });
-      } else {
-        setRecordStatus({
-          busy: false,
-          message: result?.message || "Retained training record saved to your A.I.R.O.N. account.",
-          error: "",
-        });
-      }
-    });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [screen, activeCategory]);
 
   if (screen === "complete") return (
     <div style={{ minHeight: "100vh", background: BK, fontFamily: "'Source Serif 4', serif", position: "relative", overflow: "hidden" }}>

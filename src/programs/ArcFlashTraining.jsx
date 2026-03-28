@@ -1,6 +1,4 @@
-import { useState, useEffect, useRef } from "react";
-import { useLocation } from "react-router-dom";
-import { persistTrainingRecordNetlifyIdentity } from "../auth/netlifyIdentity.js";
+import { useState, useEffect } from "react";
 
 const MODULES = [
   {
@@ -383,21 +381,22 @@ function StatBlock({ value, label, sub }) {
 }
 
 function SlideView({ slide, color, onNext, onPrev, isFirst, isLast }) {
-  const v = useAnim(slide.heading);
+  const safeSlide = slide || { heading: "Arc Flash Module", body: "This module could not load the selected slide.", icon: "⚠️" };
+  const v = useAnim(safeSlide.heading);
   return (
     <div style={{ flex:1, display:"flex", flexDirection:"column", opacity:v?1:0, transform:v?"translateY(0)":"translateY(10px)", transition:"all 0.3s ease" }}>
-      {slide.stat && <StatBlock {...slide.stat} />}
-      <div style={{ fontSize:48, marginBottom:12, textAlign:"center", filter:"drop-shadow(0 0 20px rgba(0,180,255,0.5))" }}>{slide.icon}</div>
-      <h2 style={{ margin:"0 0 10px", fontSize:22, fontWeight:800, fontFamily:"'IBM Plex Mono',monospace", color:"#e0f0ff", lineHeight:1.2 }}>{slide.heading}</h2>
-      {slide.body && <p style={{ margin:"0 0 12px", fontSize:14, lineHeight:1.75, color:"#8aa0c0", fontFamily:"'IBM Plex Sans',sans-serif" }}>{slide.body}</p>}
-      {slide.list && <ul style={{ margin:"0 0 12px", padding:0, listStyle:"none" }}>{slide.list.map((item,i)=><li key={i} style={{ padding:"7px 12px", marginBottom:5, background:"#020810", border:"1px solid #0a1825", borderLeft:`3px solid ${color}`, borderRadius:3, fontSize:13, color:"#8aa0c0", fontFamily:"'IBM Plex Sans',sans-serif", lineHeight:1.5 }}>{item}</li>)}</ul>}
-      {slide.steps && <ol style={{ margin:"0 0 12px", padding:0, listStyle:"none" }}>{slide.steps.map((s,i)=><li key={i} style={{ padding:"7px 12px", marginBottom:5, background:"#020810", border:"1px solid #0a1825", borderLeft:`3px solid ${color}`, borderRadius:3, fontSize:13, color:"#8aa0c0", fontFamily:"'IBM Plex Sans',sans-serif", lineHeight:1.5 }}>{s}</li>)}</ol>}
-      {slide.locations && <VoltageGrid locations={slide.locations} />}
-      {slide.ppeCategories && <div style={{ marginBottom:12 }}>{slide.ppeCategories.map((p,i)=><PPECategoryRow key={i} {...p} />)}</div>}
-      {slide.boundaries && <div style={{ marginBottom:12 }}>{slide.boundaries.map((b,i)=><BoundaryRow key={i} {...b} />)}</div>}
-      {slide.gloveClasses && <div style={{ marginBottom:12 }}>{slide.gloveClasses.map((g,i)=><GloveRow key={i} {...g} />)}</div>}
-      {slide.labelFields && <div style={{ marginBottom:12 }}>{slide.labelFields.map((f,i)=><LabelField key={i} {...f} />)}</div>}
-      {slide.fact && <div style={{ padding:"11px 14px", background:`${color}12`, border:`1px solid ${color}44`, borderLeft:`4px solid ${color}`, borderRadius:3, marginBottom:12 }}><span style={{ fontSize:10, color, fontFamily:"'IBM Plex Mono',monospace", letterSpacing:2, display:"block", marginBottom:3 }}>⚠ KEY FACT</span><span style={{ fontSize:13, color:"#ccc", fontFamily:"'IBM Plex Sans',sans-serif", lineHeight:1.5 }}>{slide.fact}</span></div>}
+      {safeSlide.stat && <StatBlock {...safeSlide.stat} />}
+      <div style={{ fontSize:48, marginBottom:12, textAlign:"center", filter:"drop-shadow(0 0 20px rgba(0,180,255,0.5))" }}>{safeSlide.icon}</div>
+      <h2 style={{ margin:"0 0 10px", fontSize:22, fontWeight:800, fontFamily:"'IBM Plex Mono',monospace", color:"#e0f0ff", lineHeight:1.2 }}>{safeSlide.heading}</h2>
+      {safeSlide.body && <p style={{ margin:"0 0 12px", fontSize:14, lineHeight:1.75, color:"#8aa0c0", fontFamily:"'IBM Plex Sans',sans-serif" }}>{safeSlide.body}</p>}
+      {safeSlide.list && <ul style={{ margin:"0 0 12px", padding:0, listStyle:"none" }}>{safeSlide.list.map((item,i)=><li key={i} style={{ padding:"7px 12px", marginBottom:5, background:"#020810", border:"1px solid #0a1825", borderLeft:`3px solid ${color}`, borderRadius:3, fontSize:13, color:"#8aa0c0", fontFamily:"'IBM Plex Sans',sans-serif", lineHeight:1.5 }}>{item}</li>)}</ul>}
+      {safeSlide.steps && <ol style={{ margin:"0 0 12px", padding:0, listStyle:"none" }}>{safeSlide.steps.map((s,i)=><li key={i} style={{ padding:"7px 12px", marginBottom:5, background:"#020810", border:"1px solid #0a1825", borderLeft:`3px solid ${color}`, borderRadius:3, fontSize:13, color:"#8aa0c0", fontFamily:"'IBM Plex Sans',sans-serif", lineHeight:1.5 }}>{s}</li>)}</ol>}
+      {safeSlide.locations && <VoltageGrid locations={safeSlide.locations} />}
+      {safeSlide.ppeCategories && <div style={{ marginBottom:12 }}>{safeSlide.ppeCategories.map((p,i)=><PPECategoryRow key={i} {...p} />)}</div>}
+      {safeSlide.boundaries && <div style={{ marginBottom:12 }}>{safeSlide.boundaries.map((b,i)=><BoundaryRow key={i} {...b} />)}</div>}
+      {safeSlide.gloveClasses && <div style={{ marginBottom:12 }}>{safeSlide.gloveClasses.map((g,i)=><GloveRow key={i} {...g} />)}</div>}
+      {safeSlide.labelFields && <div style={{ marginBottom:12 }}>{safeSlide.labelFields.map((f,i)=><LabelField key={i} {...f} />)}</div>}
+      {safeSlide.fact && <div style={{ padding:"11px 14px", background:`${color}12`, border:`1px solid ${color}44`, borderLeft:`4px solid ${color}`, borderRadius:3, marginBottom:12 }}><span style={{ fontSize:10, color, fontFamily:"'IBM Plex Mono',monospace", letterSpacing:2, display:"block", marginBottom:3 }}>⚠ KEY FACT</span><span style={{ fontSize:13, color:"#ccc", fontFamily:"'IBM Plex Sans',sans-serif", lineHeight:1.5 }}>{safeSlide.fact}</span></div>}
       <div style={{ display:"flex", gap:8, marginTop:"auto", paddingTop:14 }}>
         {!isFirst && <button onClick={onPrev} style={{ flex:1, padding:"11px", background:"transparent", border:"1px solid #0a1825", borderRadius:3, color:"#334", cursor:"pointer", fontFamily:"'IBM Plex Mono',monospace", fontSize:12, letterSpacing:1 }}>← BACK</button>}
         <button onClick={onNext} style={{ flex:2, padding:"12px", background:color, border:"none", borderRadius:3, color:"#000", cursor:"pointer", fontSize:14, fontWeight:700, fontFamily:"'IBM Plex Mono',monospace", letterSpacing:2 }}>{isLast?"TAKE QUIZ →":"NEXT →"}</button>
@@ -408,24 +407,37 @@ function SlideView({ slide, color, onNext, onPrev, isFirst, isLast }) {
 
 function QuizView({ mod, onComplete }) {
   const [cur, setCur] = useState(0); const [sel, setSel] = useState(null); const [rev, setRev] = useState(false); const [score, setScore] = useState(0); const [done, setDone] = useState(false);
-  const q = mod.quiz[cur]; const color = mod.color; const passed = score >= Math.ceil(mod.quiz.length*0.67);
+  const safeQuiz = Array.isArray(mod?.quiz) ? mod.quiz : [];
+  const q = safeQuiz[cur];
+  const color = mod?.color || "#00BFFF";
+  const passed = score >= Math.ceil(Math.max(1, safeQuiz.length) * 0.67);
+  if (!q) {
+    return (
+      <div style={{ flex:1, display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", textAlign:"center" }}>
+        <div style={{ fontSize:48, marginBottom:12 }}>⚠️</div>
+        <h2 style={{ color, fontFamily:"\'IBM Plex Mono\',monospace", fontSize:22, margin:"0 0 10px" }}>ARC FLASH QUIZ UNAVAILABLE</h2>
+        <p style={{ color:"#556", fontSize:14, marginBottom:20 }}>The selected quiz items could not be loaded for this module.</p>
+        <button onClick={()=>onComplete(false)} style={{ padding:"12px 28px", background:"transparent", border:`1px solid ${color}`, borderRadius:3, color, cursor:"pointer", fontFamily:"\'IBM Plex Mono\',monospace", fontSize:13, letterSpacing:2 }}>RETURN</button>
+      </div>
+    );
+  }
   const pick = i => { if(rev) return; setSel(i); setRev(true); if(i===q.answer) setScore(s=>s+1); };
-  const next = () => { if(cur+1>=mod.quiz.length){setDone(true);return;} setCur(c=>c+1); setSel(null); setRev(false); };
+  const next = () => { if(cur+1>=safeQuiz.length){setDone(true);return;} setCur(c=>c+1); setSel(null); setRev(false); };
   if(done) return (
     <div style={{ flex:1, display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", textAlign:"center" }}>
       <div style={{ fontSize:56, marginBottom:14 }}>{passed?"✅":"❌"}</div>
       <h2 style={{ color, fontFamily:"'IBM Plex Mono',monospace", fontSize:24, margin:"0 0 8px" }}>{passed?"MODULE PASSED":"REVIEW REQUIRED"}</h2>
-      <p style={{ color:"#556", fontSize:14, marginBottom:20 }}>{score}/{mod.quiz.length} correct.{!passed&&" Score 2/3 or better to pass."}</p>
+      <p style={{ color:"#556", fontSize:14, marginBottom:20 }}>{score}/{safeQuiz.length} correct.{!passed&&" Score 2/3 or better to pass."}</p>
       <button onClick={()=>onComplete(passed)} style={{ padding:"12px 28px", background:passed?color:"transparent", border:`1px solid ${color}`, borderRadius:3, color:passed?"#000":color, cursor:"pointer", fontFamily:"'IBM Plex Mono',monospace", fontSize:13, letterSpacing:2 }}>{passed?"CONTINUE →":"RETRY"}</button>
     </div>
   );
   return (
     <div style={{ flex:1, display:"flex", flexDirection:"column" }}>
-      <div style={{ color, fontFamily:"'IBM Plex Mono',monospace", fontSize:11, letterSpacing:3, marginBottom:6 }}>QUIZ — {mod.label.toUpperCase()} · Q{cur+1}/{mod.quiz.length}</div>
-      <ProgressBar current={cur} total={mod.quiz.length} color={color} />
+      <div style={{ color, fontFamily:"'IBM Plex Mono',monospace", fontSize:11, letterSpacing:3, marginBottom:6 }}>QUIZ — {mod.label.toUpperCase()} · Q{cur+1}/{safeQuiz.length}</div>
+      <ProgressBar current={cur} total={safeQuiz.length} color={color} />
       <h2 style={{ color:"#e0f0ff", fontFamily:"'IBM Plex Mono',monospace", fontSize:17, margin:"16px 0", lineHeight:1.4 }}>{q.q}</h2>
       <div style={{ flex:1, display:"flex", flexDirection:"column", gap:8 }}>
-        {q.options.map((opt,i)=>{
+        {(Array.isArray(q.options) ? q.options : []).map((opt,i)=>{
           let bg="#020810",bdr="#0a1825",clr="#8aa0c0";
           if(rev){if(i===q.answer){bg=`${color}18`;bdr=color;clr="#fff";}else if(i===sel){bg="#100008";bdr="#cc2244";clr="#ff99aa";}}
           else if(sel===i){bdr=color;}
@@ -439,10 +451,6 @@ function QuizView({ mod, onComplete }) {
 
 export default function ArcFlashTraining() {
   const [screen, setScreen] = useState("home");
-  const location = useLocation();
-  const activeCategory = typeof location.state?.activeCategory === "string" ? location.state.activeCategory : "electrical-safety";
-  const [recordStatus, setRecordStatus] = useState({ busy: false, message: "", error: "" });
-  const recordSavedRef = useRef(false);
   const [modIdx, setModIdx] = useState(0);
   const [slideIdx, setSlideIdx] = useState(0);
   const [phase, setPhase] = useState("slides");
@@ -450,7 +458,7 @@ export default function ArcFlashTraining() {
   const [scanLine, setScanLine] = useState(0);
   useEffect(() => { const t = setInterval(()=>setScanLine(x=>(x+1)%100),30); return ()=>clearInterval(t); }, []);
 
-  const mod = MODULES[modIdx];
+  const mod = MODULES[modIdx] || MODULES[0];
   const completedCount = Object.keys(completed).length;
   const startMod = idx => { setModIdx(idx); setSlideIdx(0); setPhase("slides"); setScreen("module"); };
   const handleNext = () => { if(slideIdx+1>=mod.slides.length) setPhase("quiz"); else setSlideIdx(s=>s+1); };
@@ -469,7 +477,7 @@ export default function ArcFlashTraining() {
     <div style={{ minHeight:"100vh", background:"#010408", fontFamily:"'IBM Plex Sans',sans-serif", display:"flex", flexDirection:"column", ...scanStyle }}>
       <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
       <div style={{ background:"#00BFFF", padding:"10px 20px", display:"flex", justifyContent:"space-between" }}>
-        <span style={{ fontFamily:"'IBM Plex Mono',monospace", fontWeight:700, fontSize:13, letterSpacing:2, color:"#000" }}>DINGFELDER INDUSTRIAL — ELECTRICAL SAFETY TRAINING</span>
+        <span style={{ fontFamily:"'IBM Plex Mono',monospace", fontWeight:700, fontSize:13, letterSpacing:2, color:"#000" }}>A.I.R.O.N. — ELECTRICAL SAFETY TRAINING</span>
         <span style={{ fontFamily:"'IBM Plex Mono',monospace", fontSize:11, color:"#001" }}>NFPA 70E · OSHA 1910.333</span>
       </div>
       <div style={{ padding:"32px 24px 20px", borderBottom:"1px solid #040d18" }}>
@@ -495,55 +503,6 @@ export default function ArcFlashTraining() {
     </div>
   );
 
-
-  useEffect(() => {
-    if (screen !== "complete") {
-      recordSavedRef.current = false;
-      setRecordStatus({ busy: false, message: "", error: "" });
-      return;
-    }
-
-    if (recordSavedRef.current) return;
-    recordSavedRef.current = true;
-
-    let cancelled = false;
-    setRecordStatus({ busy: true, message: "", error: "" });
-
-    persistTrainingRecordNetlifyIdentity(null, {
-      attemptId: `/arcflash:${Date.now()}:${Math.random().toString(36).slice(2, 8)}`,
-      modulePath: "/arcflash",
-      moduleTitle: "Arc Flash & Electrical Safety",
-      categoryKey: activeCategory,
-      categoryLabel: "Electrical Safety",
-      score: MODULES.length,
-      quizCorrect: MODULES.length,
-      quizTotal: MODULES.length,
-      passed: true,
-      completedAt: new Date().toISOString(),
-      runtimeMinutes: 25,
-      certificateClass: "Portal Completion Record",
-      certificateEligible: true,
-      source: "custom-module",
-    }).then((result) => {
-      if (cancelled) return;
-      if (result?.skipped) {
-        setRecordStatus({ busy: false, message: "", error: "" });
-      } else if (result?.error) {
-        setRecordStatus({ busy: false, message: "", error: result.error });
-      } else {
-        setRecordStatus({
-          busy: false,
-          message: result?.message || "Retained training record saved to your A.I.R.O.N. account.",
-          error: "",
-        });
-      }
-    });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [screen, activeCategory]);
-
   if(screen==="complete") return (
     <div style={{ minHeight:"100vh", background:"#010408", display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", padding:28, textAlign:"center" }}>
       <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
@@ -551,17 +510,6 @@ export default function ArcFlashTraining() {
       <h1 style={{ color:"#00BFFF", fontFamily:"'IBM Plex Mono',monospace", fontSize:28, margin:"0 0 10px" }}>ARC FLASH TRAINING<br />COMPLETE</h1>
       <p style={{ color:"#556", fontSize:14, fontFamily:"'IBM Plex Sans',sans-serif", marginBottom:24, lineHeight:1.6, maxWidth:440 }}>All 4 modules passed. NFPA 70E awareness training complete for the Dingfelder campus.<br />Annual recertification required. Hands-on equipment training required before live electrical work.</p>
       <div style={{ color:"#224", fontSize:10, fontFamily:"'IBM Plex Mono',monospace", letterSpacing:2 }}>DINGFELDER SAFETY · NFPA 70E · OSHA 1910.333 · {new Date().toLocaleDateString()}</div>
-
-      {recordStatus.message ? (
-        <div style={{ padding:"12px 14px", background:"rgba(34,204,102,0.10)", border:"1px solid rgba(34,204,102,0.35)", borderRadius:8, color:"#9AF0B9", fontSize:13, lineHeight:1.6, maxWidth:520, marginBottom:16 }}>
-          {recordStatus.message}
-        </div>
-      ) : null}
-      {recordStatus.error ? (
-        <div style={{ padding:"12px 14px", background:"rgba(255,107,0,0.10)", border:"1px solid rgba(255,107,0,0.35)", borderRadius:8, color:"#FFB27A", fontSize:13, lineHeight:1.6, maxWidth:520, marginBottom:16 }}>
-          {recordStatus.error}
-        </div>
-      ) : null}
       <button onClick={()=>{setCompleted({});setScreen("home");}} style={{ marginTop:20, padding:"10px 24px", background:"transparent", border:"1px solid #0a1825", borderRadius:3, color:"#334", cursor:"pointer", fontFamily:"'IBM Plex Mono',monospace", fontSize:11, letterSpacing:2 }}>RESTART</button>
     </div>
   );

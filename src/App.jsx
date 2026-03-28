@@ -2,7 +2,7 @@
 import { Routes, Route, useNavigate, useLocation } from 'react-router-dom'
 import { useState, useEffect, useMemo } from 'react'
 import aironSplash from './assets/airon-splash.png'
-import { bootstrapNetlifyIdentity, signInNetlifyIdentity, signOutNetlifyIdentity, createAccountNetlifyIdentity, getUserCaptureFromIdentityUser, loadCurrentUserCaptureNetlifyIdentity, persistUserCaptureNetlifyIdentity } from './auth/netlifyIdentity.js'
+import { bootstrapNetlifyIdentity, signInNetlifyIdentity, signOutNetlifyIdentity, createAccountNetlifyIdentity, getUserCaptureFromIdentityUser, loadCurrentUserCaptureNetlifyIdentity, persistUserCaptureNetlifyIdentity, loadTrainingRecordsNetlifyIdentity } from './auth/netlifyIdentity.js'
 
 // ─── Training Programs ────────────────────────────────────────────────────────
 import LOTOFoundry     from './programs/LOTOFoundry.jsx'
@@ -1324,7 +1324,8 @@ function AIRONSplash({ onDone }) {
       position: 'fixed',
       inset: 0,
       zIndex: 999999,
-      overflow: 'hidden',
+      maxHeight: '88vh',
+        overflow: 'auto',
       background: '#000',
       color: '#fff',
       display: 'flex',
@@ -2361,13 +2362,61 @@ function CreateAccountPanel({
   )
 }
 
-function AccountPanel({ open, authState, captureState, onClose, onOpenSignIn, onOpenSetup }) {
+
+function formatTrainingHistoryDate(value) {
+  if (!value) return '—'
+  const parsed = new Date(value)
+  if (Number.isNaN(parsed.getTime())) return '—'
+  return parsed.toLocaleString([], {
+    year: 'numeric',
+    month: 'numeric',
+    day: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit',
+  })
+}
+
+function summarizeTrainingRecord(record) {
+  if (!record || typeof record !== 'object') {
+    return {
+      title: 'Unknown module',
+      scoreLabel: '—',
+      statusLabel: '—',
+      certificateLabel: '—',
+      completedLabel: '—',
+    }
+  }
+
+  const scoreLabel =
+    Number.isFinite(Number(record?.quizCorrect)) && Number.isFinite(Number(record?.quizTotal))
+      ? `${Number(record.quizCorrect)} / ${Number(record.quizTotal)}`
+      : Number.isFinite(Number(record?.score))
+      ? String(Number(record.score))
+      : '—'
+
+  return {
+    title: typeof record?.moduleTitle === 'string' && record.moduleTitle.trim() ? record.moduleTitle : 'Unknown module',
+    scoreLabel,
+    statusLabel: record?.passed ? 'Passed' : 'Review required',
+    certificateLabel: record?.certificateEligible
+      ? (typeof record?.certificateClass === 'string' && record.certificateClass.trim() ? record.certificateClass : 'Completion Record')
+      : 'Not eligible',
+    completedLabel: formatTrainingHistoryDate(record?.completedAt),
+  }
+}
+
+function AccountPanel({ open, authState, captureState, trainingRecordsState, onClose, onOpenSignIn, onOpenSetup, onRefreshTrainingRecords }) {
   if (!open) return null
 
   const privacyText = 'Your information is used only to create and maintain your training record, save test results, retain certificates, and send training-related notices. We do not sell your data, rent your data, or use it for advertising.'
   const accepted = hasAcceptedUserCapture(captureState)
   const profileComplete = hasCompletedUserProfile(captureState?.profile || {})
   const setupComplete = isUserCaptureComplete(captureState)
+  const records = Array.isArray(trainingRecordsState?.records) ? trainingRecordsState.records : []
+  const latestRecord = records[0] || null
+  const latestSummary = summarizeTrainingRecord(latestRecord)
+  const passedCount = records.filter(item => item?.passed).length
+  const certificateEligibleCount = records.filter(item => item?.certificateEligible).length
 
   return (
     <div style={{
@@ -2382,7 +2431,7 @@ function AccountPanel({ open, authState, captureState, onClose, onOpenSignIn, on
     }}>
       <div style={{
         width: '100%',
-        maxWidth: 760,
+        maxWidth: 1040,
         borderRadius: 18,
         border: '1px solid rgba(255,209,0,0.18)',
         background: '#0D0D0D',
@@ -2501,6 +2550,186 @@ function AccountPanel({ open, authState, captureState, onClose, onOpenSignIn, on
               </div>
             </div>
           </div>
+
+          {authState.user && (
+            <>
+              <div style={{
+                marginTop: 14,
+                display: 'grid',
+                gap: 14,
+                gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+              }}>
+                <div style={{
+                  padding: '14px 15px',
+                  borderRadius: 12,
+                  background: '#111111',
+                  border: '1px solid rgba(255,255,255,0.08)',
+                }}>
+                  <div style={{
+                    color: '#BEBEBE',
+                    fontFamily: "'IBM Plex Mono', monospace",
+                    fontSize: 11,
+                    letterSpacing: 1.5,
+                    textTransform: 'uppercase',
+                    marginBottom: 8,
+                  }}>
+                    Training history
+                  </div>
+                  <div style={{ color: '#FFFFFF', fontSize: 15, fontWeight: 700, marginBottom: 8 }}>
+                    {trainingRecordsState?.hydrating ? 'Loading retained records…' : `${records.length} retained module${records.length === 1 ? '' : 's'}`}
+                  </div>
+                  <div style={{ color: '#8C8C8C', fontSize: 13, lineHeight: 1.6 }}>
+                    Passed: {passedCount} · Certificate eligible: {certificateEligibleCount}
+                  </div>
+                </div>
+
+                <div style={{
+                  padding: '14px 15px',
+                  borderRadius: 12,
+                  background: '#111111',
+                  border: '1px solid rgba(255,255,255,0.08)',
+                }}>
+                  <div style={{
+                    color: '#BEBEBE',
+                    fontFamily: "'IBM Plex Mono', monospace",
+                    fontSize: 11,
+                    letterSpacing: 1.5,
+                    textTransform: 'uppercase',
+                    marginBottom: 8,
+                  }}>
+                    Latest result
+                  </div>
+                  <div style={{ color: '#FFFFFF', fontSize: 15, fontWeight: 700, marginBottom: 8 }}>
+                    {latestSummary.title}
+                  </div>
+                  <div style={{ color: '#8C8C8C', fontSize: 13, lineHeight: 1.6 }}>
+                    {latestSummary.statusLabel} · Score {latestSummary.scoreLabel} · {latestSummary.completedLabel}
+                  </div>
+                </div>
+              </div>
+
+              <div style={{
+                marginTop: 14,
+                borderRadius: 12,
+                background: '#111111',
+                border: '1px solid rgba(255,255,255,0.08)',
+                overflow: 'hidden',
+              }}>
+                <div style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  gap: 12,
+                  padding: '14px 15px',
+                  borderBottom: '1px solid rgba(255,255,255,0.08)',
+                }}>
+                  <div>
+                    <div style={{
+                      color: '#FFFFFF',
+                      fontFamily: "'Barlow Condensed', sans-serif",
+                      fontSize: 24,
+                      lineHeight: 1,
+                      fontWeight: 800,
+                      marginBottom: 6,
+                    }}>
+                      Retained training history
+                    </div>
+                    <div style={{ color: '#8C8C8C', fontSize: 13, lineHeight: 1.6 }}>
+                      Completed modules saved under your A.I.R.O.N. account.
+                    </div>
+                  </div>
+                  <HeaderActionButton onClick={onRefreshTrainingRecords}>
+                    Refresh Records
+                  </HeaderActionButton>
+                </div>
+
+                {trainingRecordsState?.error && (
+                  <div style={{
+                    margin: 14,
+                    padding: '12px 14px',
+                    borderRadius: 10,
+                    background: 'rgba(255,107,0,0.10)',
+                    border: '1px solid rgba(255,107,0,0.24)',
+                    color: '#FFB48F',
+                    fontSize: 13,
+                    lineHeight: 1.6,
+                  }}>
+                    {trainingRecordsState.error}
+                  </div>
+                )}
+
+                {trainingRecordsState?.hydrating ? (
+                  <div style={{ padding: '16px 15px', color: '#BEBEBE', fontSize: 13 }}>
+                    Loading retained module history from your A.I.R.O.N. account…
+                  </div>
+                ) : records.length === 0 ? (
+                  <div style={{ padding: '16px 15px', color: '#8C8C8C', fontSize: 13, lineHeight: 1.7 }}>
+                    No retained module history is saved yet. Completed modules will appear here after the retained training-record write path is wired to the module flow.
+                  </div>
+                ) : (
+                  <div style={{ display: 'grid', gap: 0 }}>
+                    {records.slice(0, 12).map((record) => {
+                      const summary = summarizeTrainingRecord(record)
+                      return (
+                        <div
+                          key={record.attemptId || `${record.modulePath}:${record.completedAt}`}
+                          style={{
+                            padding: '14px 15px',
+                            borderTop: '1px solid rgba(255,255,255,0.06)',
+                            display: 'grid',
+                            gap: 10,
+                            gridTemplateColumns: 'minmax(0, 1.6fr) repeat(4, minmax(110px, 1fr))',
+                            alignItems: 'start',
+                          }}
+                        >
+                          <div style={{ minWidth: 0 }}>
+                            <div style={{ color: '#FFFFFF', fontSize: 15, fontWeight: 700, marginBottom: 6 }}>
+                              {summary.title}
+                            </div>
+                            <div style={{ color: '#8C8C8C', fontSize: 12, lineHeight: 1.5 }}>
+                              {record.categoryLabel || 'A.I.R.O.N. training'}{record.modulePath ? ` · ${record.modulePath}` : ''}
+                            </div>
+                          </div>
+                          <div>
+                            <div style={{ color: '#BEBEBE', fontFamily: "'IBM Plex Mono', monospace", fontSize: 10, letterSpacing: 1.2, textTransform: 'uppercase', marginBottom: 6 }}>
+                              Completed
+                            </div>
+                            <div style={{ color: '#E6E6E6', fontSize: 12, lineHeight: 1.5 }}>
+                              {summary.completedLabel}
+                            </div>
+                          </div>
+                          <div>
+                            <div style={{ color: '#BEBEBE', fontFamily: "'IBM Plex Mono', monospace", fontSize: 10, letterSpacing: 1.2, textTransform: 'uppercase', marginBottom: 6 }}>
+                              Score
+                            </div>
+                            <div style={{ color: '#E6E6E6', fontSize: 12, lineHeight: 1.5 }}>
+                              {summary.scoreLabel}
+                            </div>
+                          </div>
+                          <div>
+                            <div style={{ color: '#BEBEBE', fontFamily: "'IBM Plex Mono', monospace", fontSize: 10, letterSpacing: 1.2, textTransform: 'uppercase', marginBottom: 6 }}>
+                              Status
+                            </div>
+                            <div style={{ color: record?.passed ? '#8DFFB4' : '#FFB48F', fontSize: 12, lineHeight: 1.5, fontWeight: 700 }}>
+                              {summary.statusLabel}
+                            </div>
+                          </div>
+                          <div>
+                            <div style={{ color: '#BEBEBE', fontFamily: "'IBM Plex Mono', monospace", fontSize: 10, letterSpacing: 1.2, textTransform: 'uppercase', marginBottom: 6 }}>
+                              Certificate
+                            </div>
+                            <div style={{ color: '#E6E6E6', fontSize: 12, lineHeight: 1.5 }}>
+                              {summary.certificateLabel}
+                            </div>
+                          </div>
+                        </div>
+                      )
+                    })}
+                  </div>
+                )}
+              </div>
+            </>
+          )}
 
           <div style={{
             marginTop: 14,
@@ -3123,6 +3352,11 @@ function PortalHome({ authState, onSignIn, onSignOut, onCreateAccount }) {
   const [captureHydrating, setCaptureHydrating] = useState(false)
   const [captureSaving, setCaptureSaving] = useState(false)
   const [captureError, setCaptureError] = useState('')
+  const [trainingRecordsState, setTrainingRecordsState] = useState({
+    records: [],
+    hydrating: false,
+    error: '',
+  })
 
   useEffect(() => {
     const t = setInterval(() => setTick(x => x + 1), 1000)
@@ -3185,6 +3419,14 @@ function PortalHome({ authState, onSignIn, onSignOut, onCreateAccount }) {
 
     return () => {
       cancelled = true
+    }
+  }, [authState.user])
+
+  useEffect(() => {
+    if (authState.user) {
+      hydrateTrainingRecords(authState.user)
+    } else {
+      setTrainingRecordsState({ records: [], hydrating: false, error: '' })
     }
   }, [authState.user])
 
@@ -3311,6 +3553,21 @@ function PortalHome({ authState, onSignIn, onSignOut, onCreateAccount }) {
     const durableNext = saveUserCaptureToLocalCache(persisted.user || authState.user, persisted.capture || nextCapture)
     setCaptureState(durableNext)
     return durableNext
+  }
+
+  const hydrateTrainingRecords = async (user = authState.user) => {
+    if (!user) {
+      setTrainingRecordsState({ records: [], hydrating: false, error: '' })
+      return
+    }
+
+    setTrainingRecordsState(prev => ({ ...prev, hydrating: true, error: '' }))
+    const result = await loadTrainingRecordsNetlifyIdentity(user)
+    setTrainingRecordsState({
+      records: Array.isArray(result.records) ? result.records : [],
+      hydrating: false,
+      error: result.error || '',
+    })
   }
 
   const setupComplete = isUserCaptureComplete(captureState)
@@ -3743,6 +4000,7 @@ function PortalHome({ authState, onSignIn, onSignOut, onCreateAccount }) {
         open={showAccountPanel}
         authState={authState}
         captureState={captureState}
+        trainingRecordsState={trainingRecordsState}
         onClose={() => setShowAccountPanel(false)}
         onOpenSignIn={() => {
           setShowAccountPanel(false)
@@ -3752,6 +4010,7 @@ function PortalHome({ authState, onSignIn, onSignOut, onCreateAccount }) {
           setShowAccountPanel(false)
           setShowSetupGate(true)
         }}
+        onRefreshTrainingRecords={() => hydrateTrainingRecords(authState.user)}
       />
 
       <UserCaptureGate

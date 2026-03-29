@@ -124,8 +124,18 @@ export function resolveModuleRecordMeta({
 } = {}) {
   const managed = getManagedModuleByPath(path);
   if (managed) {
+    const primaryRequirement = getRequirementById(managed.requirementIds?.[0]);
     return {
       ...managed,
+      renewalRequired: primaryRequirement?.renewalRequired !== false,
+      renewalIntervalDays:
+        Number.isFinite(Number(primaryRequirement?.renewalIntervalDays)) ? Number(primaryRequirement.renewalIntervalDays) : 365,
+      notificationLeadDays:
+        Number.isFinite(Number(primaryRequirement?.notificationLeadDays)) ? Number(primaryRequirement.notificationLeadDays) : 30,
+      assignedPolicySource:
+        typeof primaryRequirement?.assignedPolicySource === "string" && primaryRequirement.assignedPolicySource.trim()
+          ? primaryRequirement.assignedPolicySource
+          : "requirement-default",
       source: source || managed.source || "portal",
     };
   }
@@ -144,6 +154,15 @@ export function resolveModuleRecordMeta({
     reviewEnabled: true,
     recordRequired: true,
     passScore,
+    renewalRequired: requirement?.renewalRequired !== false,
+    renewalIntervalDays:
+      Number.isFinite(Number(requirement?.renewalIntervalDays)) ? Number(requirement.renewalIntervalDays) : 365,
+    notificationLeadDays:
+      Number.isFinite(Number(requirement?.notificationLeadDays)) ? Number(requirement.notificationLeadDays) : 30,
+    assignedPolicySource:
+      typeof requirement?.assignedPolicySource === "string" && requirement.assignedPolicySource.trim()
+        ? requirement.assignedPolicySource
+        : "requirement-default",
     version,
     source: source || "portal",
   };

@@ -1,7 +1,13 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { useLocation } from "react-router-dom";
 import { persistTrainingRecordNetlifyIdentity } from "../auth/netlifyIdentity.js";
 import { resolveModuleRecordMeta } from "../data/moduleRegistry.js";
+import ReviewStatusBanner from "../components/ReviewStatusBanner.jsx";
+import { buildRenewalPolicyFields, resolveReviewLaunchState } from "../utils/reviewMode.js";
+
+const MODULE_PATH = "/evacuation";
+const MODULE_TITLE = "Emergency Evacuation & Muster";
+const MODULE_CATEGORY_LABEL = "Campus";
 
 // ─── ROLE → FACILITY & MUSTER MAP ────────────────────────────────────────────
 const ROLE_MAP = {
@@ -394,6 +400,14 @@ export default function EvacuationTraining() {
   const [screen,setScreen]=useState("home");
   const location = useLocation();
   const activeCategory = typeof location.state?.activeCategory === "string" ? location.state.activeCategory : "campus";
+  const recordMeta = useMemo(() => resolveModuleRecordMeta({
+    path: MODULE_PATH,
+    label: MODULE_TITLE,
+    categoryKey: activeCategory,
+    categoryLabel: MODULE_CATEGORY_LABEL,
+    source: "custom-module",
+  }), [activeCategory]);
+  const reviewState = useMemo(() => resolveReviewLaunchState(location.state, recordMeta), [location.state, recordMeta]);
   const [recordStatus, setRecordStatus] = useState({ busy: false, message: "", error: "" });
   const recordSavedRef = useRef(false);
   const [modIdx,setModIdx]=useState(0);
@@ -426,32 +440,27 @@ export default function EvacuationTraining() {
     let cancelled = false;
     setRecordStatus({ busy: true, message: "", error: "" });
 
-    const recordMeta = resolveModuleRecordMeta({
-      path: "/evacuation",
-      label: "Emergency Evacuation & Muster",
-      categoryKey: activeCategory,
-      categoryLabel: "Campus",
-      source: "custom-module",
-    });
+    const completedAt = new Date().toISOString();
 
     persistTrainingRecordNetlifyIdentity(null, {
       attemptId: `/evacuation:${Date.now()}:${Math.random().toString(36).slice(2, 8)}`,
       moduleId: recordMeta.moduleId,
       moduleVersion: recordMeta.version,
-      modulePath: "/evacuation",
-      moduleTitle: "Emergency Evacuation & Muster",
+      modulePath: MODULE_PATH,
+      moduleTitle: MODULE_TITLE,
       categoryKey: activeCategory,
-      categoryLabel: "Campus",
+      categoryLabel: MODULE_CATEGORY_LABEL,
       requirementIds: recordMeta.requirementIds,
       requirementType: recordMeta.category,
       completionBucket: recordMeta.category,
       reviewEnabled: Boolean(recordMeta.reviewEnabled),
       recordRequired: recordMeta.recordRequired !== false,
+      ...buildRenewalPolicyFields(recordMeta, reviewState.latestRecord, completedAt),
       score: MODULES.length,
       quizCorrect: MODULES.length,
       quizTotal: MODULES.length,
       passed: true,
-      completedAt: new Date().toISOString(),
+      completedAt,
       runtimeMinutes: 20,
       certificateClass: "Portal Completion Record",
       certificateEligible: true,
@@ -474,7 +483,7 @@ export default function EvacuationTraining() {
     return () => {
       cancelled = true;
     };
-  }, [screen, activeCategory]);
+  }, [screen, activeCategory, recordMeta, reviewState.latestRecord]);
 
   if(screen==="home") return (
     <div style={{minHeight:"100vh",background:"#030a04",fontFamily:"'IBM Plex Sans',sans-serif",display:"flex",flexDirection:"column"}}>
@@ -493,6 +502,7 @@ export default function EvacuationTraining() {
         </div>
       </div>
       <div style={{padding:"16px 24px",flex:1}}>
+        <ReviewStatusBanner reviewState={reviewState} accentColor="#22CC66" title="Review mode active" />
         <div style={{height:2,background:"#0a180a",borderRadius:2,overflow:"hidden",marginBottom:16}}><div style={{height:"100%",width:`${(completedCount/MODULES.length)*100}%`,background:"#22CC66",transition:"width 0.4s"}}/></div>
         {MODULES.map((m,i)=>{
           const done=completed[m.id];
@@ -560,6 +570,7 @@ export default function EvacuationTraining() {
         </div>
       </div>
       <div style={{flex:1,padding:"18px 20px",display:"flex",flexDirection:"column",maxWidth:700,width:"100%",margin:"0 auto",boxSizing:"border-box"}}>
+        <ReviewStatusBanner reviewState={reviewState} accentColor={mod.color} title="Review mode active" />
         {phase==="slides"
           ?<SlideView slide={mod.slides[slideIdx]} color={mod.color} roleCtx={roleCtx} playerRole={playerRole} onNext={handleNext} onPrev={handlePrev} isFirst={slideIdx===0&&modIdx===0} isLast={slideIdx===mod.slides.length-1}/>
           :<QuizView mod={mod} onComplete={handleQuizDone}/>}

@@ -1,7 +1,13 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { useLocation } from "react-router-dom";
 import { persistTrainingRecordNetlifyIdentity } from "../auth/netlifyIdentity.js";
 import { resolveModuleRecordMeta } from "../data/moduleRegistry.js";
+import ReviewStatusBanner from "../components/ReviewStatusBanner.jsx";
+import { buildRenewalPolicyFields, resolveReviewLaunchState } from "../utils/reviewMode.js";
+
+const MODULE_PATH = "/loto-campus";
+const MODULE_TITLE = "LOTO — Full Campus";
+const MODULE_CATEGORY_LABEL = "LOTO";
 
 // ─── FULL MODULE DATA ──────────────────────────────────────────────────────────
 
@@ -663,6 +669,14 @@ export default function LOTOFullCampus() {
   const [completed, setCompleted] = useState({});
   const recordSavedRef = useRef(false);
   const activeCategory = typeof location.state?.activeCategory === "string" ? location.state.activeCategory : "campus";
+  const recordMeta = useMemo(() => resolveModuleRecordMeta({
+    path: MODULE_PATH,
+    label: MODULE_TITLE,
+    categoryKey: activeCategory,
+    categoryLabel: MODULE_CATEGORY_LABEL,
+    source: "custom-module",
+  }), [activeCategory]);
+  const reviewState = useMemo(() => resolveReviewLaunchState(location.state, recordMeta), [location.state, recordMeta]);
 
   const mod = MODULES[modIdx] || MODULES[0];
   const allComplete = MODULES.every(m => completed[m.id]);
@@ -679,20 +693,14 @@ export default function LOTOFullCampus() {
 
     let cancelled = false;
 
-    const recordMeta = resolveModuleRecordMeta({
-      path: "/loto-campus",
-      label: "LOTO — Full Campus",
-      categoryKey: activeCategory,
-      categoryLabel: formatCategoryLabel(activeCategory),
-      source: "custom-module",
-    });
+    const completedAt = new Date().toISOString();
 
     persistTrainingRecordNetlifyIdentity(null, {
       attemptId: `/loto-campus:${Date.now()}:${Math.random().toString(36).slice(2, 8)}`,
       moduleId: recordMeta.moduleId,
       moduleVersion: recordMeta.version,
-      modulePath: "/loto-campus",
-      moduleTitle: "LOTO — Full Campus",
+      modulePath: MODULE_PATH,
+      moduleTitle: MODULE_TITLE,
       categoryKey: activeCategory,
       categoryLabel: formatCategoryLabel(activeCategory),
       requirementIds: recordMeta.requirementIds,
@@ -700,11 +708,12 @@ export default function LOTOFullCampus() {
       completionBucket: recordMeta.category,
       reviewEnabled: Boolean(recordMeta.reviewEnabled),
       recordRequired: recordMeta.recordRequired !== false,
+      ...buildRenewalPolicyFields(recordMeta, reviewState.latestRecord, completedAt),
       score: MODULES.length,
       quizCorrect: MODULES.length,
       quizTotal: MODULES.length,
       passed: true,
-      completedAt: new Date().toISOString(),
+      completedAt,
       runtimeMinutes: 35,
       certificateClass: "Portal Completion Record",
       certificateEligible: true,
@@ -722,7 +731,7 @@ export default function LOTOFullCampus() {
     return () => {
       cancelled = true;
     };
-  }, [activeCategory, screen]);
+  }, [activeCategory, screen, recordMeta, reviewState.latestRecord]);
 
   const startMod = (idx) => { setModIdx(idx); setSlideIdx(0); setPhase("slides"); setScreen("module"); };
 
@@ -767,6 +776,7 @@ export default function LOTOFullCampus() {
 
       {/* Hero */}
       <div style={{ padding: "28px 20px 20px", borderBottom: "1px solid #111" }}>
+        <ReviewStatusBanner reviewState={reviewState} accentColor="#FF6B00" title="Review mode active" />
         <div style={{ color: "#FF6B00", fontSize: 10, letterSpacing: 4, fontFamily: "'Barlow Condensed',sans-serif", marginBottom: 8 }}>FEDERAL COMPLIANCE · OSHA 29 CFR 1910.147 · NFPA 58 · 29 CFR 1910.119</div>
         <h1 style={{ margin: 0, fontSize: 38, fontWeight: 900, fontFamily: "'Barlow Condensed',sans-serif", color: "#fff", lineHeight: 1.1 }}>
           LOCKOUT / TAGOUT<br /><span style={{ color: "#FF6B00" }}>FULL CAMPUS PROGRAM</span>
@@ -869,6 +879,7 @@ export default function LOTOFullCampus() {
 
       {/* Content */}
       <div style={{ flex: 1, padding: "18px 20px", display: "flex", flexDirection: "column", maxWidth: 720, width: "100%", margin: "0 auto", boxSizing: "border-box" }}>
+        <ReviewStatusBanner reviewState={reviewState} accentColor={mod.color} title="Review mode active" />
         {phase === "slides"
           ? <SlideView slide={mod.slides[slideIdx]} color={mod.color} onNext={handleNext} onPrev={handlePrev} isFirst={slideIdx === 0} isLast={slideIdx === mod.slides.length - 1} />
           : <QuizView questions={mod.quiz} color={mod.color} moduleName={mod.title} onComplete={handleQuizDone} />

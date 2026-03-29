@@ -3,6 +3,8 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { persistTrainingRecordNetlifyIdentity } from "../auth/netlifyIdentity.js";
 import { resolveModuleRecordMeta } from "../data/moduleRegistry.js";
+import ReviewStatusBanner from "../components/ReviewStatusBanner.jsx";
+import { buildRenewalPolicyFields, resolveReviewLaunchState } from "../utils/reviewMode.js";
 
 const PAGE_BG = "#080808";
 const PANEL = "#0f0f0f";
@@ -239,6 +241,19 @@ export default function TrainingModuleShell({ module }) {
   const seriesPaths = portalContext.seriesPaths;
   const currentSeriesIndex = seriesPaths.indexOf(module.path);
   const nextModulePath = currentSeriesIndex >= 0 ? seriesPaths[currentSeriesIndex + 1] : null;
+  const recordMeta = useMemo(() => resolveModuleRecordMeta({
+    path: typeof module.path === "string" ? module.path : "",
+    label:
+      typeof module.label === "string" && module.label.trim()
+        ? module.label.trim()
+        : "A.I.R.O.N. training module",
+    categoryKey: activeCategory,
+    categoryLabel: typeof module.category === "string" ? module.category : "",
+    source: "shared-shell",
+    version: typeof module.version === "string" ? module.version : "1.0.0",
+    passScore: Number.isFinite(Number(module.passScore)) ? Number(module.passScore) : 80,
+  }), [activeCategory, module.category, module.label, module.passScore, module.path, module.version]);
+  const reviewState = useMemo(() => resolveReviewLaunchState(location.state, recordMeta), [location.state, recordMeta]);
 
   const returnToPortal = () => {
     writeStoredPortalContext(portalSearch, seriesPaths);
@@ -254,6 +269,7 @@ export default function TrainingModuleShell({ module }) {
       state: {
         portalSearch,
         seriesPaths,
+        activeCategory,
       },
     });
   };
@@ -287,21 +303,7 @@ export default function TrainingModuleShell({ module }) {
     recordSavedRef.current = true;
 
     let cancelled = false;
-
-    const recordMeta = resolveModuleRecordMeta({
-      path: typeof module.path === "string" ? module.path : "",
-      label:
-        typeof module.label === "string" && module.label.trim()
-          ? module.label.trim()
-          : typeof module.short === "string" && module.short.trim()
-          ? module.short.trim()
-          : "A.I.R.O.N. training module",
-      categoryKey: activeCategory,
-      categoryLabel: formatCategoryLabel(activeCategory),
-      source: "shared-shell",
-      version: typeof module.version === "string" && module.version.trim() ? module.version.trim() : "1.0.0",
-      passScore: passThreshold,
-    });
+    const completedAt = new Date().toISOString();
 
     persistTrainingRecordNetlifyIdentity(null, {
       attemptId: `${module.path || module.label || "training-module"}:${Date.now()}:${Math.random().toString(36).slice(2, 8)}`,
@@ -321,11 +323,12 @@ export default function TrainingModuleShell({ module }) {
       completionBucket: recordMeta.category,
       reviewEnabled: Boolean(recordMeta.reviewEnabled),
       recordRequired: recordMeta.recordRequired !== false,
+      ...buildRenewalPolicyFields(recordMeta, reviewState.latestRecord, completedAt),
       score,
       quizCorrect: score,
       quizTotal: quiz.length,
       passed: true,
-      completedAt: new Date().toISOString(),
+      completedAt,
       runtimeMinutes: Number.isFinite(Number(module.minutes)) ? Number(module.minutes) : null,
       certificateClass: "Portal Completion Record",
       certificateEligible: true,
@@ -343,7 +346,7 @@ export default function TrainingModuleShell({ module }) {
     return () => {
       cancelled = true;
     };
-  }, [activeCategory, module.label, module.minutes, module.path, module.short, passed, quiz.length, score, submitted]);
+  }, [module.label, module.minutes, module.path, module.short, passed, quiz.length, score, submitted, recordMeta, reviewState.latestRecord]);
 
   if (submitted) {
     return (
@@ -618,6 +621,7 @@ export default function TrainingModuleShell({ module }) {
         rel="stylesheet"
       />
       <div style={{ maxWidth: 860, margin: "0 auto" }}>
+        <ReviewStatusBanner reviewState={reviewState} accentColor={module.color} title="Review mode active" />
         <div
           style={{
             display: "flex",

@@ -1,7 +1,13 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { useLocation } from "react-router-dom";
 import { persistTrainingRecordNetlifyIdentity } from "../auth/netlifyIdentity.js";
 import { resolveModuleRecordMeta } from "../data/moduleRegistry.js";
+import ReviewStatusBanner from "../components/ReviewStatusBanner.jsx";
+import { buildRenewalPolicyFields, resolveReviewLaunchState } from "../utils/reviewMode.js";
+
+const MODULE_PATH = "/loto";
+const MODULE_TITLE = "LOTO — Foundry Focus";
+const MODULE_CATEGORY_LABEL = "LOTO";
 
 // ─── DATA ────────────────────────────────────────────────────────────────────
 
@@ -456,6 +462,14 @@ export default function LOTOTraining() {
   const [allDone, setAllDone] = useState(false);
   const recordSavedRef = useRef(false);
   const activeCategory = typeof location.state?.activeCategory === "string" ? location.state.activeCategory : "foundry";
+  const recordMeta = useMemo(() => resolveModuleRecordMeta({
+    path: MODULE_PATH,
+    label: MODULE_TITLE,
+    categoryKey: activeCategory,
+    categoryLabel: MODULE_CATEGORY_LABEL,
+    source: "custom-module",
+  }), [activeCategory]);
+  const reviewState = useMemo(() => resolveReviewLaunchState(location.state, recordMeta), [location.state, recordMeta]);
 
   const mod = MODULES[moduleIdx] || MODULES[0];
 
@@ -470,20 +484,14 @@ export default function LOTOTraining() {
 
     let cancelled = false;
 
-    const recordMeta = resolveModuleRecordMeta({
-      path: "/loto",
-      label: "LOTO — Foundry Focus",
-      categoryKey: activeCategory,
-      categoryLabel: formatCategoryLabel(activeCategory),
-      source: "custom-module",
-    });
+    const completedAt = new Date().toISOString();
 
     persistTrainingRecordNetlifyIdentity(null, {
       attemptId: `/loto:${Date.now()}:${Math.random().toString(36).slice(2, 8)}`,
       moduleId: recordMeta.moduleId,
       moduleVersion: recordMeta.version,
-      modulePath: "/loto",
-      moduleTitle: "LOTO — Foundry Focus",
+      modulePath: MODULE_PATH,
+      moduleTitle: MODULE_TITLE,
       categoryKey: activeCategory,
       categoryLabel: formatCategoryLabel(activeCategory),
       requirementIds: recordMeta.requirementIds,
@@ -491,11 +499,12 @@ export default function LOTOTraining() {
       completionBucket: recordMeta.category,
       reviewEnabled: Boolean(recordMeta.reviewEnabled),
       recordRequired: recordMeta.recordRequired !== false,
+      ...buildRenewalPolicyFields(recordMeta, reviewState.latestRecord, completedAt),
       score: MODULES.length,
       quizCorrect: MODULES.length,
       quizTotal: MODULES.length,
       passed: true,
-      completedAt: new Date().toISOString(),
+      completedAt,
       runtimeMinutes: 20,
       certificateClass: "Portal Completion Record",
       certificateEligible: true,
@@ -513,7 +522,7 @@ export default function LOTOTraining() {
     return () => {
       cancelled = true;
     };
-  }, [activeCategory, screen]);
+  }, [activeCategory, screen, recordMeta, reviewState.latestRecord]);
 
   const startModule = (idx) => {
     setModuleIdx(idx);
@@ -562,6 +571,7 @@ export default function LOTOTraining() {
 
       {/* Hero */}
       <div style={{ padding: "40px 24px 28px", borderBottom: "1px solid #151515" }}>
+        <ReviewStatusBanner reviewState={reviewState} accentColor="#FF6B00" title="Review mode active" />
         <div style={{ color: "#FF6B00", fontSize: 11, letterSpacing: 4, fontFamily: "'Barlow Condensed', sans-serif", marginBottom: 10, textTransform: "uppercase" }}>Federal Compliance Training</div>
         <h1 style={{ margin: 0, fontSize: 42, fontWeight: 900, fontFamily: "'Barlow Condensed', sans-serif", color: "#fff", lineHeight: 1.1 }}>
           LOCKOUT / TAGOUT<br />
@@ -677,6 +687,7 @@ export default function LOTOTraining() {
 
       {/* Content */}
       <div style={{ flex: 1, padding: "20px", display: "flex", flexDirection: "column", maxWidth: 700, width: "100%", margin: "0 auto", boxSizing: "border-box" }}>
+        <ReviewStatusBanner reviewState={reviewState} accentColor={mod.color} title="Review mode active" />
         {phase === "slides"
           ? <SlideView
               slide={mod.slides[slideIdx]}

@@ -1,7 +1,13 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { useLocation } from "react-router-dom";
 import { persistTrainingRecordNetlifyIdentity } from "../auth/netlifyIdentity.js";
 import { resolveModuleRecordMeta } from "../data/moduleRegistry.js";
+import ReviewStatusBanner from "../components/ReviewStatusBanner.jsx";
+import { buildRenewalPolicyFields, resolveReviewLaunchState } from "../utils/reviewMode.js";
+
+const MODULE_PATH = "/h2s";
+const MODULE_TITLE = "H₂S Awareness & SCBA";
+const MODULE_CATEGORY_LABEL = "Process / Gas";
 
 // ─── ROLE → CONTEXT MAP ───────────────────────────────────────────────────────
 const ROLE_CONTEXT = {
@@ -417,6 +423,14 @@ export default function H2STraining() {
   const [screen, setScreen] = useState("home");
   const location = useLocation();
   const activeCategory = typeof location.state?.activeCategory === "string" ? location.state.activeCategory : "process-gas";
+  const recordMeta = useMemo(() => resolveModuleRecordMeta({
+    path: MODULE_PATH,
+    label: MODULE_TITLE,
+    categoryKey: activeCategory,
+    categoryLabel: MODULE_CATEGORY_LABEL,
+    source: "custom-module",
+  }), [activeCategory]);
+  const reviewState = useMemo(() => resolveReviewLaunchState(location.state, recordMeta), [location.state, recordMeta]);
   const [recordStatus, setRecordStatus] = useState({ busy: false, message: "", error: "" });
   const recordSavedRef = useRef(false);
   const [modIdx, setModIdx] = useState(0);
@@ -456,32 +470,27 @@ export default function H2STraining() {
     let cancelled = false;
     setRecordStatus({ busy: true, message: "", error: "" });
 
-    const recordMeta = resolveModuleRecordMeta({
-      path: "/h2s",
-      label: "H₂S Awareness & SCBA",
-      categoryKey: activeCategory,
-      categoryLabel: "Process / Gas",
-      source: "custom-module",
-    });
+    const completedAt = new Date().toISOString();
 
     persistTrainingRecordNetlifyIdentity(null, {
       attemptId: `/h2s:${Date.now()}:${Math.random().toString(36).slice(2, 8)}`,
       moduleId: recordMeta.moduleId,
       moduleVersion: recordMeta.version,
-      modulePath: "/h2s",
-      moduleTitle: "H₂S Awareness & SCBA",
+      modulePath: MODULE_PATH,
+      moduleTitle: MODULE_TITLE,
       categoryKey: activeCategory,
-      categoryLabel: "Process / Gas",
+      categoryLabel: MODULE_CATEGORY_LABEL,
       requirementIds: recordMeta.requirementIds,
       requirementType: recordMeta.category,
       completionBucket: recordMeta.category,
       reviewEnabled: Boolean(recordMeta.reviewEnabled),
       recordRequired: recordMeta.recordRequired !== false,
+      ...buildRenewalPolicyFields(recordMeta, reviewState.latestRecord, completedAt),
       score: MODULES.length,
       quizCorrect: MODULES.length,
       quizTotal: MODULES.length,
       passed: true,
-      completedAt: new Date().toISOString(),
+      completedAt,
       runtimeMinutes: 20,
       certificateClass: "Portal Completion Record",
       certificateEligible: true,
@@ -504,7 +513,7 @@ export default function H2STraining() {
     return () => {
       cancelled = true;
     };
-  }, [screen, activeCategory]);
+  }, [screen, activeCategory, recordMeta, reviewState.latestRecord]);
 
   if(screen==="home") return (
     <div style={{ minHeight:"100vh", background:"#050400", fontFamily:"'IBM Plex Sans',sans-serif", display:"flex", flexDirection:"column" }}>
@@ -523,6 +532,7 @@ export default function H2STraining() {
         <p style={{ color:"#888", fontSize:14, lineHeight:1.6, marginBottom:0 }}>Role: <strong style={{ color:"#FF8800" }}>{playerRole}</strong> · Facility: <strong style={{ color:"#FF8800" }}>{ctx.facility}</strong> · {ctx.scba?"SCBA Required":"Monitor Required"}</p>
       </div>
       <div style={{ padding:"16px 24px", flex:1 }}>
+        <ReviewStatusBanner reviewState={reviewState} accentColor="#FF3300" title="Review mode active" />
         <div style={{ height:3, background:"#1a1000", borderRadius:2, overflow:"hidden", marginBottom:16 }}>
           <div style={{ height:"100%", width:`${(completedCount/MODULES.length)*100}%`, background:"#FF3300", transition:"width 0.4s" }} />
         </div>
@@ -591,6 +601,7 @@ export default function H2STraining() {
         </div>
       </div>
       <div style={{ flex:1, padding:"18px 20px", display:"flex", flexDirection:"column", maxWidth:700, width:"100%", margin:"0 auto", boxSizing:"border-box" }}>
+        <ReviewStatusBanner reviewState={reviewState} accentColor={mod.color} title="Review mode active" />
         {phase==="slides"
           ? <SlideView slide={mod.slides[slideIdx]} color={mod.color} onNext={handleNext} onPrev={handlePrev} isFirst={slideIdx===0&&modIdx===0} isLast={slideIdx===mod.slides.length-1} />
           : <QuizView mod={mod} onComplete={handleQuizDone} />}

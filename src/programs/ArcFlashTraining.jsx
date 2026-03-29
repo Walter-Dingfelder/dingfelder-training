@@ -1,7 +1,13 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { useLocation } from "react-router-dom";
 import { persistTrainingRecordNetlifyIdentity } from "../auth/netlifyIdentity.js";
 import { resolveModuleRecordMeta } from "../data/moduleRegistry.js";
+import ReviewStatusBanner from "../components/ReviewStatusBanner.jsx";
+import { buildRenewalPolicyFields, resolveReviewLaunchState } from "../utils/reviewMode.js";
+
+const MODULE_PATH = "/arcflash";
+const MODULE_TITLE = "Arc Flash & Electrical Safety";
+const MODULE_CATEGORY_LABEL = "Electrical Safety";
 
 const MODULES = [
   {
@@ -469,6 +475,14 @@ export default function ArcFlashTraining() {
   const [scanLine, setScanLine] = useState(0);
   const recordSavedRef = useRef(false);
   const activeCategory = typeof location.state?.activeCategory === "string" ? location.state.activeCategory : "electrical";
+  const recordMeta = useMemo(() => resolveModuleRecordMeta({
+    path: MODULE_PATH,
+    label: MODULE_TITLE,
+    categoryKey: activeCategory,
+    categoryLabel: MODULE_CATEGORY_LABEL,
+    source: "custom-module",
+  }), [activeCategory]);
+  const reviewState = useMemo(() => resolveReviewLaunchState(location.state, recordMeta), [location.state, recordMeta]);
   useEffect(() => { const t = setInterval(()=>setScanLine(x=>(x+1)%100),30); return ()=>clearInterval(t); }, []);
 
   const mod = MODULES[modIdx] || MODULES[0];
@@ -486,20 +500,14 @@ export default function ArcFlashTraining() {
 
     let cancelled = false;
 
-    const recordMeta = resolveModuleRecordMeta({
-      path: "/arcflash",
-      label: "Arc Flash & Electrical Safety",
-      categoryKey: activeCategory,
-      categoryLabel: formatCategoryLabel(activeCategory),
-      source: "custom-module",
-    });
+    const completedAt = new Date().toISOString();
 
     persistTrainingRecordNetlifyIdentity(null, {
       attemptId: `/arcflash:${Date.now()}:${Math.random().toString(36).slice(2, 8)}`,
       moduleId: recordMeta.moduleId,
       moduleVersion: recordMeta.version,
-      modulePath: "/arcflash",
-      moduleTitle: "Arc Flash & Electrical Safety",
+      modulePath: MODULE_PATH,
+      moduleTitle: MODULE_TITLE,
       categoryKey: activeCategory,
       categoryLabel: formatCategoryLabel(activeCategory),
       requirementIds: recordMeta.requirementIds,
@@ -507,11 +515,12 @@ export default function ArcFlashTraining() {
       completionBucket: recordMeta.category,
       reviewEnabled: Boolean(recordMeta.reviewEnabled),
       recordRequired: recordMeta.recordRequired !== false,
+      ...buildRenewalPolicyFields(recordMeta, reviewState.latestRecord, completedAt),
       score: MODULES.length,
       quizCorrect: MODULES.length,
       quizTotal: MODULES.length,
       passed: true,
-      completedAt: new Date().toISOString(),
+      completedAt,
       runtimeMinutes: 25,
       certificateClass: "Portal Completion Record",
       certificateEligible: true,
@@ -529,7 +538,7 @@ export default function ArcFlashTraining() {
     return () => {
       cancelled = true;
     };
-  }, [activeCategory, screen]);
+  }, [activeCategory, screen, recordMeta, reviewState.latestRecord]);
   const handleNext = () => { if(slideIdx+1>=mod.slides.length) setPhase("quiz"); else setSlideIdx(s=>s+1); };
   const handlePrev = () => { if(slideIdx>0) setSlideIdx(s=>s-1); };
   const handleQuizDone = passed => {
@@ -556,6 +565,7 @@ export default function ArcFlashTraining() {
         <p style={{ color:"#556", fontSize:14, lineHeight:1.6, marginBottom:0 }}>NFPA 70E · OSHA 29 CFR 1910.333 · 40+ MVA Campus Service</p>
       </div>
       <div style={{ padding:"16px 24px", flex:1 }}>
+        <ReviewStatusBanner reviewState={reviewState} accentColor="#00BFFF" title="Review mode active" />
         <div style={{ height:2, background:"#040d18", borderRadius:2, overflow:"hidden", marginBottom:16 }}><div style={{ height:"100%", width:`${(completedCount/MODULES.length)*100}%`, background:"#00BFFF", transition:"width 0.4s" }} /></div>
         {MODULES.map((m,i)=>{
           const done=completed[m.id];
@@ -605,6 +615,7 @@ export default function ArcFlashTraining() {
         </div>
       </div>
       <div style={{ flex:1, padding:"18px 20px", display:"flex", flexDirection:"column", maxWidth:700, width:"100%", margin:"0 auto", boxSizing:"border-box" }}>
+        <ReviewStatusBanner reviewState={reviewState} accentColor={mod.color} title="Review mode active" />
         {phase==="slides"
           ? <SlideView slide={mod.slides[slideIdx]} color={mod.color} onNext={handleNext} onPrev={handlePrev} isFirst={slideIdx===0&&modIdx===0} isLast={slideIdx===mod.slides.length-1} />
           : <QuizView mod={mod} onComplete={handleQuizDone} />}

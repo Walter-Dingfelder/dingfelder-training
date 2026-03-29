@@ -1,7 +1,13 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { useLocation } from "react-router-dom";
 import { persistTrainingRecordNetlifyIdentity } from "../auth/netlifyIdentity.js";
 import { resolveModuleRecordMeta } from "../data/moduleRegistry.js";
+import ReviewStatusBanner from "../components/ReviewStatusBanner.jsx";
+import { buildRenewalPolicyFields, resolveReviewLaunchState } from "../utils/reviewMode.js";
+
+const MODULE_PATH = "/sat";
+const MODULE_TITLE = "S.A.T. Visitor Orientation";
+const MODULE_CATEGORY_LABEL = "Campus";
 
 // ─── PALETTE & CONSTANTS ──────────────────────────────────────────────────────
 const Y = "#FFD100";      // hazard yellow
@@ -643,6 +649,14 @@ export default function SATOrientation() {
   const [screen, setScreen] = useState("welcome"); // welcome | training | complete
   const location = useLocation();
   const activeCategory = typeof location.state?.activeCategory === "string" ? location.state.activeCategory : "campus";
+  const recordMeta = useMemo(() => resolveModuleRecordMeta({
+    path: MODULE_PATH,
+    label: MODULE_TITLE,
+    categoryKey: activeCategory,
+    categoryLabel: MODULE_CATEGORY_LABEL,
+    source: "custom-module",
+  }), [activeCategory]);
+  const reviewState = useMemo(() => resolveReviewLaunchState(location.state, recordMeta), [location.state, recordMeta]);
   const [recordStatus, setRecordStatus] = useState({ busy: false, message: "", error: "" });
   const recordSavedRef = useRef(false);
   const [name, setName] = useState("");
@@ -691,32 +705,27 @@ export default function SATOrientation() {
     let cancelled = false;
     setRecordStatus({ busy: true, message: "", error: "" });
 
-    const recordMeta = resolveModuleRecordMeta({
-      path: "/sat",
-      label: "S.A.T. Visitor Orientation",
-      categoryKey: activeCategory,
-      categoryLabel: "Campus",
-      source: "custom-module",
-    });
+    const completedAt = new Date().toISOString();
 
     persistTrainingRecordNetlifyIdentity(null, {
       attemptId: `/sat:${Date.now()}:${Math.random().toString(36).slice(2, 8)}`,
       moduleId: recordMeta.moduleId,
       moduleVersion: recordMeta.version,
-      modulePath: "/sat",
-      moduleTitle: "S.A.T. Visitor Orientation",
+      modulePath: MODULE_PATH,
+      moduleTitle: MODULE_TITLE,
       categoryKey: activeCategory,
-      categoryLabel: "Campus",
+      categoryLabel: MODULE_CATEGORY_LABEL,
       requirementIds: recordMeta.requirementIds,
       requirementType: recordMeta.category,
       completionBucket: recordMeta.category,
       reviewEnabled: Boolean(recordMeta.reviewEnabled),
       recordRequired: recordMeta.recordRequired !== false,
+      ...buildRenewalPolicyFields(recordMeta, reviewState.latestRecord, completedAt),
       score: SECTIONS.length,
       quizCorrect: SECTIONS.length,
       quizTotal: SECTIONS.length,
       passed: true,
-      completedAt: new Date().toISOString(),
+      completedAt,
       runtimeMinutes: 15,
       certificateClass: "Portal Completion Record",
       certificateEligible: true,
@@ -739,7 +748,7 @@ export default function SATOrientation() {
     return () => {
       cancelled = true;
     };
-  }, [screen, activeCategory]);
+  }, [screen, activeCategory, recordMeta, reviewState.latestRecord]);
 
   if (screen === "welcome") return (
     <div style={{ minHeight: "100vh", background: BK, display: "flex", flexDirection: "column", fontFamily: "'Source Serif 4', serif", position: "relative", overflow: "hidden" }}>
@@ -753,6 +762,7 @@ export default function SATOrientation() {
       </div>
 
       <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center", padding: "40px 28px", position: "relative", zIndex: 1, maxWidth: 640, width: "100%", margin: "0 auto", boxSizing: "border-box" }}>
+        <ReviewStatusBanner reviewState={reviewState} accentColor={Y} title="Review mode active" />
         <div style={{ fontFamily: "'Oswald', sans-serif", fontSize: 10, letterSpacing: 5, color: "#6a5e30", marginBottom: 12 }}>REQUIRED BEFORE CAMPUS ACCESS</div>
         <h1 style={{ fontFamily: "'Oswald', sans-serif", fontSize: 52, fontWeight: 700, color: Y, margin: "0 0 6px", lineHeight: 1.0, letterSpacing: 1 }}>
           SITUATIONAL<br />AWARENESS<br /><span style={{ color: LT, fontSize: 38 }}>TRAINING</span>
@@ -882,6 +892,7 @@ export default function SATOrientation() {
 
       {/* Content */}
       <div style={{ flex: 1, padding: "20px 20px", display: "flex", flexDirection: "column", maxWidth: 680, width: "100%", margin: "0 auto", boxSizing: "border-box", position: "relative", zIndex: 1 }}>
+        <ReviewStatusBanner reviewState={reviewState} accentColor={section.color} title="Review mode active" />
         {phase === "slides"
           ? <SlideView
               slide={section.slides[slideIdx]}

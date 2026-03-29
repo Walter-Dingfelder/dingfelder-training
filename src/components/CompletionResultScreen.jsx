@@ -124,7 +124,10 @@ export default function CompletionResultScreen({
         color: TEXT,
         fontFamily: "'IBM Plex Sans', sans-serif",
         padding: 24,
+        paddingBottom: 48,
         boxSizing: "border-box",
+        overflowY: "auto",
+        overscrollBehavior: "contain",
       }}
     >
       <link
@@ -253,7 +256,18 @@ export default function CompletionResultScreen({
               <SummaryCard label="Certificate" value={canIssueCertificate ? "Ready" : "Available after saved record"} accentColor={canIssueCertificate ? "#22CC66" : "#FFB27A"} />
             </div>
 
-            <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+            <div
+              style={{
+                position: "sticky",
+                bottom: 0,
+                display: "flex",
+                gap: 12,
+                flexWrap: "wrap",
+                paddingTop: 12,
+                paddingBottom: 4,
+                background: "linear-gradient(180deg, rgba(13,13,13,0.0), rgba(13,13,13,0.96) 36%)",
+              }}
+            >
               <button
                 onClick={() => {
                   navigateToPortal(navigate, location.state)
@@ -387,6 +401,7 @@ export default function CompletionResultScreen({
             border: `1px solid ${BORDER}`,
             borderRadius: 18,
             overflow: "hidden",
+            minWidth: 0,
           }}
         >
           <div

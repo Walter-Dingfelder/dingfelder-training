@@ -1289,6 +1289,18 @@ function savePortalContext(portalSearch, seriesPaths) {
   } catch {}
 }
 
+function getStoredPortalSearch() {
+  if (typeof window === 'undefined') return ''
+  try {
+    const raw = window.sessionStorage.getItem(PORTAL_CONTEXT_KEY)
+    if (!raw) return ''
+    const parsed = JSON.parse(raw)
+    return typeof parsed?.portalSearch === 'string' ? parsed.portalSearch : ''
+  } catch {
+    return ''
+  }
+}
+
 function GlobalFonts() {
   return (
     <link
@@ -1989,19 +2001,22 @@ function SignInPanel({
       inset: 0,
       background: 'rgba(0,0,0,0.74)',
       display: 'flex',
-      alignItems: 'center',
+      alignItems: 'flex-start',
       justifyContent: 'center',
       padding: 24,
       zIndex: 2000,
+      overflowY: 'auto',
+      overscrollBehavior: 'contain',
     }}>
       <div style={{
         width: '100%',
         maxWidth: 460,
+        maxHeight: 'calc(100vh - 48px)',
         borderRadius: 18,
         border: '1px solid rgba(255,209,0,0.22)',
         background: '#0D0D0D',
         boxShadow: '0 18px 60px rgba(0,0,0,0.45)',
-        overflow: 'hidden',
+        overflowY: 'auto',
       }}>
         <div style={{
           padding: '18px 20px 14px',
@@ -2193,19 +2208,22 @@ function CreateAccountPanel({
       inset: 0,
       background: 'rgba(0,0,0,0.74)',
       display: 'flex',
-      alignItems: 'center',
+      alignItems: 'flex-start',
       justifyContent: 'center',
       padding: 24,
       zIndex: 2000,
+      overflowY: 'auto',
+      overscrollBehavior: 'contain',
     }}>
       <div style={{
         width: '100%',
         maxWidth: 520,
+        maxHeight: 'calc(100vh - 48px)',
         borderRadius: 18,
         border: '1px solid rgba(255,209,0,0.22)',
         background: '#0D0D0D',
         boxShadow: '0 18px 60px rgba(0,0,0,0.45)',
-        overflow: 'hidden',
+        overflowY: 'auto',
       }}>
         <div style={{
           padding: '18px 20px 14px',
@@ -2429,19 +2447,22 @@ function AccountPanel({ open, authState, captureState, trainingRecordsState, onC
       inset: 0,
       background: 'rgba(0,0,0,0.74)',
       display: 'flex',
-      alignItems: 'center',
+      alignItems: 'flex-start',
       justifyContent: 'center',
       padding: 24,
       zIndex: 1900,
+      overflowY: 'auto',
+      overscrollBehavior: 'contain',
     }}>
       <div style={{
         width: '100%',
         maxWidth: 1040,
+        maxHeight: 'calc(100vh - 48px)',
         borderRadius: 18,
         border: '1px solid rgba(255,209,0,0.18)',
         background: '#0D0D0D',
         boxShadow: '0 18px 60px rgba(0,0,0,0.45)',
-        overflow: 'hidden',
+        overflowY: 'auto',
       }}>
         <div style={{
           padding: '18px 20px 14px',
@@ -2750,11 +2771,19 @@ function AccountPanel({ open, authState, captureState, trainingRecordsState, onC
           </div>
 
           <div style={{
+            position: 'sticky',
+            bottom: 0,
             marginTop: 16,
+            marginLeft: -20,
+            marginRight: -20,
+            marginBottom: -20,
+            padding: '14px 20px 18px',
             display: 'flex',
             gap: 10,
             justifyContent: 'flex-end',
             flexWrap: 'wrap',
+            background: 'linear-gradient(180deg, rgba(13,13,13,0.92), #0D0D0D)',
+            borderTop: '1px solid rgba(255,255,255,0.08)',
           }}>
             {!authState.user && (
               <HeaderActionButton accent="primary" onClick={onOpenSignIn}>
@@ -4303,6 +4332,21 @@ export default function App() {
     }
   }
 
+  const returnToPortal = () => {
+    const storedSearch = getStoredPortalSearch()
+    navigate(
+      {
+        pathname: '/',
+        search: storedSearch || '',
+      },
+      {
+        replace: true,
+        state: { authReturn: true },
+      }
+    )
+    forceScrollTop()
+  }
+
   const handleSignIn = async (email, password) => {
     const result = await signInNetlifyIdentity(email, password)
     setAuthState({
@@ -4311,6 +4355,9 @@ export default function App() {
       message: result.message,
       error: result.error,
     })
+    if (!result.error) {
+      returnToPortal()
+    }
     return result
   }
 
@@ -4322,6 +4369,7 @@ export default function App() {
       message: result.message,
       error: result.error,
     })
+    returnToPortal()
   }
 
 
@@ -4333,6 +4381,9 @@ export default function App() {
       message: result.message,
       error: result.error,
     })
+    if (!result.error) {
+      returnToPortal()
+    }
     return result
   }
 

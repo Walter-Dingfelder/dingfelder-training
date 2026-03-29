@@ -1255,12 +1255,10 @@ function matchesTypeFilter(value, active) {
 
 const PORTAL_CONTEXT_KEY = 'airon.portalContext'
 
-function buildPortalSearch(category, type, searchQuery = '') {
+function buildPortalSearch(category, type) {
   const params = new URLSearchParams()
   if (category && category !== 'all') params.set('category', category)
   if (type && type !== 'all') params.set('type', type)
-  const normalizedSearch = typeof searchQuery === 'string' ? searchQuery.trim() : ''
-  if (normalizedSearch) params.set('q', normalizedSearch)
   const query = params.toString()
   return query ? `?${query}` : ''
 }
@@ -1269,11 +1267,9 @@ function parsePortalSearch(search) {
   const params = new URLSearchParams(search || '')
   const rawCategory = params.get('category') || 'all'
   const rawType = params.get('type') || 'all'
-  const rawQuery = params.get('q') || ''
   const category = isValidCategoryKey(rawCategory) ? rawCategory : 'all'
   const type = isValidTypeKey(rawType) ? rawType : 'all'
-  const query = typeof rawQuery === 'string' ? rawQuery.trim() : ''
-  return { category, type, query }
+  return { category, type }
 }
 
 function savePortalContext(portalSearch, seriesPaths) {
@@ -1287,18 +1283,6 @@ function savePortalContext(portalSearch, seriesPaths) {
       })
     )
   } catch {}
-}
-
-function getStoredPortalSearch() {
-  if (typeof window === 'undefined') return ''
-  try {
-    const raw = window.sessionStorage.getItem(PORTAL_CONTEXT_KEY)
-    if (!raw) return ''
-    const parsed = JSON.parse(raw)
-    return typeof parsed?.portalSearch === 'string' ? parsed.portalSearch : ''
-  } catch {
-    return ''
-  }
 }
 
 function GlobalFonts() {
@@ -2001,22 +1985,19 @@ function SignInPanel({
       inset: 0,
       background: 'rgba(0,0,0,0.74)',
       display: 'flex',
-      alignItems: 'flex-start',
+      alignItems: 'center',
       justifyContent: 'center',
       padding: 24,
       zIndex: 2000,
-      overflowY: 'auto',
-      overscrollBehavior: 'contain',
     }}>
       <div style={{
         width: '100%',
         maxWidth: 460,
-        maxHeight: 'calc(100vh - 48px)',
         borderRadius: 18,
         border: '1px solid rgba(255,209,0,0.22)',
         background: '#0D0D0D',
         boxShadow: '0 18px 60px rgba(0,0,0,0.45)',
-        overflowY: 'auto',
+        overflow: 'hidden',
       }}>
         <div style={{
           padding: '18px 20px 14px',
@@ -2208,22 +2189,19 @@ function CreateAccountPanel({
       inset: 0,
       background: 'rgba(0,0,0,0.74)',
       display: 'flex',
-      alignItems: 'flex-start',
+      alignItems: 'center',
       justifyContent: 'center',
       padding: 24,
       zIndex: 2000,
-      overflowY: 'auto',
-      overscrollBehavior: 'contain',
     }}>
       <div style={{
         width: '100%',
         maxWidth: 520,
-        maxHeight: 'calc(100vh - 48px)',
         borderRadius: 18,
         border: '1px solid rgba(255,209,0,0.22)',
         background: '#0D0D0D',
         boxShadow: '0 18px 60px rgba(0,0,0,0.45)',
-        overflowY: 'auto',
+        overflow: 'hidden',
       }}>
         <div style={{
           padding: '18px 20px 14px',
@@ -2447,25 +2425,19 @@ function AccountPanel({ open, authState, captureState, trainingRecordsState, onC
       inset: 0,
       background: 'rgba(0,0,0,0.74)',
       display: 'flex',
-      alignItems: 'flex-start',
+      alignItems: 'center',
       justifyContent: 'center',
       padding: 24,
       zIndex: 1900,
-      overflowY: 'auto',
-      overscrollBehavior: 'contain',
     }}>
       <div style={{
         width: '100%',
         maxWidth: 1040,
-        maxHeight: 'calc(100vh - 48px)',
-        margin: 'auto 0',
         borderRadius: 18,
         border: '1px solid rgba(255,209,0,0.18)',
         background: '#0D0D0D',
         boxShadow: '0 18px 60px rgba(0,0,0,0.45)',
         overflow: 'hidden',
-        display: 'flex',
-        flexDirection: 'column',
       }}>
         <div style={{
           padding: '18px 20px 14px',
@@ -2504,12 +2476,7 @@ function AccountPanel({ open, authState, captureState, trainingRecordsState, onC
           </div>
         </div>
 
-        <div style={{
-          padding: 20,
-          overflowY: 'auto',
-          WebkitOverflowScrolling: 'touch',
-          minHeight: 0,
-        }}>
+        <div style={{ padding: 20 }}>
           <div style={{
             display: 'grid',
             gap: 14,
@@ -2779,20 +2746,11 @@ function AccountPanel({ open, authState, captureState, trainingRecordsState, onC
           </div>
 
           <div style={{
-            position: 'sticky',
-            bottom: 0,
             marginTop: 16,
-            marginLeft: -20,
-            marginRight: -20,
-            marginBottom: -20,
-            padding: '14px 20px 18px',
             display: 'flex',
             gap: 10,
             justifyContent: 'flex-end',
             flexWrap: 'wrap',
-            background: 'linear-gradient(180deg, rgba(13,13,13,0.90), rgba(13,13,13,0.98) 35%, #0D0D0D)',
-            borderTop: '1px solid rgba(255,255,255,0.08)',
-            boxShadow: '0 -8px 24px rgba(0,0,0,0.24)',
           }}>
             {!authState.user && (
               <HeaderActionButton accent="primary" onClick={onOpenSignIn}>
@@ -3502,47 +3460,27 @@ function PortalHome({ authState, onSignIn, onSignOut, onCreateAccount }) {
   const blink = tick % 2 === 0
   const [categoryFilter, setCategoryFilter] = useState(() => parsePortalSearch(location.search).category)
   const [typeFilter, setTypeFilter] = useState(() => parsePortalSearch(location.search).type)
-  const [searchQuery, setSearchQuery] = useState(() => parsePortalSearch(location.search).query)
 
   useEffect(() => {
     const parsed = parsePortalSearch(location.search)
     setCategoryFilter(parsed.category)
     setTypeFilter(parsed.type)
-    setSearchQuery(parsed.query)
   }, [location.search])
 
   useEffect(() => {
-    const nextSearch = buildPortalSearch(categoryFilter, typeFilter, searchQuery)
+    const nextSearch = buildPortalSearch(categoryFilter, typeFilter)
     if (location.pathname === '/' && location.search !== nextSearch) {
       navigate({ pathname: '/', search: nextSearch }, { replace: true })
     }
-  }, [categoryFilter, typeFilter, searchQuery, location.pathname, location.search, navigate])
+  }, [categoryFilter, typeFilter, location.pathname, location.search, navigate])
 
   const filteredPrograms = useMemo(() => {
-    const normalizedQuery = searchQuery.trim().toLowerCase()
     return PROGRAMS.filter(prog => {
       const categories = getProgramCategories(prog.path)
       const type = getProgramType(prog.path)
-      const matchesFilters = matchesCategoryFilter(categories, categoryFilter) && matchesTypeFilter(type, typeFilter)
-      if (!matchesFilters) return false
-      if (!normalizedQuery) return true
-
-      const haystack = [
-        prog.label,
-        prog.short,
-        prog.regulation,
-        prog.audience,
-        prog.path,
-        ...(Array.isArray(categories) ? categories : []),
-        type,
-      ]
-        .filter(Boolean)
-        .join(' ')
-        .toLowerCase()
-
-      return haystack.includes(normalizedQuery)
+      return matchesCategoryFilter(categories, categoryFilter) && matchesTypeFilter(type, typeFilter)
     })
-  }, [categoryFilter, typeFilter, searchQuery])
+  }, [categoryFilter, typeFilter])
 
   const programResolutionMap = useMemo(
     () => buildProgramResolutionMap(PROGRAMS, trainingRecordsState.records),
@@ -3580,7 +3518,6 @@ function PortalHome({ authState, onSignIn, onSignOut, onCreateAccount }) {
     setLoginBusy(false)
     setLoginPassword('')
     setShowSignIn(false)
-    setShowAccountPanel(true)
   }
 
 
@@ -3610,11 +3547,10 @@ function PortalHome({ authState, onSignIn, onSignOut, onCreateAccount }) {
     setCreatePassword('')
     setCreateConfirmPassword('')
     setShowCreateAccount(false)
-    setShowAccountPanel(true)
   }
 
   const handleProgramOpen = (prog) => {
-    const portalSearch = buildPortalSearch(categoryFilter, typeFilter, searchQuery)
+    const portalSearch = buildPortalSearch(categoryFilter, typeFilter)
     const seriesPaths = filteredPrograms.map(item => item.path)
     const resolution = programResolutionMap[prog.path] || null
     savePortalContext(portalSearch, seriesPaths)
@@ -3936,108 +3872,6 @@ function PortalHome({ authState, onSignIn, onSignOut, onCreateAccount }) {
           </div>
 
           <div style={{
-            display: 'grid',
-            gap: 8,
-          }}>
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              gap: 10,
-              flexWrap: 'wrap',
-            }}>
-              <div style={{
-                color: '#FFD100',
-                fontFamily: "'IBM Plex Mono', monospace",
-                fontSize: 11,
-                letterSpacing: 1.8,
-                textTransform: 'uppercase',
-              }}>
-                Quick card search
-              </div>
-              <div style={{
-                color: '#707070',
-                fontFamily: "'IBM Plex Mono', monospace",
-                fontSize: 11,
-                letterSpacing: 1.1,
-              }}>
-                Try: evac · muster · loto · arc flash · propane
-              </div>
-            </div>
-
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: 10,
-              flexWrap: 'wrap',
-            }}>
-              <div style={{
-                flex: '1 1 320px',
-                minWidth: 220,
-                display: 'flex',
-                alignItems: 'center',
-                gap: 10,
-                padding: '12px 14px',
-                borderRadius: 14,
-                background: searchQuery.trim() ? 'rgba(34, 204, 102, 0.08)' : 'rgba(255, 209, 0, 0.05)',
-                border: `1px solid ${searchQuery.trim() ? 'rgba(34, 204, 102, 0.34)' : 'rgba(255, 209, 0, 0.28)'}`,
-                boxShadow: searchQuery.trim()
-                  ? '0 0 0 1px rgba(34,204,102,0.10), 0 12px 30px rgba(0,0,0,0.18)'
-                  : '0 0 0 1px rgba(255,209,0,0.06), 0 12px 30px rgba(0,0,0,0.16)',
-              }}>
-                <span style={{
-                  color: searchQuery.trim() ? '#22CC66' : '#FFD100',
-                  fontFamily: "'IBM Plex Mono', monospace",
-                  fontSize: 12,
-                  letterSpacing: 1.4,
-                }}>SEARCH</span>
-                <input
-                  value={searchQuery}
-                  onChange={(event) => setSearchQuery(event.target.value)}
-                  placeholder="Find cards by title, audience, regulation, or keyword"
-                  style={{
-                    flex: 1,
-                    background: 'transparent',
-                    border: 'none',
-                    outline: 'none',
-                    color: '#EAEAEA',
-                    fontSize: 14,
-                    fontFamily: "'IBM Plex Sans', sans-serif",
-                  }}
-                />
-                {searchQuery.trim() ? (
-                  <button
-                    onClick={() => setSearchQuery('')}
-                    style={{
-                      appearance: 'none',
-                      border: '1px solid rgba(255,255,255,0.10)',
-                      background: '#111',
-                      color: '#A7A7A7',
-                      borderRadius: 8,
-                      padding: '6px 8px',
-                      fontSize: 11,
-                      cursor: 'pointer',
-                      fontFamily: "'IBM Plex Mono', monospace",
-                    }}
-                  >
-                    CLEAR
-                  </button>
-                ) : null}
-              </div>
-              <div style={{
-                color: searchQuery.trim() ? '#9AE6B4' : '#666',
-                fontFamily: "'IBM Plex Mono', monospace",
-                fontSize: 11,
-                letterSpacing: 1.2,
-              }}>
-                {searchQuery.trim()
-                  ? `${filteredPrograms.length} match${filteredPrograms.length === 1 ? '' : 'es'}`
-                  : 'Search all visible cards'}
-              </div>
-            </div>
-          </div>
-
-          <div style={{
             display: 'flex',
             flexWrap: 'wrap',
             gap: 8,
@@ -4071,21 +3905,7 @@ function PortalHome({ authState, onSignIn, onSignOut, onCreateAccount }) {
           </div>
         </div>
 
-        {filteredPrograms.length === 0 ? (
-          <div style={{
-            border: '1px solid rgba(255,255,255,0.08)',
-            background: '#0d0d0d',
-            borderRadius: 16,
-            padding: '18px 20px',
-            color: '#A7A7A7',
-            fontSize: 14,
-            lineHeight: 1.7,
-            marginTop: 8,
-          }}>
-            No training cards match the current filters.
-            {searchQuery.trim() ? ` Try a different search than “${searchQuery.trim()}”.` : ''}
-          </div>
-        ) : categoryFilter !== 'all' ? (
+        {categoryFilter !== 'all' ? (
           <>
             {completedPrograms.length > 0 && (
               <>
@@ -4375,21 +4195,6 @@ export default function App() {
     }
   }
 
-  const returnToPortal = () => {
-    const storedSearch = getStoredPortalSearch()
-    navigate(
-      {
-        pathname: '/',
-        search: storedSearch || '',
-      },
-      {
-        replace: true,
-        state: { authReturn: true },
-      }
-    )
-    forceScrollTop()
-  }
-
   const handleSignIn = async (email, password) => {
     const result = await signInNetlifyIdentity(email, password)
     setAuthState({
@@ -4398,9 +4203,6 @@ export default function App() {
       message: result.message,
       error: result.error,
     })
-    if (!result.error) {
-      returnToPortal()
-    }
     return result
   }
 
@@ -4412,7 +4214,6 @@ export default function App() {
       message: result.message,
       error: result.error,
     })
-    returnToPortal()
   }
 
 
@@ -4424,9 +4225,6 @@ export default function App() {
       message: result.message,
       error: result.error,
     })
-    if (!result.error) {
-      returnToPortal()
-    }
     return result
   }
 

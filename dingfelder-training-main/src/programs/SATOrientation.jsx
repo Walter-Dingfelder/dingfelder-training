@@ -20,7 +20,7 @@ const SECTIONS = [
     id: "welcome",
     zone: "GATE",
     icon: "🏭",
-    title: "Welcome to Dingfelder Industrial Campus",
+    title: "Welcome to the A.I.R.O.N. Training Portal",
     color: Y,
     slides: [
       {
@@ -592,7 +592,7 @@ function VisitorPass({ name }) {
         <div style={{ position: "relative", zIndex: 1 }}>
           {/* Header stripe */}
           <div style={{ background: Y, margin: "-24px -22px 20px", padding: "10px 22px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-            <span style={{ fontFamily: "'Oswald', sans-serif", fontWeight: 700, fontSize: 13, letterSpacing: 3, color: BK }}>DINGFELDER INDUSTRIAL CAMPUS</span>
+            <span style={{ fontFamily: "'Oswald', sans-serif", fontWeight: 700, fontSize: 13, letterSpacing: 3, color: BK }}>A.I.R.O.N. TRAINING PORTAL</span>
             <span style={{ fontFamily: "'Oswald', sans-serif", fontSize: 11, color: BK, letterSpacing: 2 }}>VISITOR</span>
           </div>
 
@@ -674,6 +674,9 @@ export default function SATOrientation() {
 
   // ── COMPLETE SCREEN ───────────────────────────────────────────
 
+
+
+  // ── WELCOME SCREEN ────────────────────────────────────────────
   useEffect(() => {
     if (screen !== "complete") {
       recordSavedRef.current = false;
@@ -722,8 +725,6 @@ export default function SATOrientation() {
     };
   }, [screen, activeCategory]);
 
-
-  // ── WELCOME SCREEN ────────────────────────────────────────────
   if (screen === "welcome") return (
     <div style={{ minHeight: "100vh", background: BK, display: "flex", flexDirection: "column", fontFamily: "'Source Serif 4', serif", position: "relative", overflow: "hidden" }}>
       <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Source+Serif+4:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet" />
@@ -731,8 +732,8 @@ export default function SATOrientation() {
 
       {/* Top stripe */}
       <div style={{ background: Y, padding: "12px 24px", display: "flex", alignItems: "center", justifyContent: "space-between", position: "relative", zIndex: 1 }}>
-        <span style={{ fontFamily: "'Oswald', sans-serif", fontWeight: 700, fontSize: 14, letterSpacing: 3, color: BK }}>DINGFELDER INDUSTRIAL CAMPUS</span>
-        <span style={{ fontFamily: "'Oswald', sans-serif", fontSize: 10, color: BK, letterSpacing: 3 }}>SAFETY & SECURITY</span>
+        <span style={{ fontFamily: "'Oswald', sans-serif", fontWeight: 700, fontSize: 14, letterSpacing: 3, color: BK }}>A.I.R.O.N. TRAINING PORTAL</span>
+        <span style={{ fontFamily: "'Oswald', sans-serif", fontSize: 10, color: BK, letterSpacing: 3 }}>DINGFELDER INDUSTRIAL CAMPUS</span>
       </div>
 
       <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center", padding: "40px 28px", position: "relative", zIndex: 1, maxWidth: 640, width: "100%", margin: "0 auto", boxSizing: "border-box" }}>

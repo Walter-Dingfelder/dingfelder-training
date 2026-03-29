@@ -21,7 +21,7 @@ const SECTIONS = [
     id: "welcome",
     zone: "GATE",
     icon: "🏭",
-    title: "Welcome to Dingfelder Industrial Campus",
+    title: "Welcome to the A.I.R.O.N. Training Portal",
     color: Y,
     slides: [
       {
@@ -593,7 +593,7 @@ function VisitorPass({ name }) {
         <div style={{ position: "relative", zIndex: 1 }}>
           {/* Header stripe */}
           <div style={{ background: Y, margin: "-24px -22px 20px", padding: "10px 22px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-            <span style={{ fontFamily: "'Oswald', sans-serif", fontWeight: 700, fontSize: 13, letterSpacing: 3, color: BK }}>DINGFELDER INDUSTRIAL CAMPUS</span>
+            <span style={{ fontFamily: "'Oswald', sans-serif", fontWeight: 700, fontSize: 13, letterSpacing: 3, color: BK }}>A.I.R.O.N. TRAINING PORTAL</span>
             <span style={{ fontFamily: "'Oswald', sans-serif", fontSize: 11, color: BK, letterSpacing: 2 }}>VISITOR</span>
           </div>
 
@@ -672,61 +672,6 @@ export default function SATOrientation() {
   };
 
   // ── WELCOME SCREEN ────────────────────────────────────────────
-  if (screen === "welcome") return (
-    <div style={{ minHeight: "100vh", background: BK, display: "flex", flexDirection: "column", fontFamily: "'Source Serif 4', serif", position: "relative", overflow: "hidden" }}>
-      <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Source+Serif+4:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet" />
-      <ChevronBg color={Y} opacity={0.035} />
-
-      {/* Top stripe */}
-      <div style={{ background: Y, padding: "12px 24px", display: "flex", alignItems: "center", justifyContent: "space-between", position: "relative", zIndex: 1 }}>
-        <span style={{ fontFamily: "'Oswald', sans-serif", fontWeight: 700, fontSize: 14, letterSpacing: 3, color: BK }}>DINGFELDER INDUSTRIAL CAMPUS</span>
-        <span style={{ fontFamily: "'Oswald', sans-serif", fontSize: 10, color: BK, letterSpacing: 3 }}>SAFETY & SECURITY</span>
-      </div>
-
-      <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center", padding: "40px 28px", position: "relative", zIndex: 1, maxWidth: 640, width: "100%", margin: "0 auto", boxSizing: "border-box" }}>
-        <div style={{ fontFamily: "'Oswald', sans-serif", fontSize: 10, letterSpacing: 5, color: "#6a5e30", marginBottom: 12 }}>REQUIRED BEFORE CAMPUS ACCESS</div>
-        <h1 style={{ fontFamily: "'Oswald', sans-serif", fontSize: 52, fontWeight: 700, color: Y, margin: "0 0 6px", lineHeight: 1.0, letterSpacing: 1 }}>
-          SITUATIONAL<br />AWARENESS<br /><span style={{ color: LT, fontSize: 38 }}>TRAINING</span>
-        </h1>
-        <div style={{ width: 60, height: 3, background: Y, margin: "16px 0 20px" }} />
-        <p style={{ fontSize: 15, color: "#9a8c5a", lineHeight: 1.7, marginBottom: 32, maxWidth: 480 }}>
-          This orientation covers gas monitoring, electrical hazards, propane farm awareness, moving equipment safety, emergency alarms, muster points, and visitor conduct rules.
-          <br /><br />
-          <strong style={{ color: "#c4b882" }}>Approximately 15 minutes. 7 checkpoints. Required for all visitors.</strong>
-        </p>
-
-        {/* Name input */}
-        <div style={{ marginBottom: 20 }}>
-          <label style={{ fontFamily: "'Oswald', sans-serif", fontSize: 11, letterSpacing: 3, color: "#6a5e30", display: "block", marginBottom: 8 }}>YOUR NAME (for visitor pass)</label>
-          <input
-            value={nameInput}
-            onChange={e => setNameInput(e.target.value)}
-            placeholder="First and Last Name"
-            style={{ width: "100%", padding: "13px 16px", background: "#141209", border: `1px solid #3a3018`, borderRadius: 3, color: LT, fontFamily: "'Oswald', sans-serif", fontSize: 16, letterSpacing: 1, outline: "none", boxSizing: "border-box" }}
-          />
-        </div>
-
-        <button
-          onClick={() => { setName(nameInput || "CAMPUS VISITOR"); setScreen("training"); }}
-          style={{ padding: "16px 32px", background: Y, border: "none", borderRadius: 3, color: BK, cursor: "pointer", fontFamily: "'Oswald', sans-serif", fontSize: 17, fontWeight: 700, letterSpacing: 4, alignSelf: "flex-start" }}
-        >BEGIN ORIENTATION →</button>
-
-        {/* Section previews */}
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", gap: 6, marginTop: 36 }}>
-          {SECTIONS.map(s => (
-            <div key={s.id} style={{ padding: "8px 6px", background: "#141209", border: "1px solid #2a2510", borderRadius: 3, textAlign: "center" }}>
-              <div style={{ fontSize: 18, marginBottom: 3 }}>{s.icon}</div>
-              <div style={{ fontFamily: "'Oswald', sans-serif", fontSize: 9, color: "#4a4220", letterSpacing: 1, lineHeight: 1.3 }}>{s.zone}</div>
-            </div>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
-
-  // ── COMPLETE SCREEN ───────────────────────────────────────────
-
-  
 useEffect(() => {
   if (screen !== "complete") {
     recordSavedRef.current = false;
@@ -779,6 +724,62 @@ useEffect(() => {
     cancelled = true;
   };
 }, [screen, activeCategory]);
+
+  if (screen === "welcome") return (
+    <div style={{ minHeight: "100vh", background: BK, display: "flex", flexDirection: "column", fontFamily: "'Source Serif 4', serif", position: "relative", overflow: "hidden" }}>
+      <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Source+Serif+4:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet" />
+      <ChevronBg color={Y} opacity={0.035} />
+
+      {/* Top stripe */}
+      <div style={{ background: Y, padding: "12px 24px", display: "flex", alignItems: "center", justifyContent: "space-between", position: "relative", zIndex: 1 }}>
+        <span style={{ fontFamily: "'Oswald', sans-serif", fontWeight: 700, fontSize: 14, letterSpacing: 3, color: BK }}>A.I.R.O.N. TRAINING PORTAL</span>
+        <span style={{ fontFamily: "'Oswald', sans-serif", fontSize: 10, color: BK, letterSpacing: 3 }}>DINGFELDER INDUSTRIAL CAMPUS</span>
+      </div>
+
+      <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center", padding: "40px 28px", position: "relative", zIndex: 1, maxWidth: 640, width: "100%", margin: "0 auto", boxSizing: "border-box" }}>
+        <div style={{ fontFamily: "'Oswald', sans-serif", fontSize: 10, letterSpacing: 5, color: "#6a5e30", marginBottom: 12 }}>REQUIRED BEFORE CAMPUS ACCESS</div>
+        <h1 style={{ fontFamily: "'Oswald', sans-serif", fontSize: 52, fontWeight: 700, color: Y, margin: "0 0 6px", lineHeight: 1.0, letterSpacing: 1 }}>
+          SITUATIONAL<br />AWARENESS<br /><span style={{ color: LT, fontSize: 38 }}>TRAINING</span>
+        </h1>
+        <div style={{ width: 60, height: 3, background: Y, margin: "16px 0 20px" }} />
+        <p style={{ fontSize: 15, color: "#9a8c5a", lineHeight: 1.7, marginBottom: 32, maxWidth: 480 }}>
+          This orientation covers gas monitoring, electrical hazards, propane farm awareness, moving equipment safety, emergency alarms, muster points, and visitor conduct rules.
+          <br /><br />
+          <strong style={{ color: "#c4b882" }}>Approximately 15 minutes. 7 checkpoints. Required for all visitors.</strong>
+        </p>
+
+        {/* Name input */}
+        <div style={{ marginBottom: 20 }}>
+          <label style={{ fontFamily: "'Oswald', sans-serif", fontSize: 11, letterSpacing: 3, color: "#6a5e30", display: "block", marginBottom: 8 }}>YOUR NAME (for visitor pass)</label>
+          <input
+            value={nameInput}
+            onChange={e => setNameInput(e.target.value)}
+            placeholder="First and Last Name"
+            style={{ width: "100%", padding: "13px 16px", background: "#141209", border: `1px solid #3a3018`, borderRadius: 3, color: LT, fontFamily: "'Oswald', sans-serif", fontSize: 16, letterSpacing: 1, outline: "none", boxSizing: "border-box" }}
+          />
+        </div>
+
+        <button
+          onClick={() => { setName(nameInput || "CAMPUS VISITOR"); setScreen("training"); }}
+          style={{ padding: "16px 32px", background: Y, border: "none", borderRadius: 3, color: BK, cursor: "pointer", fontFamily: "'Oswald', sans-serif", fontSize: 17, fontWeight: 700, letterSpacing: 4, alignSelf: "flex-start" }}
+        >BEGIN ORIENTATION →</button>
+
+        {/* Section previews */}
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", gap: 6, marginTop: 36 }}>
+          {SECTIONS.map(s => (
+            <div key={s.id} style={{ padding: "8px 6px", background: "#141209", border: "1px solid #2a2510", borderRadius: 3, textAlign: "center" }}>
+              <div style={{ fontSize: 18, marginBottom: 3 }}>{s.icon}</div>
+              <div style={{ fontFamily: "'Oswald', sans-serif", fontSize: 9, color: "#4a4220", letterSpacing: 1, lineHeight: 1.3 }}>{s.zone}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+
+  // ── COMPLETE SCREEN ───────────────────────────────────────────
+
+  
 
 
 if (screen === "complete") return (

@@ -442,42 +442,6 @@ export default function H2STraining() {
 
   const completedCount = Object.keys(completed).length;
 
-  if(screen==="home") return (
-    <div style={{ minHeight:"100vh", background:"#050400", fontFamily:"'IBM Plex Sans',sans-serif", display:"flex", flexDirection:"column" }}>
-      <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=Share+Tech+Mono&display=swap" rel="stylesheet" />
-      <div style={{ background:"#FF3300", padding:"10px 20px", display:"flex", alignItems:"center", justifyContent:"space-between" }}>
-        <span style={{ fontFamily:"'Oswald',sans-serif", fontWeight:700, fontSize:13, letterSpacing:3, color:"#000" }}>DINGFELDER INDUSTRIAL — REQUIRED SAFETY TRAINING</span>
-        <span style={{ fontFamily:"'Share Tech Mono',monospace", fontSize:11, color:"#000" }}>OSHA 29 CFR 1910.134</span>
-      </div>
-      <div style={{ padding:"32px 24px 20px", borderBottom:"1px solid #1a1000" }}>
-        <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:8 }}>
-          <div style={{ width:8, height:8, borderRadius:"50%", background:blink?"#FF3300":"transparent", border:"1px solid #FF3300", transition:"background 0.1s" }} />
-          <span style={{ color:"#FF3300", fontFamily:"'Oswald',sans-serif", fontSize:10, letterSpacing:4 }}>HAZARD CLASS — IMMEDIATELY DANGEROUS TO LIFE AND HEALTH</span>
-        </div>
-        <h1 style={{ margin:0, fontSize:44, fontWeight:700, fontFamily:"'Oswald',sans-serif", color:"#fff", lineHeight:1.0 }}>H₂S AWARENESS<br /><span style={{ color:"#FF8800", fontSize:32 }}>& SCBA TRAINING</span></h1>
-        <div style={{ width:50, height:3, background:"#FF3300", margin:"16px 0 14px" }} />
-        <p style={{ color:"#888", fontSize:14, lineHeight:1.6, marginBottom:0 }}>Role: <strong style={{ color:"#FF8800" }}>{playerRole}</strong> · Facility: <strong style={{ color:"#FF8800" }}>{ctx.facility}</strong> · {ctx.scba?"SCBA Required":"Monitor Required"}</p>
-      </div>
-      <div style={{ padding:"16px 24px", flex:1 }}>
-        <div style={{ height:3, background:"#1a1000", borderRadius:2, overflow:"hidden", marginBottom:16 }}>
-          <div style={{ height:"100%", width:`${(completedCount/MODULES.length)*100}%`, background:"#FF3300", transition:"width 0.4s" }} />
-        </div>
-        {MODULES.map((m,i)=>{
-          const done=completed[m.id];
-          return <div key={m.id} onClick={()=>startMod(i)} style={{ display:"flex", alignItems:"center", gap:12, padding:"13px 14px", marginBottom:7, background:"#0a0800", border:`1px solid ${done?m.color+"55":"#2a1800"}`, borderRadius:4, cursor:"pointer" }}>
-            <div style={{ width:42, height:42, borderRadius:6, background:done?m.color:`${m.color}1a`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:18, border:`1px solid ${m.color}44`, flexShrink:0 }}>{done?"✓":m.icon}</div>
-            <div style={{ flex:1 }}>
-              <div style={{ color:done?m.color:"#ddd", fontFamily:"'Oswald',sans-serif", fontWeight:700, fontSize:15 }}>{m.label}</div>
-              <div style={{ color:"#555", fontSize:11 }}>{m.slides.length} slides · {m.quiz.length} questions</div>
-            </div>
-            <span style={{ color:done?m.color:"#444", fontSize:16 }}>{done?"✓":"→"}</span>
-          </div>;
-        })}
-      </div>
-    </div>
-  );
-
-
   useEffect(() => {
     if (screen !== "complete") {
       recordSavedRef.current = false;
@@ -525,6 +489,43 @@ export default function H2STraining() {
       cancelled = true;
     };
   }, [screen, activeCategory]);
+
+  if(screen==="home") return (
+    <div style={{ minHeight:"100vh", background:"#050400", fontFamily:"'IBM Plex Sans',sans-serif", display:"flex", flexDirection:"column" }}>
+      <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=Share+Tech+Mono&display=swap" rel="stylesheet" />
+      <div style={{ background:"#FF3300", padding:"10px 20px", display:"flex", alignItems:"center", justifyContent:"space-between" }}>
+        <span style={{ fontFamily:"'Oswald',sans-serif", fontWeight:700, fontSize:13, letterSpacing:3, color:"#000" }}>A.I.R.O.N. — REQUIRED SAFETY TRAINING</span>
+        <span style={{ fontFamily:"'Share Tech Mono',monospace", fontSize:11, color:"#000" }}>OSHA 29 CFR 1910.134</span>
+      </div>
+      <div style={{ padding:"32px 24px 20px", borderBottom:"1px solid #1a1000" }}>
+        <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:8 }}>
+          <div style={{ width:8, height:8, borderRadius:"50%", background:blink?"#FF3300":"transparent", border:"1px solid #FF3300", transition:"background 0.1s" }} />
+          <span style={{ color:"#FF3300", fontFamily:"'Oswald',sans-serif", fontSize:10, letterSpacing:4 }}>HAZARD CLASS — IMMEDIATELY DANGEROUS TO LIFE AND HEALTH</span>
+        </div>
+        <h1 style={{ margin:0, fontSize:44, fontWeight:700, fontFamily:"'Oswald',sans-serif", color:"#fff", lineHeight:1.0 }}>H₂S AWARENESS<br /><span style={{ color:"#FF8800", fontSize:32 }}>& SCBA TRAINING</span></h1>
+        <div style={{ width:50, height:3, background:"#FF3300", margin:"16px 0 14px" }} />
+        <p style={{ color:"#888", fontSize:14, lineHeight:1.6, marginBottom:0 }}>Role: <strong style={{ color:"#FF8800" }}>{playerRole}</strong> · Facility: <strong style={{ color:"#FF8800" }}>{ctx.facility}</strong> · {ctx.scba?"SCBA Required":"Monitor Required"}</p>
+      </div>
+      <div style={{ padding:"16px 24px", flex:1 }}>
+        <div style={{ height:3, background:"#1a1000", borderRadius:2, overflow:"hidden", marginBottom:16 }}>
+          <div style={{ height:"100%", width:`${(completedCount/MODULES.length)*100}%`, background:"#FF3300", transition:"width 0.4s" }} />
+        </div>
+        {MODULES.map((m,i)=>{
+          const done=completed[m.id];
+          return <div key={m.id} onClick={()=>startMod(i)} style={{ display:"flex", alignItems:"center", gap:12, padding:"13px 14px", marginBottom:7, background:"#0a0800", border:`1px solid ${done?m.color+"55":"#2a1800"}`, borderRadius:4, cursor:"pointer" }}>
+            <div style={{ width:42, height:42, borderRadius:6, background:done?m.color:`${m.color}1a`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:18, border:`1px solid ${m.color}44`, flexShrink:0 }}>{done?"✓":m.icon}</div>
+            <div style={{ flex:1 }}>
+              <div style={{ color:done?m.color:"#ddd", fontFamily:"'Oswald',sans-serif", fontWeight:700, fontSize:15 }}>{m.label}</div>
+              <div style={{ color:"#555", fontSize:11 }}>{m.slides.length} slides · {m.quiz.length} questions</div>
+            </div>
+            <span style={{ color:done?m.color:"#444", fontSize:16 }}>{done?"✓":"→"}</span>
+          </div>;
+        })}
+      </div>
+    </div>
+  );
+
+
 
   if(screen==="complete") return (
     <div style={{ minHeight:"100vh", background:"#050400", display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", padding:28, textAlign:"center" }}>

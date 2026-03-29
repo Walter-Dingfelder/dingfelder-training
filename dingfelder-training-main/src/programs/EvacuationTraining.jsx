@@ -412,40 +412,6 @@ export default function EvacuationTraining() {
     if(next===-1||Object.keys(nc).length>=MODULES.length){setScreen("complete");}else startMod(next);
   };
 
-  if(screen==="home") return (
-    <div style={{minHeight:"100vh",background:"#030a04",fontFamily:"'IBM Plex Sans',sans-serif",display:"flex",flexDirection:"column"}}>
-      <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet"/>
-      <div style={{background:"#22CC66",padding:"10px 20px",display:"flex",justifyContent:"space-between"}}>
-        <span style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:700,fontSize:13,letterSpacing:3,color:"#000"}}>DINGFELDER INDUSTRIAL — EMERGENCY PREPAREDNESS TRAINING</span>
-        <span style={{fontFamily:"'Barlow Condensed',sans-serif",fontSize:11,color:"#001",letterSpacing:2}}>OSHA 29 CFR 1910.38</span>
-      </div>
-      <div style={{padding:"28px 24px 20px",borderBottom:"1px solid #0a180a"}}>
-        <div style={{color:"#22CC66",fontFamily:"'Barlow Condensed',sans-serif",fontSize:9,letterSpacing:5,marginBottom:8}}>ROLE: {playerRole.toUpperCase()} · FACILITY: {roleCtx.facility}</div>
-        <h1 style={{margin:0,fontSize:40,fontWeight:800,fontFamily:"'Barlow Condensed',sans-serif",color:"#fff",lineHeight:1.0}}>EMERGENCY<br /><span style={{color:"#22CC66"}}>EVACUATION & MUSTER</span></h1>
-        <div style={{width:50,height:3,background:"#22CC66",margin:"14px 0 12px"}}/>
-        <div style={{padding:"10px 14px",background:"#060e06",border:"1px solid #1a3a1a",borderLeft:"4px solid #22CC66",borderRadius:3}}>
-          <div style={{color:"#88aa88",fontFamily:"'Barlow Condensed',sans-serif",fontSize:10,letterSpacing:2,marginBottom:3}}>YOUR MUSTER POINT</div>
-          <div style={{color:"#22CC66",fontSize:15,fontFamily:"'Barlow Condensed',sans-serif",fontWeight:700}}>📍 {roleCtx.muster}</div>
-        </div>
-      </div>
-      <div style={{padding:"16px 24px",flex:1}}>
-        <div style={{height:2,background:"#0a180a",borderRadius:2,overflow:"hidden",marginBottom:16}}><div style={{height:"100%",width:`${(completedCount/MODULES.length)*100}%`,background:"#22CC66",transition:"width 0.4s"}}/></div>
-        {MODULES.map((m,i)=>{
-          const done=completed[m.id];
-          return <div key={m.id} onClick={()=>startMod(i)} style={{display:"flex",alignItems:"center",gap:12,padding:"13px 14px",marginBottom:7,background:"#060e06",border:`1px solid ${done?m.color+"55":"#0d1a0d"}`,borderRadius:4,cursor:"pointer"}}>
-            <div style={{width:42,height:42,borderRadius:6,background:done?m.color:`${m.color}1a`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:18,border:`1px solid ${m.color}33`,flexShrink:0}}>{done?"✓":m.icon}</div>
-            <div style={{flex:1}}>
-              <div style={{color:done?m.color:"#ddd",fontFamily:"'Barlow Condensed',sans-serif",fontWeight:700,fontSize:15}}>{m.label}</div>
-              <div style={{color:"#446644",fontSize:11}}>{m.slides.length} slides · {m.quiz.length} questions</div>
-            </div>
-            <span style={{color:done?m.color:"#224422",fontSize:16}}>{done?"✓":"→"}</span>
-          </div>;
-        })}
-      </div>
-    </div>
-  );
-
-
   useEffect(() => {
     if (screen !== "complete") {
       recordSavedRef.current = false;
@@ -493,6 +459,41 @@ export default function EvacuationTraining() {
       cancelled = true;
     };
   }, [screen, activeCategory]);
+
+  if(screen==="home") return (
+    <div style={{minHeight:"100vh",background:"#030a04",fontFamily:"'IBM Plex Sans',sans-serif",display:"flex",flexDirection:"column"}}>
+      <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet"/>
+      <div style={{background:"#22CC66",padding:"10px 20px",display:"flex",justifyContent:"space-between"}}>
+        <span style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:700,fontSize:13,letterSpacing:3,color:"#000"}}>A.I.R.O.N. — EMERGENCY PREPAREDNESS TRAINING</span>
+        <span style={{fontFamily:"'Barlow Condensed',sans-serif",fontSize:11,color:"#001",letterSpacing:2}}>OSHA 29 CFR 1910.38</span>
+      </div>
+      <div style={{padding:"28px 24px 20px",borderBottom:"1px solid #0a180a"}}>
+        <div style={{color:"#22CC66",fontFamily:"'Barlow Condensed',sans-serif",fontSize:9,letterSpacing:5,marginBottom:8}}>ROLE: {playerRole.toUpperCase()} · FACILITY: {roleCtx.facility}</div>
+        <h1 style={{margin:0,fontSize:40,fontWeight:800,fontFamily:"'Barlow Condensed',sans-serif",color:"#fff",lineHeight:1.0}}>EMERGENCY<br /><span style={{color:"#22CC66"}}>EVACUATION & MUSTER</span></h1>
+        <div style={{width:50,height:3,background:"#22CC66",margin:"14px 0 12px"}}/>
+        <div style={{padding:"10px 14px",background:"#060e06",border:"1px solid #1a3a1a",borderLeft:"4px solid #22CC66",borderRadius:3}}>
+          <div style={{color:"#88aa88",fontFamily:"'Barlow Condensed',sans-serif",fontSize:10,letterSpacing:2,marginBottom:3}}>YOUR MUSTER POINT</div>
+          <div style={{color:"#22CC66",fontSize:15,fontFamily:"'Barlow Condensed',sans-serif",fontWeight:700}}>📍 {roleCtx.muster}</div>
+        </div>
+      </div>
+      <div style={{padding:"16px 24px",flex:1}}>
+        <div style={{height:2,background:"#0a180a",borderRadius:2,overflow:"hidden",marginBottom:16}}><div style={{height:"100%",width:`${(completedCount/MODULES.length)*100}%`,background:"#22CC66",transition:"width 0.4s"}}/></div>
+        {MODULES.map((m,i)=>{
+          const done=completed[m.id];
+          return <div key={m.id} onClick={()=>startMod(i)} style={{display:"flex",alignItems:"center",gap:12,padding:"13px 14px",marginBottom:7,background:"#060e06",border:`1px solid ${done?m.color+"55":"#0d1a0d"}`,borderRadius:4,cursor:"pointer"}}>
+            <div style={{width:42,height:42,borderRadius:6,background:done?m.color:`${m.color}1a`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:18,border:`1px solid ${m.color}33`,flexShrink:0}}>{done?"✓":m.icon}</div>
+            <div style={{flex:1}}>
+              <div style={{color:done?m.color:"#ddd",fontFamily:"'Barlow Condensed',sans-serif",fontWeight:700,fontSize:15}}>{m.label}</div>
+              <div style={{color:"#446644",fontSize:11}}>{m.slides.length} slides · {m.quiz.length} questions</div>
+            </div>
+            <span style={{color:done?m.color:"#224422",fontSize:16}}>{done?"✓":"→"}</span>
+          </div>;
+        })}
+      </div>
+    </div>
+  );
+
+
 
   if(screen==="complete") return (
     <div style={{minHeight:"100vh",background:"#030a04",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:28,textAlign:"center"}}>

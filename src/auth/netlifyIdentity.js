@@ -222,6 +222,38 @@ async function callTrainingRecordsFunction(method, user, record) {
   return payload || {}
 }
 
+
+async function callCertificateEmailFunction(user, payload) {
+  const currentUser = user || await getUser()
+  const token = await getAccessTokenFromIdentityUser(currentUser)
+
+  const response = await fetch('/.netlify/functions/airon-certificate-email', {
+    method: 'POST',
+    credentials: 'include',
+    headers: {
+      'Content-Type': 'application/json',
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
+    body: JSON.stringify(payload || {}),
+  })
+
+  let payloadResponse = null
+  try {
+    payloadResponse = await response.json()
+  } catch (error) {
+    payloadResponse = null
+  }
+
+  if (!response.ok) {
+    const serverError =
+      (payloadResponse && typeof payloadResponse.error === 'string' && payloadResponse.error.trim()) ||
+      'Unable to send your certificate email right now.'
+    throw new Error(serverError)
+  }
+
+  return payloadResponse || {}
+}
+
 export async function persistTrainingRecordNetlifyIdentity(user, record) {
   const currentUser = user || await getUser().catch(() => null)
   const normalizedRecord = normalizeTrainingRecordShape(record)
@@ -379,6 +411,50 @@ export async function signOutNetlifyIdentity() {
       user: currentUser,
       message: '',
       error: normalizeIdentityError(error),
+    }
+  }
+}
+
+
+export async function emailTrainingCertificateNetlifyIdentity(user, payload) {
+  const currentUser = user || await getUser().catch(() => null)
+
+  if (!currentUser) {
+    return {
+      user: null,
+      sent: false,
+      destination: '',
+      message: '',
+      error: 'Sign in to email a retained certificate.',
+    }
+  }
+
+  try {
+    const responsePayload = await callCertificateEmailFunction(currentUser, payload)
+    return {
+      user: currentUser,
+      sent: true,
+      destination:
+        (typeof responsePayload?.destination === 'string' && responsePayload.destination.trim()) ||
+        (typeof currentUser?.email === 'string' ? currentUser.email : ''),
+      message:
+        (typeof responsePayload?.message === 'string' && responsePayload.message.trim()) ||
+        'Certificate email sent.',
+      error: '',
+      provider:
+        (typeof responsePayload?.provider === 'string' && responsePayload.provider.trim()) || '',
+      messageId:
+        (typeof responsePayload?.messageId === 'string' && responsePayload.messageId.trim()) || '',
+    }
+  } catch (error) {
+    return {
+      user: currentUser,
+      sent: false,
+      destination: typeof currentUser?.email === 'string' ? currentUser.email : '',
+      message: '',
+      error: normalizeIdentityError(error),
+      provider: '',
+      messageId: '',
     }
   }
 }

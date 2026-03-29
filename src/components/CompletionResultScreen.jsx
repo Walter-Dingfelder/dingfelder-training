@@ -1,12 +1,11 @@
 import { useEffect, useMemo, useRef, useState } from "react"
 import { useLocation, useNavigate } from "react-router-dom"
-import { loadTrainingRecordsNetlifyIdentity } from "../auth/netlifyIdentity.js"
+import { emailTrainingCertificateNetlifyIdentity, loadTrainingRecordsNetlifyIdentity } from "../auth/netlifyIdentity.js"
 import { navigateToNextCard, navigateToPortal, getNextCardPath } from "../programs/portalNavigation.js"
 import {
   downloadTrainingCertificateHtml,
   formatTrainingTimestamp,
   getCompletedByLabel,
-  openTrainingCertificateEmail,
 } from "../utils/trainingCertificate.js"
 
 const PANEL_BG = "#0D0D0D"
@@ -67,10 +66,18 @@ export default function CompletionResultScreen({
     records: [],
     error: "",
   })
+  const [emailState, setEmailState] = useState({
+    busy: false,
+    message: "",
+    error: "",
+  })
 
   const canIssueCertificate = Boolean(recordStatus?.saved || recordStatus?.record?.completedAt || recordStatus?.message)
   const effectiveCompletedAt = recordStatus?.record?.completedAt || completedAt || new Date().toISOString()
   const completedByLabel = getCompletedByLabel(recordStatus, completedBy)
+  const accountEmail =
+    (typeof recordStatus?.user?.email === "string" && recordStatus.user.email.trim()) ||
+    ""
   const nextCardPath = useMemo(() => getNextCardPath(modulePath, location.state), [modulePath, location.state])
 
   useEffect(() => {
@@ -95,12 +102,13 @@ export default function CompletionResultScreen({
     moduleTitle: title,
     modulePath,
     completedAt: effectiveCompletedAt,
+    completedBy: completedByLabel,
     score: typeof score === "number" ? score : quizCorrect,
     quizCorrect: typeof quizCorrect === "number" ? quizCorrect : score,
     quizTotal: typeof quizTotal === "number" ? quizTotal : undefined,
     certificateClass: "Portal Completion Record",
     passed,
-  }), [effectiveCompletedAt, modulePath, passed, quizCorrect, quizTotal, score, title])
+  }), [completedByLabel, effectiveCompletedAt, modulePath, passed, quizCorrect, quizTotal, score, title])
 
   const latestRecords = useMemo(
     () => (Array.isArray(historyState.records) ? historyState.records.filter(item => item?.passed).slice(0, 6) : []),
@@ -124,10 +132,7 @@ export default function CompletionResultScreen({
         color: TEXT,
         fontFamily: "'IBM Plex Sans', sans-serif",
         padding: 24,
-        paddingBottom: 48,
         boxSizing: "border-box",
-        overflowY: "auto",
-        overscrollBehavior: "contain",
       }}
     >
       <link
@@ -238,6 +243,41 @@ export default function CompletionResultScreen({
               </div>
             ) : null}
 
+
+{emailState.message ? (
+  <div
+    style={{
+      marginBottom: 16,
+      padding: "12px 14px",
+      borderRadius: 10,
+      background: "rgba(34,204,102,0.10)",
+      border: "1px solid rgba(34,204,102,0.24)",
+      color: "#9AF0B9",
+      fontSize: 13,
+      lineHeight: 1.6,
+    }}
+  >
+    {emailState.message}
+  </div>
+) : null}
+
+{emailState.error ? (
+  <div
+    style={{
+      marginBottom: 16,
+      padding: "12px 14px",
+      borderRadius: 10,
+      background: "rgba(255,107,0,0.10)",
+      border: "1px solid rgba(255,107,0,0.24)",
+      color: "#FFB48F",
+      fontSize: 13,
+      lineHeight: 1.6,
+    }}
+  >
+    {emailState.error}
+  </div>
+) : null}
+
             <div
               style={{
                 display: "grid",
@@ -256,18 +296,22 @@ export default function CompletionResultScreen({
               <SummaryCard label="Certificate" value={canIssueCertificate ? "Ready" : "Available after saved record"} accentColor={canIssueCertificate ? "#22CC66" : "#FFB27A"} />
             </div>
 
-            <div
-              style={{
-                position: "sticky",
-                bottom: 0,
-                display: "flex",
-                gap: 12,
-                flexWrap: "wrap",
-                paddingTop: 12,
-                paddingBottom: 4,
-                background: "linear-gradient(180deg, rgba(13,13,13,0.0), rgba(13,13,13,0.96) 36%)",
-              }}
-            >
+            {canIssueCertificate ? (
+              <div
+                style={{
+                  marginBottom: 14,
+                  color: "#8F8F8F",
+                  fontSize: 12,
+                  lineHeight: 1.6,
+                  fontFamily: "'IBM Plex Mono', monospace",
+                  letterSpacing: 0.6,
+                }}
+              >
+                Certificate email delivery uses the retained account inbox{accountEmail ? `: ${accountEmail}` : "."}
+              </div>
+            ) : null}
+
+            <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
               <button
                 onClick={() => {
                   navigateToPortal(navigate, location.state)
@@ -332,27 +376,37 @@ export default function CompletionResultScreen({
                   </button>
 
                   <button
-                    onClick={() => {
-                      openTrainingCertificateEmail(currentRecord, {
+                    onClick={async () => {
+                      if (!canIssueCertificate || emailState.busy) return
+                      setEmailState({ busy: true, message: "", error: "" })
+                      const result = await emailTrainingCertificateNetlifyIdentity(recordStatus?.user || null, {
+                        record: currentRecord,
                         title,
+                        subtitle,
                         completedAt: effectiveCompletedAt,
                         completedBy: completedByLabel,
-                        email: recordStatus?.user?.email || "",
+                        accentColor,
+                      })
+                      setEmailState({
+                        busy: false,
+                        message: result?.message || "",
+                        error: result?.error || "",
                       })
                     }}
-                    disabled={!canIssueCertificate}
+                    disabled={!canIssueCertificate || emailState.busy}
                     style={{
                       background: "transparent",
                       color: canIssueCertificate ? "#fff" : "#666",
                       border: `1px solid ${canIssueCertificate ? "#333" : "#222"}`,
                       borderRadius: 10,
                       padding: "12px 16px",
-                      cursor: canIssueCertificate ? "pointer" : "not-allowed",
+                      cursor: !canIssueCertificate || emailState.busy ? "not-allowed" : "pointer",
                       fontFamily: "'Barlow Condensed', sans-serif",
                       letterSpacing: 1,
+                      opacity: emailState.busy ? 0.65 : 1,
                     }}
                   >
-                    Email Certificate
+                    {emailState.busy ? "Sending Certificate…" : "Email Certificate"}
                   </button>
 
                   <button
@@ -401,7 +455,6 @@ export default function CompletionResultScreen({
             border: `1px solid ${BORDER}`,
             borderRadius: 18,
             overflow: "hidden",
-            minWidth: 0,
           }}
         >
           <div

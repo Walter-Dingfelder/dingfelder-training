@@ -3,6 +3,7 @@ import { useLocation } from "react-router-dom";
 import { persistTrainingRecordNetlifyIdentity } from "../auth/netlifyIdentity.js";
 import { resolveModuleRecordMeta } from "../data/moduleRegistry.js";
 import ReviewStatusBanner from "../components/ReviewStatusBanner.jsx";
+import CompletionResultScreen from "../components/CompletionResultScreen.jsx";
 import { buildRenewalPolicyFields, resolveReviewLaunchState } from "../utils/reviewMode.js";
 
 const MODULE_PATH = "/arcflash";
@@ -473,6 +474,8 @@ export default function ArcFlashTraining() {
   const [phase, setPhase] = useState("slides");
   const [completed, setCompleted] = useState({});
   const [scanLine, setScanLine] = useState(0);
+  const [recordStatus, setRecordStatus] = useState({ busy: false, message: "", error: "", saved: false, record: null, user: null });
+  const [completedAtStamp, setCompletedAtStamp] = useState("");
   const recordSavedRef = useRef(false);
   const activeCategory = typeof location.state?.activeCategory === "string" ? location.state.activeCategory : "electrical";
   const recordMeta = useMemo(() => resolveModuleRecordMeta({
@@ -492,6 +495,8 @@ export default function ArcFlashTraining() {
   useEffect(() => {
     if (screen !== "complete") {
       recordSavedRef.current = false;
+      setCompletedAtStamp("");
+      setRecordStatus({ busy: false, message: "", error: "", saved: false, record: null, user: null });
       return;
     }
 
@@ -499,8 +504,9 @@ export default function ArcFlashTraining() {
     recordSavedRef.current = true;
 
     let cancelled = false;
-
     const completedAt = new Date().toISOString();
+    setCompletedAtStamp(completedAt);
+    setRecordStatus({ busy: true, message: "", error: "", saved: false, record: null, user: null });
 
     persistTrainingRecordNetlifyIdentity(null, {
       attemptId: `/arcflash:${Date.now()}:${Math.random().toString(36).slice(2, 8)}`,
@@ -527,12 +533,46 @@ export default function ArcFlashTraining() {
       source: "custom-module",
     })
       .then((result) => {
-        if (cancelled || !result?.error) return;
-        console.error("A.I.R.O.N. retained record write failed.", result.error);
+        if (cancelled) return;
+        if (result?.error) {
+          setRecordStatus({
+            busy: false,
+            message: "",
+            error: result.error,
+            saved: false,
+            record: result?.record || null,
+            user: result?.user || null,
+          });
+        } else if (result?.skipped) {
+          setRecordStatus({
+            busy: false,
+            message: "",
+            error: "",
+            saved: false,
+            record: result?.record || null,
+            user: result?.user || null,
+          });
+        } else {
+          setRecordStatus({
+            busy: false,
+            message: result?.message || "Retained training record saved to your A.I.R.O.N. account.",
+            error: "",
+            saved: Boolean(result?.saved),
+            record: result?.record || null,
+            user: result?.user || null,
+          });
+        }
       })
       .catch((error) => {
         if (cancelled) return;
-        console.error("A.I.R.O.N. retained record write failed.", error);
+        setRecordStatus({
+          busy: false,
+          message: "",
+          error: error?.message || "Unable to save your retained training record right now.",
+          saved: false,
+          record: null,
+          user: null,
+        });
       });
 
     return () => {
@@ -583,14 +623,35 @@ export default function ArcFlashTraining() {
   );
 
   if(screen==="complete") return (
-    <div style={{ minHeight:"100vh", background:"#010408", display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", padding:28, textAlign:"center" }}>
-      <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
-      <div style={{ fontSize:64, marginBottom:16 }}>✅</div>
-      <h1 style={{ color:"#00BFFF", fontFamily:"'IBM Plex Mono',monospace", fontSize:28, margin:"0 0 10px" }}>ARC FLASH TRAINING<br />COMPLETE</h1>
-      <p style={{ color:"#556", fontSize:14, fontFamily:"'IBM Plex Sans',sans-serif", marginBottom:24, lineHeight:1.6, maxWidth:440 }}>All 4 modules passed. NFPA 70E awareness training complete for the Dingfelder campus.<br />Annual recertification required. Hands-on equipment training required before live electrical work.</p>
-      <div style={{ color:"#224", fontSize:10, fontFamily:"'IBM Plex Mono',monospace", letterSpacing:2 }}>DINGFELDER SAFETY · NFPA 70E · OSHA 1910.333 · {new Date().toLocaleDateString()}</div>
-      <button onClick={()=>{setCompleted({});setScreen("home");}} style={{ marginTop:20, padding:"10px 24px", background:"transparent", border:"1px solid #0a1825", borderRadius:3, color:"#334", cursor:"pointer", fontFamily:"'IBM Plex Mono',monospace", fontSize:11, letterSpacing:2 }}>RESTART</button>
-    </div>
+    <CompletionResultScreen
+      accentColor="#00BFFF"
+      title="Arc Flash & Electrical Safety"
+      modulePath={MODULE_PATH}
+      passed={true}
+      score={MODULES.length}
+      quizCorrect={MODULES.length}
+      quizTotal={MODULES.length}
+      runtimeMinutes={25}
+      completedAt={completedAtStamp}
+      recordStatus={recordStatus}
+      statusLabel="Requirement met"
+      subtitle="NFPA 70E awareness training is complete. Review the completion summary, save or email the certificate, then continue to your next card or return to the portal."
+      heroContent={
+        <div style={{ display: "grid", gap: 14 }}>
+          <div style={{ padding: "14px 16px", background: "rgba(0,191,255,0.08)", border: "1px solid rgba(0,191,255,0.24)", borderRadius: 12 }}>
+            <div style={{ color: "#00BFFF", fontFamily: "'IBM Plex Mono', monospace", fontSize: 11, letterSpacing: 2, textTransform: "uppercase", marginBottom: 8 }}>
+              Training scope
+            </div>
+            <div style={{ color: "#FFFFFF", fontSize: 18, fontWeight: 700, lineHeight: 1.4 }}>
+              {MODULES.length} modules passed
+            </div>
+            <div style={{ color: "#A7A7A7", fontSize: 13, lineHeight: 1.7, marginTop: 6 }}>
+              Annual recertification remains required. Hands-on equipment qualification is still required before live electrical work.
+            </div>
+          </div>
+        </div>
+      }
+    />
   );
 
   return (

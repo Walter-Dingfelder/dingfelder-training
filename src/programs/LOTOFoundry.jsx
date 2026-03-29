@@ -3,6 +3,7 @@ import { useLocation } from "react-router-dom";
 import { persistTrainingRecordNetlifyIdentity } from "../auth/netlifyIdentity.js";
 import { resolveModuleRecordMeta } from "../data/moduleRegistry.js";
 import ReviewStatusBanner from "../components/ReviewStatusBanner.jsx";
+import CompletionResultScreen from "../components/CompletionResultScreen.jsx";
 import { buildRenewalPolicyFields, resolveReviewLaunchState } from "../utils/reviewMode.js";
 
 const MODULE_PATH = "/loto";
@@ -460,6 +461,8 @@ export default function LOTOTraining() {
   const [phase, setPhase] = useState("slides"); // slides | quiz
   const [completedModules, setCompletedModules] = useState({});
   const [allDone, setAllDone] = useState(false);
+  const [recordStatus, setRecordStatus] = useState({ busy: false, message: "", error: "", saved: false, record: null, user: null });
+  const [completedAtStamp, setCompletedAtStamp] = useState("");
   const recordSavedRef = useRef(false);
   const activeCategory = typeof location.state?.activeCategory === "string" ? location.state.activeCategory : "foundry";
   const recordMeta = useMemo(() => resolveModuleRecordMeta({
@@ -476,6 +479,8 @@ export default function LOTOTraining() {
   useEffect(() => {
     if (screen !== "complete") {
       recordSavedRef.current = false;
+      setCompletedAtStamp("");
+      setRecordStatus({ busy: false, message: "", error: "", saved: false, record: null, user: null });
       return;
     }
 
@@ -483,8 +488,9 @@ export default function LOTOTraining() {
     recordSavedRef.current = true;
 
     let cancelled = false;
-
     const completedAt = new Date().toISOString();
+    setCompletedAtStamp(completedAt);
+    setRecordStatus({ busy: true, message: "", error: "", saved: false, record: null, user: null });
 
     persistTrainingRecordNetlifyIdentity(null, {
       attemptId: `/loto:${Date.now()}:${Math.random().toString(36).slice(2, 8)}`,
@@ -511,12 +517,46 @@ export default function LOTOTraining() {
       source: "custom-module",
     })
       .then((result) => {
-        if (cancelled || !result?.error) return;
-        console.error("A.I.R.O.N. retained record write failed.", result.error);
+        if (cancelled) return;
+        if (result?.error) {
+          setRecordStatus({
+            busy: false,
+            message: "",
+            error: result.error,
+            saved: false,
+            record: result?.record || null,
+            user: result?.user || null,
+          });
+        } else if (result?.skipped) {
+          setRecordStatus({
+            busy: false,
+            message: "",
+            error: "",
+            saved: false,
+            record: result?.record || null,
+            user: result?.user || null,
+          });
+        } else {
+          setRecordStatus({
+            busy: false,
+            message: result?.message || "Retained training record saved to your A.I.R.O.N. account.",
+            error: "",
+            saved: Boolean(result?.saved),
+            record: result?.record || null,
+            user: result?.user || null,
+          });
+        }
       })
       .catch((error) => {
         if (cancelled) return;
-        console.error("A.I.R.O.N. retained record write failed.", error);
+        setRecordStatus({
+          busy: false,
+          message: "",
+          error: error?.message || "Unable to save your retained training record right now.",
+          saved: false,
+          record: null,
+          user: null,
+        });
       });
 
     return () => {
@@ -625,30 +665,33 @@ export default function LOTOTraining() {
 
   // ── COMPLETE ───────────────────────────────────────────────────────────────
   if (screen === "complete") return (
-    <div style={{
-      minHeight: "100vh", background: "#0a0a0a", display: "flex",
-      flexDirection: "column", alignItems: "center", justifyContent: "center",
-      padding: 32, textAlign: "center"
-    }}>
-      <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;700;800;900&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
-      <div style={{ fontSize: 80, marginBottom: 24 }}>🏆</div>
-      <h1 style={{ color: "#FF6B00", fontFamily: "'Barlow Condensed', sans-serif", fontSize: 38, fontWeight: 900, margin: "0 0 12px" }}>TRAINING COMPLETE</h1>
-      <p style={{ color: "#aaa", fontFamily: "'IBM Plex Sans', sans-serif", fontSize: 16, marginBottom: 32, lineHeight: 1.6 }}>
-        You have completed all 5 LOTO training modules.<br />
-        This session satisfies the Dingfelder LOTO awareness requirement under 29 CFR 1910.147.<br />
-        Present your completion record to your supervisor.
-      </p>
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, width: "100%", maxWidth: 400, marginBottom: 32 }}>
-        {MODULES.map(m => (
-          <div key={m.id} style={{ padding: "10px", background: `${m.color}15`, border: `1px solid ${m.color}40`, borderRadius: 6 }}>
-            <span style={{ color: m.color, fontFamily: "'Barlow Condensed', sans-serif", fontSize: 13 }}>{m.icon} {m.title}</span>
+    <CompletionResultScreen
+      accentColor="#FF6B00"
+      title="LOTO — Foundry Focus"
+      modulePath={MODULE_PATH}
+      passed={true}
+      score={MODULES.length}
+      quizCorrect={MODULES.length}
+      quizTotal={MODULES.length}
+      runtimeMinutes={20}
+      completedAt={completedAtStamp}
+      recordStatus={recordStatus}
+      statusLabel="Requirement met"
+      subtitle="The retained foundry LOTO awareness record has been captured. Save or email the certificate, continue to your next card, or return to the portal."
+      heroContent={
+        <div style={{ display: "grid", gap: 14 }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 10 }}>
+            {MODULES.map(m => (
+              <div key={m.id} style={{ padding: "10px 12px", background: `${m.color}12`, border: `1px solid ${m.color}33`, borderRadius: 10 }}>
+                <div style={{ color: m.color, fontSize: 18, marginBottom: 6 }}>{m.icon}</div>
+                <div style={{ color: "#FFFFFF", fontFamily: "'Barlow Condensed', sans-serif", fontSize: 16, fontWeight: 700, lineHeight: 1.2 }}>{m.title}</div>
+                <div style={{ color: "#7A7A7A", fontSize: 12, marginTop: 4 }}>{m.subtitle}</div>
+              </div>
+            ))}
           </div>
-        ))}
-      </div>
-      <div style={{ color: "#444", fontSize: 12, fontFamily: "'Barlow Condensed', sans-serif", letterSpacing: 2 }}>
-        DINGFELDER SAFETY TRAINING · OSHA 29 CFR 1910.147 · {new Date().toLocaleDateString()}
-      </div>
-    </div>
+        </div>
+      }
+    />
   );
 
   // ── MODULE ─────────────────────────────────────────────────────────────────

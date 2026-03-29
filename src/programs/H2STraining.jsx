@@ -3,6 +3,7 @@ import { useLocation } from "react-router-dom";
 import { persistTrainingRecordNetlifyIdentity } from "../auth/netlifyIdentity.js";
 import { resolveModuleRecordMeta } from "../data/moduleRegistry.js";
 import ReviewStatusBanner from "../components/ReviewStatusBanner.jsx";
+import CompletionResultScreen from "../components/CompletionResultScreen.jsx";
 import { buildRenewalPolicyFields, resolveReviewLaunchState } from "../utils/reviewMode.js";
 
 const MODULE_PATH = "/h2s";
@@ -431,7 +432,8 @@ export default function H2STraining() {
     source: "custom-module",
   }), [activeCategory]);
   const reviewState = useMemo(() => resolveReviewLaunchState(location.state, recordMeta), [location.state, recordMeta]);
-  const [recordStatus, setRecordStatus] = useState({ busy: false, message: "", error: "" });
+  const [recordStatus, setRecordStatus] = useState({ busy: false, message: "", error: "", saved: false, record: null, user: null });
+  const [completedAtStamp, setCompletedAtStamp] = useState("");
   const recordSavedRef = useRef(false);
   const [modIdx, setModIdx] = useState(0);
   const [slideIdx, setSlideIdx] = useState(0);
@@ -460,7 +462,8 @@ export default function H2STraining() {
   useEffect(() => {
     if (screen !== "complete") {
       recordSavedRef.current = false;
-      setRecordStatus({ busy: false, message: "", error: "" });
+      setCompletedAtStamp("");
+      setRecordStatus({ busy: false, message: "", error: "", saved: false, record: null, user: null });
       return;
     }
 
@@ -468,9 +471,10 @@ export default function H2STraining() {
     recordSavedRef.current = true;
 
     let cancelled = false;
-    setRecordStatus({ busy: true, message: "", error: "" });
+    setRecordStatus({ busy: true, message: "", error: "", saved: false, record: null, user: null });
 
     const completedAt = new Date().toISOString();
+    setCompletedAtStamp(completedAt);
 
     persistTrainingRecordNetlifyIdentity(null, {
       attemptId: `/h2s:${Date.now()}:${Math.random().toString(36).slice(2, 8)}`,
@@ -498,14 +502,31 @@ export default function H2STraining() {
     }).then((result) => {
       if (cancelled) return;
       if (result?.skipped) {
-        setRecordStatus({ busy: false, message: "", error: "" });
+        setRecordStatus({
+          busy: false,
+          message: "",
+          error: "",
+          saved: false,
+          record: result?.record || null,
+          user: result?.user || null,
+        });
       } else if (result?.error) {
-        setRecordStatus({ busy: false, message: "", error: result.error });
+        setRecordStatus({
+          busy: false,
+          message: "",
+          error: result.error,
+          saved: false,
+          record: result?.record || null,
+          user: result?.user || null,
+        });
       } else {
         setRecordStatus({
           busy: false,
           message: result?.message || "Retained training record saved to your A.I.R.O.N. account.",
           error: "",
+          saved: Boolean(result?.saved),
+          record: result?.record || null,
+          user: result?.user || null,
         });
       }
     });
@@ -554,29 +575,35 @@ export default function H2STraining() {
 
 
   if(screen==="complete") return (
-    <div style={{ minHeight:"100vh", background:"#050400", display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", padding:28, textAlign:"center" }}>
-      <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=Share+Tech+Mono&display=swap" rel="stylesheet" />
-      <div style={{ fontSize:64, marginBottom:16 }}>✅</div>
-      <h1 style={{ color:"#FF8800", fontFamily:"'Oswald',sans-serif", fontSize:30, margin:"0 0 10px" }}>H₂S TRAINING COMPLETE</h1>
-      <p style={{ color:"#888", fontSize:14, fontFamily:"'IBM Plex Sans',sans-serif", marginBottom:24, lineHeight:1.6, maxWidth:440 }}>
-        You have completed all H₂S Awareness and SCBA modules for the Dingfelder campus.<br />
-        Role: <strong style={{ color:"#FF8800" }}>{playerRole}</strong> · Facility: <strong style={{ color:"#FF8800" }}>{ctx.facility}</strong><br /><br />
-        Present this completion record to your supervisor. Annual recertification required.
-      </p>
-      <div style={{ color:"#333", fontSize:11, fontFamily:"'Share Tech Mono',monospace", letterSpacing:2 }}>DINGFELDER SAFETY · OSHA 29 CFR 1910.134 · {new Date().toLocaleDateString()}</div>
-
-      {recordStatus.message ? (
-        <div style={{ padding:"12px 14px", background:"rgba(34,204,102,0.10)", border:"1px solid rgba(34,204,102,0.35)", borderRadius:8, color:"#9AF0B9", fontSize:13, lineHeight:1.6, maxWidth:520, marginBottom:16 }}>
-          {recordStatus.message}
+    <CompletionResultScreen
+      accentColor="#FF8800"
+      title="H₂S Awareness & SCBA"
+      modulePath={MODULE_PATH}
+      passed={true}
+      score={MODULES.length}
+      quizCorrect={MODULES.length}
+      quizTotal={MODULES.length}
+      runtimeMinutes={20}
+      completedAt={completedAtStamp}
+      recordStatus={recordStatus}
+      statusLabel="Requirement met"
+      subtitle="The retained H₂S awareness record has been captured. Review your role context, save or email the certificate, then continue to your next card or return to the portal."
+      heroContent={
+        <div style={{ display: "grid", gap: 14 }}>
+          <div style={{ padding: "14px 16px", background: "rgba(255,136,0,0.08)", border: "1px solid rgba(255,136,0,0.24)", borderRadius: 12 }}>
+            <div style={{ color: "#FF8800", fontFamily: "'Share Tech Mono', monospace", fontSize: 11, letterSpacing: 2, textTransform: "uppercase", marginBottom: 8 }}>
+              Role assignment
+            </div>
+            <div style={{ color: "#FFFFFF", fontSize: 18, fontWeight: 700, lineHeight: 1.4 }}>
+              {playerRole} · {ctx.facility}
+            </div>
+            <div style={{ color: "#A7A7A7", fontSize: 13, lineHeight: 1.7, marginTop: 6 }}>
+              Present this completion record to your supervisor. Annual recertification remains required.
+            </div>
+          </div>
         </div>
-      ) : null}
-      {recordStatus.error ? (
-        <div style={{ padding:"12px 14px", background:"rgba(255,107,0,0.10)", border:"1px solid rgba(255,107,0,0.35)", borderRadius:8, color:"#FFB27A", fontSize:13, lineHeight:1.6, maxWidth:520, marginBottom:16 }}>
-          {recordStatus.error}
-        </div>
-      ) : null}
-      <button onClick={()=>{setCompleted({});setScreen("home");}} style={{ marginTop:20, padding:"10px 24px", background:"transparent", border:"1px solid #333", borderRadius:3, color:"#444", cursor:"pointer", fontFamily:"'Oswald',sans-serif", fontSize:12, letterSpacing:2 }}>RESTART</button>
-    </div>
+      }
+    />
   );
 
   return (

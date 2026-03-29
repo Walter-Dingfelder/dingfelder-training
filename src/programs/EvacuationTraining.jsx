@@ -3,6 +3,7 @@ import { useLocation } from "react-router-dom";
 import { persistTrainingRecordNetlifyIdentity } from "../auth/netlifyIdentity.js";
 import { resolveModuleRecordMeta } from "../data/moduleRegistry.js";
 import ReviewStatusBanner from "../components/ReviewStatusBanner.jsx";
+import CompletionResultScreen from "../components/CompletionResultScreen.jsx";
 import { buildRenewalPolicyFields, resolveReviewLaunchState } from "../utils/reviewMode.js";
 
 const MODULE_PATH = "/evacuation";
@@ -408,7 +409,8 @@ export default function EvacuationTraining() {
     source: "custom-module",
   }), [activeCategory]);
   const reviewState = useMemo(() => resolveReviewLaunchState(location.state, recordMeta), [location.state, recordMeta]);
-  const [recordStatus, setRecordStatus] = useState({ busy: false, message: "", error: "" });
+  const [recordStatus, setRecordStatus] = useState({ busy: false, message: "", error: "", saved: false, record: null, user: null });
+  const [completedAtStamp, setCompletedAtStamp] = useState("");
   const recordSavedRef = useRef(false);
   const [modIdx,setModIdx]=useState(0);
   const [slideIdx,setSlideIdx]=useState(0);
@@ -430,7 +432,8 @@ export default function EvacuationTraining() {
   useEffect(() => {
     if (screen !== "complete") {
       recordSavedRef.current = false;
-      setRecordStatus({ busy: false, message: "", error: "" });
+      setCompletedAtStamp("");
+      setRecordStatus({ busy: false, message: "", error: "", saved: false, record: null, user: null });
       return;
     }
 
@@ -438,9 +441,10 @@ export default function EvacuationTraining() {
     recordSavedRef.current = true;
 
     let cancelled = false;
-    setRecordStatus({ busy: true, message: "", error: "" });
+    setRecordStatus({ busy: true, message: "", error: "", saved: false, record: null, user: null });
 
     const completedAt = new Date().toISOString();
+    setCompletedAtStamp(completedAt);
 
     persistTrainingRecordNetlifyIdentity(null, {
       attemptId: `/evacuation:${Date.now()}:${Math.random().toString(36).slice(2, 8)}`,
@@ -468,14 +472,31 @@ export default function EvacuationTraining() {
     }).then((result) => {
       if (cancelled) return;
       if (result?.skipped) {
-        setRecordStatus({ busy: false, message: "", error: "" });
+        setRecordStatus({
+          busy: false,
+          message: "",
+          error: "",
+          saved: false,
+          record: result?.record || null,
+          user: result?.user || null,
+        });
       } else if (result?.error) {
-        setRecordStatus({ busy: false, message: "", error: result.error });
+        setRecordStatus({
+          busy: false,
+          message: "",
+          error: result.error,
+          saved: false,
+          record: result?.record || null,
+          user: result?.user || null,
+        });
       } else {
         setRecordStatus({
           busy: false,
           message: result?.message || "Retained training record saved to your A.I.R.O.N. account.",
           error: "",
+          saved: Boolean(result?.saved),
+          record: result?.record || null,
+          user: result?.user || null,
         });
       }
     });
@@ -522,30 +543,30 @@ export default function EvacuationTraining() {
 
 
   if(screen==="complete") return (
-    <div style={{minHeight:"100vh",background:"#030a04",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:28,textAlign:"center"}}>
-      <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet"/>
-      <div style={{fontSize:64,marginBottom:16}}>✅</div>
-      <h1 style={{color:"#22CC66",fontFamily:"'Barlow Condensed',sans-serif",fontSize:30,margin:"0 0 10px"}}>EVACUATION TRAINING<br />COMPLETE</h1>
-      <div style={{padding:"14px 18px",background:"#060e06",border:"2px solid #22CC66",borderRadius:6,marginBottom:20,textAlign:"left",maxWidth:400}}>
-        <div style={{color:"#22CC66",fontFamily:"'Barlow Condensed',sans-serif",fontSize:11,letterSpacing:2,marginBottom:6}}>YOUR MUSTER POINT — MEMORIZE THIS</div>
-        <div style={{color:"#fff",fontSize:16,fontFamily:"'Barlow Condensed',sans-serif",fontWeight:700}}>📍 {roleCtx.muster}</div>
-        <div style={{color:"#88aa88",fontSize:12,fontFamily:"'IBM Plex Sans',sans-serif",marginTop:6}}>{roleCtx.exitNote}</div>
-      </div>
-      <p style={{color:"#446644",fontSize:13,fontFamily:"'IBM Plex Sans',sans-serif",marginBottom:20,lineHeight:1.6,maxWidth:440}}>Role: <strong style={{color:"#22CC66"}}>{playerRole}</strong> · Facility: <strong style={{color:"#22CC66"}}>{roleCtx.facility}</strong><br />Annual recertification required. Evacuation drill participation mandatory.</p>
-      <div style={{color:"#224422",fontSize:10,fontFamily:"'Barlow Condensed',sans-serif",letterSpacing:2}}>DINGFELDER SAFETY · OSHA 29 CFR 1910.38 · {new Date().toLocaleDateString()}</div>
-
-      {recordStatus.message ? (
-        <div style={{ padding:"12px 14px", background:"rgba(34,204,102,0.10)", border:"1px solid rgba(34,204,102,0.35)", borderRadius:8, color:"#9AF0B9", fontSize:13, lineHeight:1.6, maxWidth:520, marginBottom:16 }}>
-          {recordStatus.message}
+    <CompletionResultScreen
+      accentColor="#22CC66"
+      title="Emergency Evacuation & Muster"
+      modulePath={MODULE_PATH}
+      passed={true}
+      score={MODULES.length}
+      quizCorrect={MODULES.length}
+      quizTotal={MODULES.length}
+      runtimeMinutes={20}
+      completedAt={completedAtStamp}
+      recordStatus={recordStatus}
+      statusLabel="Requirement met"
+      subtitle="The retained evacuation training record has been captured. Memorize your muster point, then save or email the certificate, continue to your next card, or return to the portal."
+      heroContent={
+        <div style={{ display: "grid", gap: 14 }}>
+          <div style={{padding:"14px 18px",background:"#060e06",border:"2px solid #22CC66",borderRadius:12,textAlign:"left",maxWidth:520}}>
+            <div style={{color:"#22CC66",fontFamily:"'Barlow Condensed',sans-serif",fontSize:11,letterSpacing:2,marginBottom:6}}>YOUR MUSTER POINT — MEMORIZE THIS</div>
+            <div style={{color:"#fff",fontSize:18,fontFamily:"'Barlow Condensed',sans-serif",fontWeight:700}}>📍 {roleCtx.muster}</div>
+            <div style={{color:"#88aa88",fontSize:13,fontFamily:"'IBM Plex Sans',sans-serif",marginTop:8,lineHeight:1.7}}>{roleCtx.exitNote}</div>
+            <div style={{color:"#A7A7A7",fontSize:13,lineHeight:1.7,marginTop:10}}>Role: <strong style={{color:"#22CC66"}}>{playerRole}</strong> · Facility: <strong style={{color:"#22CC66"}}>{roleCtx.facility}</strong></div>
+          </div>
         </div>
-      ) : null}
-      {recordStatus.error ? (
-        <div style={{ padding:"12px 14px", background:"rgba(255,107,0,0.10)", border:"1px solid rgba(255,107,0,0.35)", borderRadius:8, color:"#FFB27A", fontSize:13, lineHeight:1.6, maxWidth:520, marginBottom:16 }}>
-          {recordStatus.error}
-        </div>
-      ) : null}
-      <button onClick={()=>{setCompleted({});setScreen("home");}} style={{marginTop:20,padding:"10px 24px",background:"transparent",border:"1px solid #0d1a0d",borderRadius:3,color:"#224422",cursor:"pointer",fontFamily:"'Barlow Condensed',sans-serif",fontSize:12,letterSpacing:2}}>RESTART</button>
-    </div>
+      }
+    />
   );
 
   return (

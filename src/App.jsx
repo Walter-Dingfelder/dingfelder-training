@@ -1255,10 +1255,12 @@ function matchesTypeFilter(value, active) {
 
 const PORTAL_CONTEXT_KEY = 'airon.portalContext'
 
-function buildPortalSearch(category, type) {
+function buildPortalSearch(category, type, searchQuery = '') {
   const params = new URLSearchParams()
   if (category && category !== 'all') params.set('category', category)
   if (type && type !== 'all') params.set('type', type)
+  const normalizedSearch = typeof searchQuery === 'string' ? searchQuery.trim() : ''
+  if (normalizedSearch) params.set('q', normalizedSearch)
   const query = params.toString()
   return query ? `?${query}` : ''
 }
@@ -1267,9 +1269,11 @@ function parsePortalSearch(search) {
   const params = new URLSearchParams(search || '')
   const rawCategory = params.get('category') || 'all'
   const rawType = params.get('type') || 'all'
+  const rawQuery = params.get('q') || ''
   const category = isValidCategoryKey(rawCategory) ? rawCategory : 'all'
   const type = isValidTypeKey(rawType) ? rawType : 'all'
-  return { category, type }
+  const query = typeof rawQuery === 'string' ? rawQuery.trim() : ''
+  return { category, type, query }
 }
 
 function savePortalContext(portalSearch, seriesPaths) {
@@ -3460,27 +3464,47 @@ function PortalHome({ authState, onSignIn, onSignOut, onCreateAccount }) {
   const blink = tick % 2 === 0
   const [categoryFilter, setCategoryFilter] = useState(() => parsePortalSearch(location.search).category)
   const [typeFilter, setTypeFilter] = useState(() => parsePortalSearch(location.search).type)
+  const [searchQuery, setSearchQuery] = useState(() => parsePortalSearch(location.search).query)
 
   useEffect(() => {
     const parsed = parsePortalSearch(location.search)
     setCategoryFilter(parsed.category)
     setTypeFilter(parsed.type)
+    setSearchQuery(parsed.query)
   }, [location.search])
 
   useEffect(() => {
-    const nextSearch = buildPortalSearch(categoryFilter, typeFilter)
+    const nextSearch = buildPortalSearch(categoryFilter, typeFilter, searchQuery)
     if (location.pathname === '/' && location.search !== nextSearch) {
       navigate({ pathname: '/', search: nextSearch }, { replace: true })
     }
-  }, [categoryFilter, typeFilter, location.pathname, location.search, navigate])
+  }, [categoryFilter, typeFilter, searchQuery, location.pathname, location.search, navigate])
 
   const filteredPrograms = useMemo(() => {
+    const normalizedQuery = searchQuery.trim().toLowerCase()
     return PROGRAMS.filter(prog => {
       const categories = getProgramCategories(prog.path)
       const type = getProgramType(prog.path)
-      return matchesCategoryFilter(categories, categoryFilter) && matchesTypeFilter(type, typeFilter)
+      const matchesFilters = matchesCategoryFilter(categories, categoryFilter) && matchesTypeFilter(type, typeFilter)
+      if (!matchesFilters) return false
+      if (!normalizedQuery) return true
+
+      const haystack = [
+        prog.label,
+        prog.short,
+        prog.regulation,
+        prog.audience,
+        prog.path,
+        ...(Array.isArray(categories) ? categories : []),
+        type,
+      ]
+        .filter(Boolean)
+        .join(' ')
+        .toLowerCase()
+
+      return haystack.includes(normalizedQuery)
     })
-  }, [categoryFilter, typeFilter])
+  }, [categoryFilter, typeFilter, searchQuery])
 
   const programResolutionMap = useMemo(
     () => buildProgramResolutionMap(PROGRAMS, trainingRecordsState.records),
@@ -3552,7 +3576,7 @@ function PortalHome({ authState, onSignIn, onSignOut, onCreateAccount }) {
   }
 
   const handleProgramOpen = (prog) => {
-    const portalSearch = buildPortalSearch(categoryFilter, typeFilter)
+    const portalSearch = buildPortalSearch(categoryFilter, typeFilter, searchQuery)
     const seriesPaths = filteredPrograms.map(item => item.path)
     const resolution = programResolutionMap[prog.path] || null
     savePortalContext(portalSearch, seriesPaths)
@@ -3875,6 +3899,74 @@ function PortalHome({ authState, onSignIn, onSignOut, onCreateAccount }) {
 
           <div style={{
             display: 'flex',
+            alignItems: 'center',
+            gap: 10,
+            flexWrap: 'wrap',
+          }}>
+            <div style={{
+              flex: '1 1 320px',
+              minWidth: 220,
+              display: 'flex',
+              alignItems: 'center',
+              gap: 10,
+              padding: '10px 12px',
+              borderRadius: 12,
+              background: '#0c0c0c',
+              border: '1px solid #2b2b2b',
+            }}>
+              <span style={{
+                color: searchQuery.trim() ? '#22CC66' : '#666',
+                fontFamily: "'IBM Plex Mono', monospace",
+                fontSize: 12,
+                letterSpacing: 1.2,
+              }}>SEARCH</span>
+              <input
+                value={searchQuery}
+                onChange={(event) => setSearchQuery(event.target.value)}
+                placeholder="Find cards by title, audience, regulation, or keyword"
+                style={{
+                  flex: 1,
+                  background: 'transparent',
+                  border: 'none',
+                  outline: 'none',
+                  color: '#EAEAEA',
+                  fontSize: 14,
+                  fontFamily: "'IBM Plex Sans', sans-serif",
+                }}
+              />
+              {searchQuery.trim() ? (
+                <button
+                  onClick={() => setSearchQuery('')}
+                  style={{
+                    appearance: 'none',
+                    border: '1px solid rgba(255,255,255,0.10)',
+                    background: '#111',
+                    color: '#A7A7A7',
+                    borderRadius: 8,
+                    padding: '6px 8px',
+                    fontSize: 11,
+                    cursor: 'pointer',
+                    fontFamily: "'IBM Plex Mono', monospace",
+                  }}
+                >
+                  CLEAR
+                </button>
+              ) : null}
+            </div>
+            <div style={{
+              color: '#666',
+              fontFamily: "'IBM Plex Mono', monospace",
+              fontSize: 11,
+              letterSpacing: 1.2,
+            }}>
+              {searchQuery.trim()
+                ? `${filteredPrograms.length} match${filteredPrograms.length === 1 ? '' : 'es'}`
+                : 'Search all visible cards'}
+            </div>
+          </div>
+
+          <div style={{
+            display: 'flex',
             flexWrap: 'wrap',
             gap: 8,
             paddingBottom: 4,
@@ -3907,7 +3999,21 @@ function PortalHome({ authState, onSignIn, onSignOut, onCreateAccount }) {
           </div>
         </div>
 
-        {categoryFilter !== 'all' ? (
+        {filteredPrograms.length === 0 ? (
+          <div style={{
+            border: '1px solid rgba(255,255,255,0.08)',
+            background: '#0d0d0d',
+            borderRadius: 16,
+            padding: '18px 20px',
+            color: '#A7A7A7',
+            fontSize: 14,
+            lineHeight: 1.7,
+            marginTop: 8,
+          }}>
+            No training cards match the current filters.
+            {searchQuery.trim() ? ` Try a different search than “${searchQuery.trim()}”.` : ''}
+          </div>
+        ) : categoryFilter !== 'all' ? (
           <>
             {completedPrograms.length > 0 && (
               <>

@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useLocation } from "react-router-dom";
 import { persistTrainingRecordNetlifyIdentity } from "../auth/netlifyIdentity.js";
+import { resolveModuleRecordMeta } from "../data/moduleRegistry.js";
 
 // ─── ROLE → FACILITY & MUSTER MAP ────────────────────────────────────────────
 const ROLE_MAP = {
@@ -425,12 +426,27 @@ export default function EvacuationTraining() {
     let cancelled = false;
     setRecordStatus({ busy: true, message: "", error: "" });
 
+    const recordMeta = resolveModuleRecordMeta({
+      path: "/evacuation",
+      label: "Emergency Evacuation & Muster",
+      categoryKey: activeCategory,
+      categoryLabel: "Campus",
+      source: "custom-module",
+    });
+
     persistTrainingRecordNetlifyIdentity(null, {
       attemptId: `/evacuation:${Date.now()}:${Math.random().toString(36).slice(2, 8)}`,
+      moduleId: recordMeta.moduleId,
+      moduleVersion: recordMeta.version,
       modulePath: "/evacuation",
       moduleTitle: "Emergency Evacuation & Muster",
       categoryKey: activeCategory,
       categoryLabel: "Campus",
+      requirementIds: recordMeta.requirementIds,
+      requirementType: recordMeta.category,
+      completionBucket: recordMeta.category,
+      reviewEnabled: Boolean(recordMeta.reviewEnabled),
+      recordRequired: recordMeta.recordRequired !== false,
       score: MODULES.length,
       quizCorrect: MODULES.length,
       quizTotal: MODULES.length,

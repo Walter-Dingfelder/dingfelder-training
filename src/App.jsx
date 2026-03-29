@@ -3,6 +3,7 @@ import { Routes, Route, useNavigate, useLocation } from 'react-router-dom'
 import { useState, useEffect, useMemo } from 'react'
 import aironSplash from './assets/airon-splash.png'
 import { bootstrapNetlifyIdentity, signInNetlifyIdentity, signOutNetlifyIdentity, createAccountNetlifyIdentity, getUserCaptureFromIdentityUser, loadCurrentUserCaptureNetlifyIdentity, persistUserCaptureNetlifyIdentity, loadTrainingRecordsNetlifyIdentity } from './auth/netlifyIdentity.js'
+import { buildProgramResolutionMap } from './utils/trainingRecordResolver.js'
 
 // ─── Training Programs ────────────────────────────────────────────────────────
 import LOTOFoundry     from './programs/LOTOFoundry.jsx'
@@ -3220,14 +3221,18 @@ function UserCaptureGate({
   )
 }
 
-function ProgramCard({ prog, onOpen }) {
+function ProgramCard({ prog, onOpen, resolution }) {
+  const isCompleted = Boolean(resolution?.isCompleted)
+  const actionLabel = resolution?.actionLabel || 'START →'
+  const statusLabel = resolution?.statusLabel || ''
+
   return (
     <div
       onClick={onOpen}
       style={{
         background: '#0f0f0f',
         border: '1px solid #1e1e1e',
-        borderTop: `3px solid ${prog.color}`,
+        borderTop: `3px solid ${isCompleted ? '#22CC66' : prog.color}`,
         borderRadius: 6,
         padding: '18px',
         cursor: 'pointer',
@@ -3238,27 +3243,27 @@ function ProgramCard({ prog, onOpen }) {
       }}
       onMouseEnter={e => {
         e.currentTarget.style.background = '#161616'
-        e.currentTarget.style.borderColor = `${prog.color}88`
-        e.currentTarget.style.borderTopColor = prog.color
+        e.currentTarget.style.borderColor = `${isCompleted ? '#22CC66' : prog.color}88`
+        e.currentTarget.style.borderTopColor = isCompleted ? '#22CC66' : prog.color
       }}
       onMouseLeave={e => {
         e.currentTarget.style.background = '#0f0f0f'
         e.currentTarget.style.borderColor = '#1e1e1e'
-        e.currentTarget.style.borderTopColor = prog.color
+        e.currentTarget.style.borderTopColor = isCompleted ? '#22CC66' : prog.color
       }}
     >
       <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
         <div style={{
           width: 40, height: 40,
-          background: `${prog.color}18`,
-          border: `1px solid ${prog.color}44`,
+          background: `${isCompleted ? '#22CC66' : prog.color}18`,
+          border: `1px solid ${isCompleted ? '#22CC66' : prog.color}44`,
           borderRadius: 6,
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           fontSize: 20, flexShrink: 0,
         }}>{prog.icon}</div>
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{
-            color: prog.color,
+            color: isCompleted ? '#FFD100' : prog.color,
             fontFamily: "'Barlow Condensed', sans-serif",
             fontWeight: 800, fontSize: 16, letterSpacing: 0.3,
             lineHeight: 1.2,
@@ -3284,6 +3289,16 @@ function ProgramCard({ prog, onOpen }) {
         <div style={{ color: '#989898', fontSize: 11 }}>
           {prog.audience}
         </div>
+        {statusLabel ? (
+          <div style={{
+            color: '#8DFFB4',
+            fontSize: 11,
+            fontFamily: "'IBM Plex Mono', monospace",
+            marginTop: 4,
+          }}>
+            {statusLabel}
+          </div>
+        ) : null}
       </div>
 
       <div style={{
@@ -3297,10 +3312,10 @@ function ProgramCard({ prog, onOpen }) {
           fontFamily: "'IBM Plex Mono', monospace",
         }}>~{prog.minutes} min</span>
         <span style={{
-          color: prog.color,
+          color: isCompleted ? '#22CC66' : prog.color,
           fontFamily: "'Barlow Condensed', sans-serif",
           fontSize: 12, letterSpacing: 2, fontWeight: 700,
-        }}>START →</span>
+        }}>{actionLabel}</span>
       </div>
     </div>
   )
@@ -3467,7 +3482,22 @@ function PortalHome({ authState, onSignIn, onSignOut, onCreateAccount }) {
     })
   }, [categoryFilter, typeFilter])
 
-  const groupedPrograms = useMemo(() => splitProgramsForCategory(filteredPrograms, categoryFilter), [filteredPrograms, categoryFilter])
+  const programResolutionMap = useMemo(
+    () => buildProgramResolutionMap(PROGRAMS, trainingRecordsState.records),
+    [trainingRecordsState.records]
+  )
+
+  const completedPrograms = useMemo(
+    () => filteredPrograms.filter(prog => programResolutionMap[prog.path]?.isCompleted),
+    [filteredPrograms, programResolutionMap]
+  )
+
+  const activePrograms = useMemo(
+    () => filteredPrograms.filter(prog => !programResolutionMap[prog.path]?.isCompleted),
+    [filteredPrograms, programResolutionMap]
+  )
+
+  const groupedPrograms = useMemo(() => splitProgramsForCategory(activePrograms, categoryFilter), [activePrograms, categoryFilter])
 
   const handleSignInSubmit = async (event) => {
     event.preventDefault()
@@ -3524,6 +3554,7 @@ function PortalHome({ authState, onSignIn, onSignOut, onCreateAccount }) {
   const handleProgramOpen = (prog) => {
     const portalSearch = buildPortalSearch(categoryFilter, typeFilter)
     const seriesPaths = filteredPrograms.map(item => item.path)
+    const resolution = programResolutionMap[prog.path] || null
     savePortalContext(portalSearch, seriesPaths)
     navigate(prog.path, {
       state: {
@@ -3531,6 +3562,8 @@ function PortalHome({ authState, onSignIn, onSignOut, onCreateAccount }) {
         seriesPaths,
         activeCategory: categoryFilter,
         activeType: typeFilter,
+        reviewMode: Boolean(resolution?.isCompleted),
+        latestRecord: resolution?.latestRecord || null,
       },
     })
   }
@@ -3876,6 +3909,24 @@ function PortalHome({ authState, onSignIn, onSignOut, onCreateAccount }) {
 
         {categoryFilter !== 'all' ? (
           <>
+            {completedPrograms.length > 0 && (
+              <>
+                <SectionHeading
+                  title="Completed"
+                  subtitle="Retained passing records found for these requirements. Opening them now uses review mode."
+                />
+                <div style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))',
+                  gap: 12,
+                }}>
+                  {completedPrograms.map(prog => (
+                    <ProgramCard key={prog.path} prog={prog} resolution={programResolutionMap[prog.path]} onOpen={() => handleProgramOpen(prog)} />
+                  ))}
+                </div>
+              </>
+            )}
+
             {groupedPrograms.specific.length > 0 && (
               <>
                 <SectionHeading
@@ -3888,7 +3939,7 @@ function PortalHome({ authState, onSignIn, onSignOut, onCreateAccount }) {
                   gap: 12,
                 }}>
                   {groupedPrograms.specific.map(prog => (
-                    <ProgramCard key={prog.path} prog={prog} onOpen={() => handleProgramOpen(prog)} />
+                    <ProgramCard key={prog.path} prog={prog} resolution={programResolutionMap[prog.path]} onOpen={() => handleProgramOpen(prog)} />
                   ))}
                 </div>
               </>
@@ -3906,22 +3957,45 @@ function PortalHome({ authState, onSignIn, onSignOut, onCreateAccount }) {
                   gap: 12,
                 }}>
                   {groupedPrograms.common.map(prog => (
-                    <ProgramCard key={prog.path} prog={prog} onOpen={() => handleProgramOpen(prog)} />
+                    <ProgramCard key={prog.path} prog={prog} resolution={programResolutionMap[prog.path]} onOpen={() => handleProgramOpen(prog)} />
                   ))}
                 </div>
               </>
             )}
           </>
         ) : (
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))',
-            gap: 12,
-          }}>
-            {filteredPrograms.map(prog => (
-              <ProgramCard key={prog.path} prog={prog} onOpen={() => handleProgramOpen(prog)} />
-            ))}
-          </div>
+          <>
+            {completedPrograms.length > 0 && (
+              <>
+                <SectionHeading
+                  title="Completed"
+                  subtitle="Retained passing records found for these requirements. Opening them now uses review mode."
+                />
+                <div style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))',
+                  gap: 12,
+                  marginBottom: 18,
+                }}>
+                  {completedPrograms.map(prog => (
+                    <ProgramCard key={prog.path} prog={prog} resolution={programResolutionMap[prog.path]} onOpen={() => handleProgramOpen(prog)} />
+                  ))}
+                </div>
+              </>
+            )}
+
+            {activePrograms.length > 0 && (
+              <div style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))',
+                gap: 12,
+              }}>
+                {activePrograms.map(prog => (
+                  <ProgramCard key={prog.path} prog={prog} resolution={programResolutionMap[prog.path]} onOpen={() => handleProgramOpen(prog)} />
+                ))}
+              </div>
+            )}
+          </>
         )}
 
         {filteredPrograms.length === 0 && (

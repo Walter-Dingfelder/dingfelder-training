@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useLocation } from "react-router-dom";
 import { persistTrainingRecordNetlifyIdentity } from "../auth/netlifyIdentity.js";
+import { resolveModuleRecordMeta } from "../data/moduleRegistry.js";
 
 // ─── FULL MODULE DATA ──────────────────────────────────────────────────────────
 
@@ -678,12 +679,27 @@ export default function LOTOFullCampus() {
 
     let cancelled = false;
 
+    const recordMeta = resolveModuleRecordMeta({
+      path: "/loto-campus",
+      label: "LOTO — Full Campus",
+      categoryKey: activeCategory,
+      categoryLabel: formatCategoryLabel(activeCategory),
+      source: "custom-module",
+    });
+
     persistTrainingRecordNetlifyIdentity(null, {
       attemptId: `/loto-campus:${Date.now()}:${Math.random().toString(36).slice(2, 8)}`,
+      moduleId: recordMeta.moduleId,
+      moduleVersion: recordMeta.version,
       modulePath: "/loto-campus",
       moduleTitle: "LOTO — Full Campus",
       categoryKey: activeCategory,
       categoryLabel: formatCategoryLabel(activeCategory),
+      requirementIds: recordMeta.requirementIds,
+      requirementType: recordMeta.category,
+      completionBucket: recordMeta.category,
+      reviewEnabled: Boolean(recordMeta.reviewEnabled),
+      recordRequired: recordMeta.recordRequired !== false,
       score: MODULES.length,
       quizCorrect: MODULES.length,
       quizTotal: MODULES.length,

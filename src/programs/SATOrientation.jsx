@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useLocation } from "react-router-dom";
 import { persistTrainingRecordNetlifyIdentity } from "../auth/netlifyIdentity.js";
+import { resolveModuleRecordMeta } from "../data/moduleRegistry.js";
 
 // ─── PALETTE & CONSTANTS ──────────────────────────────────────────────────────
 const Y = "#FFD100";      // hazard yellow
@@ -690,12 +691,27 @@ export default function SATOrientation() {
     let cancelled = false;
     setRecordStatus({ busy: true, message: "", error: "" });
 
+    const recordMeta = resolveModuleRecordMeta({
+      path: "/sat",
+      label: "S.A.T. Visitor Orientation",
+      categoryKey: activeCategory,
+      categoryLabel: "Campus",
+      source: "custom-module",
+    });
+
     persistTrainingRecordNetlifyIdentity(null, {
       attemptId: `/sat:${Date.now()}:${Math.random().toString(36).slice(2, 8)}`,
+      moduleId: recordMeta.moduleId,
+      moduleVersion: recordMeta.version,
       modulePath: "/sat",
       moduleTitle: "S.A.T. Visitor Orientation",
       categoryKey: activeCategory,
       categoryLabel: "Campus",
+      requirementIds: recordMeta.requirementIds,
+      requirementType: recordMeta.category,
+      completionBucket: recordMeta.category,
+      reviewEnabled: Boolean(recordMeta.reviewEnabled),
+      recordRequired: recordMeta.recordRequired !== false,
       score: SECTIONS.length,
       quizCorrect: SECTIONS.length,
       quizTotal: SECTIONS.length,

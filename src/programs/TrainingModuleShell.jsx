@@ -2,6 +2,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { persistTrainingRecordNetlifyIdentity } from "../auth/netlifyIdentity.js";
+import { resolveModuleRecordMeta } from "../data/moduleRegistry.js";
 
 const PAGE_BG = "#080808";
 const PANEL = "#0f0f0f";
@@ -287,8 +288,25 @@ export default function TrainingModuleShell({ module }) {
 
     let cancelled = false;
 
+    const recordMeta = resolveModuleRecordMeta({
+      path: typeof module.path === "string" ? module.path : "",
+      label:
+        typeof module.label === "string" && module.label.trim()
+          ? module.label.trim()
+          : typeof module.short === "string" && module.short.trim()
+          ? module.short.trim()
+          : "A.I.R.O.N. training module",
+      categoryKey: activeCategory,
+      categoryLabel: formatCategoryLabel(activeCategory),
+      source: "shared-shell",
+      version: typeof module.version === "string" && module.version.trim() ? module.version.trim() : "1.0.0",
+      passScore: passThreshold,
+    });
+
     persistTrainingRecordNetlifyIdentity(null, {
       attemptId: `${module.path || module.label || "training-module"}:${Date.now()}:${Math.random().toString(36).slice(2, 8)}`,
+      moduleId: recordMeta.moduleId,
+      moduleVersion: recordMeta.version,
       modulePath: typeof module.path === "string" ? module.path : "",
       moduleTitle:
         typeof module.label === "string" && module.label.trim()
@@ -298,6 +316,11 @@ export default function TrainingModuleShell({ module }) {
           : "A.I.R.O.N. training module",
       categoryKey: activeCategory,
       categoryLabel: formatCategoryLabel(activeCategory),
+      requirementIds: recordMeta.requirementIds,
+      requirementType: recordMeta.category,
+      completionBucket: recordMeta.category,
+      reviewEnabled: Boolean(recordMeta.reviewEnabled),
+      recordRequired: recordMeta.recordRequired !== false,
       score,
       quizCorrect: score,
       quizTotal: quiz.length,

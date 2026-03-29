@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useLocation } from "react-router-dom";
 import { persistTrainingRecordNetlifyIdentity } from "../auth/netlifyIdentity.js";
+import { resolveModuleRecordMeta } from "../data/moduleRegistry.js";
 
 // ─── ROLE → CONTEXT MAP ───────────────────────────────────────────────────────
 const ROLE_CONTEXT = {
@@ -455,12 +456,27 @@ export default function H2STraining() {
     let cancelled = false;
     setRecordStatus({ busy: true, message: "", error: "" });
 
+    const recordMeta = resolveModuleRecordMeta({
+      path: "/h2s",
+      label: "H₂S Awareness & SCBA",
+      categoryKey: activeCategory,
+      categoryLabel: "Process / Gas",
+      source: "custom-module",
+    });
+
     persistTrainingRecordNetlifyIdentity(null, {
       attemptId: `/h2s:${Date.now()}:${Math.random().toString(36).slice(2, 8)}`,
+      moduleId: recordMeta.moduleId,
+      moduleVersion: recordMeta.version,
       modulePath: "/h2s",
       moduleTitle: "H₂S Awareness & SCBA",
       categoryKey: activeCategory,
       categoryLabel: "Process / Gas",
+      requirementIds: recordMeta.requirementIds,
+      requirementType: recordMeta.category,
+      completionBucket: recordMeta.category,
+      reviewEnabled: Boolean(recordMeta.reviewEnabled),
+      recordRequired: recordMeta.recordRequired !== false,
       score: MODULES.length,
       quizCorrect: MODULES.length,
       quizTotal: MODULES.length,

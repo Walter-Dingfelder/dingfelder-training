@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useLocation } from "react-router-dom";
 import { persistTrainingRecordNetlifyIdentity } from "../auth/netlifyIdentity.js";
+import { resolveModuleRecordMeta } from "../data/moduleRegistry.js";
 
 // ─── DATA ────────────────────────────────────────────────────────────────────
 
@@ -469,12 +470,27 @@ export default function LOTOTraining() {
 
     let cancelled = false;
 
+    const recordMeta = resolveModuleRecordMeta({
+      path: "/loto",
+      label: "LOTO — Foundry Focus",
+      categoryKey: activeCategory,
+      categoryLabel: formatCategoryLabel(activeCategory),
+      source: "custom-module",
+    });
+
     persistTrainingRecordNetlifyIdentity(null, {
       attemptId: `/loto:${Date.now()}:${Math.random().toString(36).slice(2, 8)}`,
+      moduleId: recordMeta.moduleId,
+      moduleVersion: recordMeta.version,
       modulePath: "/loto",
       moduleTitle: "LOTO — Foundry Focus",
       categoryKey: activeCategory,
       categoryLabel: formatCategoryLabel(activeCategory),
+      requirementIds: recordMeta.requirementIds,
+      requirementType: recordMeta.category,
+      completionBucket: recordMeta.category,
+      reviewEnabled: Boolean(recordMeta.reviewEnabled),
+      recordRequired: recordMeta.recordRequired !== false,
       score: MODULES.length,
       quizCorrect: MODULES.length,
       quizTotal: MODULES.length,

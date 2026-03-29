@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useLocation } from "react-router-dom";
 import { persistTrainingRecordNetlifyIdentity } from "../auth/netlifyIdentity.js";
+import { resolveModuleRecordMeta } from "../data/moduleRegistry.js";
 
 const MODULES = [
   {
@@ -485,12 +486,27 @@ export default function ArcFlashTraining() {
 
     let cancelled = false;
 
+    const recordMeta = resolveModuleRecordMeta({
+      path: "/arcflash",
+      label: "Arc Flash & Electrical Safety",
+      categoryKey: activeCategory,
+      categoryLabel: formatCategoryLabel(activeCategory),
+      source: "custom-module",
+    });
+
     persistTrainingRecordNetlifyIdentity(null, {
       attemptId: `/arcflash:${Date.now()}:${Math.random().toString(36).slice(2, 8)}`,
+      moduleId: recordMeta.moduleId,
+      moduleVersion: recordMeta.version,
       modulePath: "/arcflash",
       moduleTitle: "Arc Flash & Electrical Safety",
       categoryKey: activeCategory,
       categoryLabel: formatCategoryLabel(activeCategory),
+      requirementIds: recordMeta.requirementIds,
+      requirementType: recordMeta.category,
+      completionBucket: recordMeta.category,
+      reviewEnabled: Boolean(recordMeta.reviewEnabled),
+      recordRequired: recordMeta.recordRequired !== false,
       score: MODULES.length,
       quizCorrect: MODULES.length,
       quizTotal: MODULES.length,

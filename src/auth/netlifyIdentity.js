@@ -152,10 +152,19 @@ function normalizeTrainingRecordShape(rawRecord) {
 
   return {
     attemptId: typeof rawRecord?.attemptId === 'string' ? rawRecord.attemptId : '',
+    moduleId: typeof rawRecord?.moduleId === 'string' ? rawRecord.moduleId : '',
+    moduleVersion: typeof rawRecord?.moduleVersion === 'string' ? rawRecord.moduleVersion : '',
     modulePath: typeof rawRecord?.modulePath === 'string' ? rawRecord.modulePath : '',
     moduleTitle: typeof rawRecord?.moduleTitle === 'string' ? rawRecord.moduleTitle : '',
     categoryKey: typeof rawRecord?.categoryKey === 'string' ? rawRecord.categoryKey : '',
     categoryLabel: typeof rawRecord?.categoryLabel === 'string' ? rawRecord.categoryLabel : '',
+    requirementIds: Array.isArray(rawRecord?.requirementIds)
+      ? rawRecord.requirementIds.filter(value => typeof value === 'string' && value.trim())
+      : [],
+    requirementType: typeof rawRecord?.requirementType === 'string' ? rawRecord.requirementType : '',
+    completionBucket: typeof rawRecord?.completionBucket === 'string' ? rawRecord.completionBucket : '',
+    reviewEnabled: Boolean(rawRecord?.reviewEnabled),
+    recordRequired: rawRecord?.recordRequired !== false,
     score: toNumberOrNull(rawRecord?.score),
     quizCorrect: toNumberOrNull(rawRecord?.quizCorrect),
     quizTotal: toNumberOrNull(rawRecord?.quizTotal),

@@ -2,7 +2,6 @@ import { useState, useEffect, useRef } from "react";
 import { useLocation } from "react-router-dom";
 import { persistTrainingRecordNetlifyIdentity } from "../auth/netlifyIdentity.js";
 import CompletionResultScreen from "../components/CompletionResultScreen.jsx";
-import { getModuleRecordMeta } from "../data/moduleRegistry.js";
 
 // ─── FULL MODULE DATA ──────────────────────────────────────────────────────────
 
@@ -696,7 +695,6 @@ useEffect(() => {
   const completionRecord = {
     attemptId: `/loto-campus:${Date.now()}:${Math.random().toString(36).slice(2, 8)}`,
     modulePath: "/loto-campus",
-  ...getModuleRecordMeta("/loto-campus"),
     moduleTitle: "LOTO — Full Campus",
     categoryKey: activeCategory,
     categoryLabel: "LOTO",

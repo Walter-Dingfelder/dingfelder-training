@@ -3,7 +3,6 @@ import { Routes, Route, useNavigate, useLocation } from 'react-router-dom'
 import { useState, useEffect, useMemo } from 'react'
 import aironSplash from './assets/airon-splash.png'
 import { bootstrapNetlifyIdentity, signInNetlifyIdentity, signOutNetlifyIdentity, createAccountNetlifyIdentity, getUserCaptureFromIdentityUser, loadCurrentUserCaptureNetlifyIdentity, persistUserCaptureNetlifyIdentity, loadTrainingRecordsNetlifyIdentity } from './auth/netlifyIdentity.js'
-import { resolveProgramCompletion } from './utils/trainingRecordResolver.js'
 
 // ─── Training Programs ────────────────────────────────────────────────────────
 import LOTOFoundry     from './programs/LOTOFoundry.jsx'
@@ -1907,27 +1906,11 @@ function isUserCaptureComplete(capture) {
 }
 
 function splitProgramsForCategory(programs, selectedCategory) {
+  if (!selectedCategory || selectedCategory === 'all') {
+    return { specific: programs, common: [] }
+  }
+
   return programs.reduce((acc, prog) => {
-    if (prog.__resolution?.satisfied) {
-      acc.completed.push(prog)
-      return acc
-    }
-
-    if (!selectedCategory || selectedCategory === 'all') {
-      acc.specific.push(prog)
-      return acc
-    }
-
-    if (prog.__resolution?.completionBucket === 'common') {
-      acc.common.push(prog)
-      return acc
-    }
-
-    if (prog.__resolution?.completionBucket === 'specific') {
-      acc.specific.push(prog)
-      return acc
-    }
-
     const tags = getProgramCategories(prog.path)
     const sharedTags = tags.filter(tag => tag !== selectedCategory && tag !== 'campus' && VALID_CATEGORY_FILTER_KEYS.has(tag))
     if (sharedTags.length > 0) {
@@ -1936,7 +1919,7 @@ function splitProgramsForCategory(programs, selectedCategory) {
       acc.specific.push(prog)
     }
     return acc
-  }, { completed: [], specific: [], common: [] })
+  }, { specific: [], common: [] })
 }
 
 function HeaderActionButton({ children, onClick, accent = 'neutral', type = 'button' }) {
@@ -3238,24 +3221,13 @@ function UserCaptureGate({
 }
 
 function ProgramCard({ prog, onOpen }) {
-  const resolution = prog.__resolution || {}
-  const satisfied = Boolean(resolution.satisfied)
-  const completedLabel = resolution.completedLabel || ''
-  const bucketLabel = satisfied
-    ? 'Completed'
-    : resolution.completionBucket === 'common'
-    ? 'Common'
-    : resolution.completionBucket === 'specific'
-    ? 'Specific'
-    : ''
-
   return (
     <div
       onClick={onOpen}
       style={{
         background: '#0f0f0f',
-        border: `1px solid ${satisfied ? 'rgba(34,204,102,0.28)' : '#1e1e1e'}`,
-        borderTop: `3px solid ${satisfied ? '#22CC66' : prog.color}`,
+        border: '1px solid #1e1e1e',
+        borderTop: `3px solid ${prog.color}`,
         borderRadius: 6,
         padding: '18px',
         cursor: 'pointer',
@@ -3266,13 +3238,13 @@ function ProgramCard({ prog, onOpen }) {
       }}
       onMouseEnter={e => {
         e.currentTarget.style.background = '#161616'
-        e.currentTarget.style.borderColor = satisfied ? 'rgba(34,204,102,0.45)' : `${prog.color}88`
-        e.currentTarget.style.borderTopColor = satisfied ? '#22CC66' : prog.color
+        e.currentTarget.style.borderColor = `${prog.color}88`
+        e.currentTarget.style.borderTopColor = prog.color
       }}
       onMouseLeave={e => {
         e.currentTarget.style.background = '#0f0f0f'
-        e.currentTarget.style.borderColor = satisfied ? 'rgba(34,204,102,0.28)' : '#1e1e1e'
-        e.currentTarget.style.borderTopColor = satisfied ? '#22CC66' : prog.color
+        e.currentTarget.style.borderColor = '#1e1e1e'
+        e.currentTarget.style.borderTopColor = prog.color
       }}
     >
       <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
@@ -3296,36 +3268,6 @@ function ProgramCard({ prog, onOpen }) {
             fontFamily: "'Barlow Condensed', sans-serif",
             letterSpacing: 0.5, marginTop: 2,
           }}>{prog.short}</div>
-
-          {(bucketLabel || completedLabel) && (
-            <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 8 }}>
-              {bucketLabel && (
-                <span style={{
-                  borderRadius: 999,
-                  padding: '3px 8px',
-                  border: `1px solid ${satisfied ? 'rgba(34,204,102,0.28)' : 'rgba(255,209,0,0.22)'}`,
-                  background: satisfied ? 'rgba(34,204,102,0.10)' : 'rgba(255,209,0,0.06)',
-                  color: satisfied ? '#9DFFBC' : '#FFD100',
-                  fontFamily: "'IBM Plex Mono', monospace",
-                  fontSize: 10,
-                  letterSpacing: 1,
-                  textTransform: 'uppercase',
-                }}>
-                  {bucketLabel}
-                </span>
-              )}
-
-              {completedLabel && (
-                <span style={{
-                  color: '#9DFFBC',
-                  fontSize: 11,
-                  fontFamily: "'IBM Plex Mono', monospace",
-                }}>
-                  {completedLabel}
-                </span>
-              )}
-            </div>
-          )}
         </div>
       </div>
 
@@ -3353,12 +3295,12 @@ function ProgramCard({ prog, onOpen }) {
         <span style={{
           color: '#666', fontSize: 11,
           fontFamily: "'IBM Plex Mono', monospace",
-        }}>{satisfied ? completedLabel || `~${prog.minutes} min` : `~${prog.minutes} min`}</span>
+        }}>~{prog.minutes} min</span>
         <span style={{
-          color: satisfied ? '#9DFFBC' : prog.color,
+          color: prog.color,
           fontFamily: "'Barlow Condensed', sans-serif",
           fontSize: 12, letterSpacing: 2, fontWeight: 700,
-        }}>{resolution.actionLabel || 'START →'}</span>
+        }}>START →</span>
       </div>
     </div>
   )
@@ -3517,24 +3459,15 @@ function PortalHome({ authState, onSignIn, onSignOut, onCreateAccount }) {
     }
   }, [categoryFilter, typeFilter, location.pathname, location.search, navigate])
 
-  const resolvedPrograms = useMemo(() => {
-    return PROGRAMS.map(prog => ({
-      ...prog,
-      __resolution: resolveProgramCompletion(prog, trainingRecordsState.records),
-    }))
-  }, [trainingRecordsState.records])
-
   const filteredPrograms = useMemo(() => {
-    return resolvedPrograms.filter(prog => {
+    return PROGRAMS.filter(prog => {
       const categories = getProgramCategories(prog.path)
       const type = getProgramType(prog.path)
       return matchesCategoryFilter(categories, categoryFilter) && matchesTypeFilter(type, typeFilter)
     })
-  }, [resolvedPrograms, categoryFilter, typeFilter])
+  }, [categoryFilter, typeFilter])
 
   const groupedPrograms = useMemo(() => splitProgramsForCategory(filteredPrograms, categoryFilter), [filteredPrograms, categoryFilter])
-  const completedPrograms = useMemo(() => filteredPrograms.filter(prog => prog.__resolution?.satisfied), [filteredPrograms])
-  const availablePrograms = useMemo(() => filteredPrograms.filter(prog => !prog.__resolution?.satisfied), [filteredPrograms])
 
   const handleSignInSubmit = async (event) => {
     event.preventDefault()
@@ -3598,8 +3531,6 @@ function PortalHome({ authState, onSignIn, onSignOut, onCreateAccount }) {
         seriesPaths,
         activeCategory: categoryFilter,
         activeType: typeFilter,
-        reviewMode: Boolean(prog.__resolution?.satisfied),
-        latestPassingRecord: prog.__resolution?.latestPassingRecord || null,
       },
     })
   }
@@ -3945,24 +3876,6 @@ function PortalHome({ authState, onSignIn, onSignOut, onCreateAccount }) {
 
         {categoryFilter !== 'all' ? (
           <>
-            {groupedPrograms.completed.length > 0 && (
-              <>
-                <SectionHeading
-                  title="Completed"
-                  subtitle="Requirements already satisfied by a retained passing record. Open any completed card in review mode."
-                />
-                <div style={{
-                  display: 'grid',
-                  gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))',
-                  gap: 12,
-                }}>
-                  {groupedPrograms.completed.map(prog => (
-                    <ProgramCard key={prog.path} prog={prog} onOpen={() => handleProgramOpen(prog)} />
-                  ))}
-                </div>
-              </>
-            )}
-
             {groupedPrograms.specific.length > 0 && (
               <>
                 <SectionHeading
@@ -4000,45 +3913,15 @@ function PortalHome({ authState, onSignIn, onSignOut, onCreateAccount }) {
             )}
           </>
         ) : (
-          <>
-            {completedPrograms.length > 0 && (
-              <>
-                <SectionHeading
-                  title="Completed"
-                  subtitle="Requirements already satisfied by a retained passing record."
-                />
-                <div style={{
-                  display: 'grid',
-                  gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))',
-                  gap: 12,
-                }}>
-                  {completedPrograms.map(prog => (
-                    <ProgramCard key={prog.path} prog={prog} onOpen={() => handleProgramOpen(prog)} />
-                  ))}
-                </div>
-              </>
-            )}
-
-            {availablePrograms.length > 0 && (
-              <>
-                {completedPrograms.length > 0 && (
-                  <SectionHeading
-                    title="Available"
-                    subtitle="Modules without a retained passing record yet."
-                  />
-                )}
-                <div style={{
-                  display: 'grid',
-                  gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))',
-                  gap: 12,
-                }}>
-                  {availablePrograms.map(prog => (
-                    <ProgramCard key={prog.path} prog={prog} onOpen={() => handleProgramOpen(prog)} />
-                  ))}
-                </div>
-              </>
-            )}
-          </>
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))',
+            gap: 12,
+          }}>
+            {filteredPrograms.map(prog => (
+              <ProgramCard key={prog.path} prog={prog} onOpen={() => handleProgramOpen(prog)} />
+            ))}
+          </div>
         )}
 
         {filteredPrograms.length === 0 && (

@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { useLocation } from "react-router-dom";
 import { persistTrainingRecordNetlifyIdentity } from "../auth/netlifyIdentity.js";
 import CompletionResultScreen from "../components/CompletionResultScreen.jsx";
+import { getModuleRecordMeta } from "../data/moduleRegistry.js";
 
 // ─── DATA ────────────────────────────────────────────────────────────────────
 
@@ -492,6 +493,7 @@ useEffect(() => {
   const completionRecord = {
     attemptId: `/loto:${Date.now()}:${Math.random().toString(36).slice(2, 8)}`,
     modulePath: "/loto",
+  ...getModuleRecordMeta("/loto"),
     moduleTitle: "LOTO — Foundry Focus",
     categoryKey: activeCategory,
     categoryLabel: "LOTO",

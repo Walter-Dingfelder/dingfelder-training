@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { useLocation } from "react-router-dom";
 import { persistTrainingRecordNetlifyIdentity } from "../auth/netlifyIdentity.js";
 import CompletionResultScreen from "../components/CompletionResultScreen.jsx";
+import { getModuleRecordMeta } from "../data/moduleRegistry.js";
 
 const MODULES = [
   {
@@ -495,6 +496,7 @@ useEffect(() => {
   const completionRecord = {
     attemptId: `/arcflash:${Date.now()}:${Math.random().toString(36).slice(2, 8)}`,
     modulePath: "/arcflash",
+  ...getModuleRecordMeta("/arcflash"),
     moduleTitle: "Arc Flash & Electrical Safety",
     categoryKey: activeCategory,
     categoryLabel: "Electrical Safety",

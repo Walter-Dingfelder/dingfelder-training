@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { useLocation } from "react-router-dom";
 import { persistTrainingRecordNetlifyIdentity } from "../auth/netlifyIdentity.js";
 import CompletionResultScreen from "../components/CompletionResultScreen.jsx";
+import { getModuleRecordMeta } from "../data/moduleRegistry.js";
 
 // ─── ROLE → CONTEXT MAP ───────────────────────────────────────────────────────
 const ROLE_CONTEXT = {
@@ -457,6 +458,7 @@ useEffect(() => {
   const completionRecord = {
   attemptId: `/h2s:${Date.now()}:${Math.random().toString(36).slice(2, 8)}`,
   modulePath: "/h2s",
+  ...getModuleRecordMeta("/h2s"),
   moduleTitle: "H₂S Awareness & SCBA",
   categoryKey: activeCategory,
   categoryLabel: "Process / Gas",

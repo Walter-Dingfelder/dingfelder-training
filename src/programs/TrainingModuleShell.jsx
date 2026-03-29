@@ -2,7 +2,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { persistTrainingRecordNetlifyIdentity } from "../auth/netlifyIdentity.js";
-import CompletionResultScreen from "../components/CompletionResultScreen.jsx";
 
 const PAGE_BG = "#080808";
 const PANEL = "#0f0f0f";
@@ -77,6 +76,13 @@ function getPortalContext(locationState) {
       : stored.seriesPaths;
 
   return { portalSearch, seriesPaths };
+}
+
+function formatCategoryLabel(categoryKey) {
+  if (typeof categoryKey !== "string" || !categoryKey.trim()) return "A.I.R.O.N. training";
+  return categoryKey
+    .replace(/[-_]+/g, " ")
+    .replace(/\b\w/g, (match) => match.toUpperCase());
 }
 
 
@@ -224,23 +230,14 @@ export default function TrainingModuleShell({ module }) {
   const [slideIndex, setSlideIndex] = useState(0);
   const [answers, setAnswers] = useState({});
   const [submitted, setSubmitted] = useState(false);
-  const [recordStatus, setRecordStatus] = useState({ busy: false, message: "", error: "", saved: false, record: null, user: null });
   const recordSavedRef = useRef(false);
 
+  const activeCategory = typeof location.state?.activeCategory === "string" ? location.state.activeCategory : "campus";
   const portalContext = useMemo(() => getPortalContext(location.state), [location.state]);
   const portalSearch = portalContext.portalSearch;
   const seriesPaths = portalContext.seriesPaths;
   const currentSeriesIndex = seriesPaths.indexOf(module.path);
   const nextModulePath = currentSeriesIndex >= 0 ? seriesPaths[currentSeriesIndex + 1] : null;
-  const activeCategory = useMemo(() => {
-    try {
-      const params = new URLSearchParams(portalSearch || "");
-      const value = params.get("category");
-      return value && value !== "all" ? value : "campus";
-    } catch {
-      return "campus";
-    }
-  }, [portalSearch]);
 
   const returnToPortal = () => {
     writeStoredPortalContext(portalSearch, seriesPaths);
@@ -276,95 +273,198 @@ export default function TrainingModuleShell({ module }) {
     () => quiz.reduce((sum, q, idx) => sum + (answers[idx] === q.answer ? 1 : 0), 0),
     [answers, quiz]
   );
+  const passThreshold = Math.ceil(quiz.length * 0.7);
+  const passed = score >= passThreshold;
 
+  useEffect(() => {
+    if (!submitted || !passed) {
+      recordSavedRef.current = false;
+      return;
+    }
 
-useEffect(() => {
-  if (!submitted) {
-    recordSavedRef.current = false;
-    setRecordStatus({ busy: false, message: "", error: "", saved: false, record: null, user: null });
-    return;
+    if (recordSavedRef.current) return;
+    recordSavedRef.current = true;
+
+    let cancelled = false;
+
+    persistTrainingRecordNetlifyIdentity(null, {
+      attemptId: `${module.path || module.label || "training-module"}:${Date.now()}:${Math.random().toString(36).slice(2, 8)}`,
+      modulePath: typeof module.path === "string" ? module.path : "",
+      moduleTitle:
+        typeof module.label === "string" && module.label.trim()
+          ? module.label.trim()
+          : typeof module.short === "string" && module.short.trim()
+          ? module.short.trim()
+          : "A.I.R.O.N. training module",
+      categoryKey: activeCategory,
+      categoryLabel: formatCategoryLabel(activeCategory),
+      score,
+      quizCorrect: score,
+      quizTotal: quiz.length,
+      passed: true,
+      completedAt: new Date().toISOString(),
+      runtimeMinutes: Number.isFinite(Number(module.minutes)) ? Number(module.minutes) : null,
+      certificateClass: "Portal Completion Record",
+      certificateEligible: true,
+      source: "shared-shell",
+    })
+      .then((result) => {
+        if (cancelled || !result?.error) return;
+        console.error("A.I.R.O.N. retained record write failed.", result.error);
+      })
+      .catch((error) => {
+        if (cancelled) return;
+        console.error("A.I.R.O.N. retained record write failed.", error);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [activeCategory, module.label, module.minutes, module.path, module.short, passed, quiz.length, score, submitted]);
+
+  if (submitted) {
+    return (
+      <div
+        style={{
+          minHeight: "100vh",
+          background: PAGE_BG,
+          color: TEXT,
+          fontFamily: SANS,
+          padding: 24,
+          boxSizing: "border-box",
+        }}
+      >
+        <link
+          href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;700;800;900&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;600&display=swap"
+          rel="stylesheet"
+        />
+        <div style={{ maxWidth: 820, margin: "0 auto" }}>
+          <div
+            style={{
+              background: PANEL,
+              border: `1px solid ${BORDER}`,
+              borderTop: `4px solid ${module.color}`,
+              borderRadius: 10,
+              padding: 24,
+            }}
+          >
+            <div
+              style={{
+                color: passed ? "#22CC66" : "#FF6B00",
+                fontFamily: CONDENSED,
+                fontSize: 14,
+                letterSpacing: 3,
+                marginBottom: 10,
+              }}
+            >
+              {passed ? "MODULE COMPLETE" : "REVIEW REQUIRED"}
+            </div>
+            <h1
+              style={{
+                margin: 0,
+                color: "#fff",
+                fontFamily: CONDENSED,
+                fontSize: 42,
+                lineHeight: 1,
+              }}
+            >
+              {module.label}
+            </h1>
+            <p style={{ color: "#BEBEBE", lineHeight: 1.6, marginTop: 14 }}>
+              {passed
+                ? "Training record generated. The portal can now return to the catalog."
+                : "The module is still available. Review your answers and retake when ready."}
+            </p>
+
+            <div
+              style={{
+                marginTop: 18,
+                display: "grid",
+                gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))",
+                gap: 12,
+              }}
+            >
+              <div style={{ background: PANEL_ALT, border: "1px solid #222", borderRadius: 8, padding: 14 }}>
+                <div style={{ color: DIM, fontSize: 12, fontFamily: MONO }}>SCORE</div>
+                <div style={{ color: "#fff", fontSize: 24, fontWeight: 700 }}>
+                  {score} / {module.quiz.length}
+                </div>
+              </div>
+              <div style={{ background: PANEL_ALT, border: "1px solid #222", borderRadius: 8, padding: 14 }}>
+                <div style={{ color: DIM, fontSize: 12, fontFamily: MONO }}>RUNTIME</div>
+                <div style={{ color: "#fff", fontSize: 24, fontWeight: 700 }}>~{module.minutes} MIN</div>
+              </div>
+              <div style={{ background: PANEL_ALT, border: "1px solid #222", borderRadius: 8, padding: 14 }}>
+                <div style={{ color: DIM, fontSize: 12, fontFamily: MONO }}>DATE</div>
+                <div style={{ color: "#fff", fontSize: 18, fontWeight: 700 }}>
+                  {new Date().toLocaleDateString()}
+                </div>
+              </div>
+            </div>
+
+            <div style={{ display: "flex", gap: 12, marginTop: 22, flexWrap: "wrap" }}>
+              <button
+                onClick={returnToPortal}
+                style={{
+                  background: module.color,
+                  color: "#0b0b0b",
+                  border: "none",
+                  borderRadius: 8,
+                  padding: "12px 16px",
+                  fontWeight: 800,
+                  fontFamily: CONDENSED,
+                  letterSpacing: 1,
+                  cursor: "pointer",
+                }}
+              >
+                Return to Portal
+              </button>
+              <button
+                onClick={goToNextModule}
+                disabled={!nextModulePath}
+                style={{
+                  background: nextModulePath ? "#121212" : "#171717",
+                  color: nextModulePath ? "#fff" : "#555",
+                  border: "1px solid #333",
+                  borderRadius: 8,
+                  padding: "12px 16px",
+                  cursor: nextModulePath ? "pointer" : "not-allowed",
+                  fontFamily: CONDENSED,
+                  letterSpacing: 1,
+                }}
+              >
+                Next Card
+              </button>
+              {!passed && (
+                <button
+                  onClick={() => {
+                    setAnswers({});
+                    setSubmitted(false);
+                    setSlideIndex(0);
+                    forceScrollTop();
+                  }}
+                  style={{
+                    background: "#121212",
+                    color: "#fff",
+                    border: "1px solid #333",
+                    borderRadius: 8,
+                    padding: "12px 16px",
+                    cursor: "pointer",
+                    fontFamily: CONDENSED,
+                    letterSpacing: 1,
+                  }}
+                >
+                  RETAKE MODULE
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
   }
 
-  const passed = score >= Math.ceil(quiz.length * 0.7);
-  if (!passed) return;
-  if (recordSavedRef.current) return;
-  recordSavedRef.current = true;
-
-  let cancelled = false;
-  const completionRecord = {
-    attemptId: `${module.path || module.label}:${Date.now()}:${Math.random().toString(36).slice(2, 8)}`,
-    modulePath: module.path,
-    moduleTitle: module.label,
-    categoryKey: activeCategory,
-    categoryLabel: activeCategory.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()),
-    score,
-    quizCorrect: score,
-    quizTotal: quiz.length,
-    passed: true,
-    completedAt: new Date().toISOString(),
-    runtimeMinutes: module.minutes,
-    certificateClass: "Portal Completion Record",
-    certificateEligible: true,
-    source: "shared-shell",
-  };
-
-  setRecordStatus({ busy: true, message: "", error: "", saved: false, record: completionRecord, user: null });
-
-  persistTrainingRecordNetlifyIdentity(null, completionRecord).then((result) => {
-    if (cancelled) return;
-    if (result?.skipped) {
-      setRecordStatus({ busy: false, message: "", error: "", saved: false, record: completionRecord, user: result?.user || null });
-    } else if (result?.error) {
-      setRecordStatus({ busy: false, message: "", error: result.error, saved: false, record: completionRecord, user: result?.user || null });
-    } else {
-      setRecordStatus({
-        busy: false,
-        message: result?.message || "Retained training record saved to your A.I.R.O.N. account.",
-        error: "",
-        saved: Boolean(result?.saved),
-        record: result?.record || completionRecord,
-        user: result?.user || null,
-      });
-    }
-  });
-
-  return () => {
-    cancelled = true;
-  };
-}, [submitted, score, quiz.length, module.path, module.label, module.minutes, activeCategory]);
-
-
-if (submitted) {
-  const passed = score >= Math.ceil(quiz.length * 0.7);
-  return (
-    <CompletionResultScreen
-      accentColor={module.color}
-      title={module.label}
-      modulePath={module.path}
-      passed={passed}
-      score={score}
-      quizCorrect={score}
-      quizTotal={quiz.length}
-      runtimeMinutes={module.minutes}
-      completedAt={recordStatus?.record?.completedAt || new Date().toISOString()}
-      recordStatus={recordStatus}
-      statusLabel={passed ? "Requirement met" : "Review required"}
-      subtitle={
-        passed
-          ? "The retained record has been captured through the shared training shell. Send or save the certificate, review your completion history, then continue."
-          : "Review the missed answers, then retake the module when ready."
-      }
-      onRestart={() => {
-        setAnswers({});
-        setSubmitted(false);
-        setSlideIndex(0);
-        forceScrollTop();
-      }}
-    />
-  );
-}
-
-if (slideIndex >= slides.length) {
+  if (slideIndex >= slides.length) {
     return (
       <div
         style={{

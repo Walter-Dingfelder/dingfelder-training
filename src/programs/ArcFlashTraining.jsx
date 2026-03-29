@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useLocation } from "react-router-dom";
 import { persistTrainingRecordNetlifyIdentity } from "../auth/netlifyIdentity.js";
-import CompletionResultScreen from "../components/CompletionResultScreen.jsx";
 
 const MODULES = [
   {
@@ -452,22 +451,69 @@ function QuizView({ mod, onComplete }) {
   );
 }
 
+function formatCategoryLabel(categoryKey) {
+  if (typeof categoryKey !== "string" || !categoryKey.trim()) return "A.I.R.O.N. training";
+  return categoryKey
+    .replace(/[-_]+/g, " ")
+    .replace(/\b\w/g, (match) => match.toUpperCase());
+}
+
 export default function ArcFlashTraining() {
-  const [screen, setScreen] = useState("home");
   const location = useLocation();
-  const activeCategory = typeof location.state?.activeCategory === "string" ? location.state.activeCategory : "electrical-safety";
+  const [screen, setScreen] = useState("home");
   const [modIdx, setModIdx] = useState(0);
   const [slideIdx, setSlideIdx] = useState(0);
   const [phase, setPhase] = useState("slides");
   const [completed, setCompleted] = useState({});
   const [scanLine, setScanLine] = useState(0);
-  const [recordStatus, setRecordStatus] = useState({ busy: false, message: "", error: "", saved: false, record: null, user: null });
   const recordSavedRef = useRef(false);
+  const activeCategory = typeof location.state?.activeCategory === "string" ? location.state.activeCategory : "electrical";
   useEffect(() => { const t = setInterval(()=>setScanLine(x=>(x+1)%100),30); return ()=>clearInterval(t); }, []);
 
   const mod = MODULES[modIdx] || MODULES[0];
   const completedCount = Object.keys(completed).length;
   const startMod = idx => { setModIdx(idx); setSlideIdx(0); setPhase("slides"); setScreen("module"); };
+
+  useEffect(() => {
+    if (screen !== "complete") {
+      recordSavedRef.current = false;
+      return;
+    }
+
+    if (recordSavedRef.current) return;
+    recordSavedRef.current = true;
+
+    let cancelled = false;
+
+    persistTrainingRecordNetlifyIdentity(null, {
+      attemptId: `/arcflash:${Date.now()}:${Math.random().toString(36).slice(2, 8)}`,
+      modulePath: "/arcflash",
+      moduleTitle: "Arc Flash & Electrical Safety",
+      categoryKey: activeCategory,
+      categoryLabel: formatCategoryLabel(activeCategory),
+      score: MODULES.length,
+      quizCorrect: MODULES.length,
+      quizTotal: MODULES.length,
+      passed: true,
+      completedAt: new Date().toISOString(),
+      runtimeMinutes: 25,
+      certificateClass: "Portal Completion Record",
+      certificateEligible: true,
+      source: "custom-module",
+    })
+      .then((result) => {
+        if (cancelled || !result?.error) return;
+        console.error("A.I.R.O.N. retained record write failed.", result.error);
+      })
+      .catch((error) => {
+        if (cancelled) return;
+        console.error("A.I.R.O.N. retained record write failed.", error);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [activeCategory, screen]);
   const handleNext = () => { if(slideIdx+1>=mod.slides.length) setPhase("quiz"); else setSlideIdx(s=>s+1); };
   const handlePrev = () => { if(slideIdx>0) setSlideIdx(s=>s-1); };
   const handleQuizDone = passed => {
@@ -479,60 +525,6 @@ export default function ArcFlashTraining() {
   };
 
   const scanStyle = { background:`linear-gradient(180deg, transparent ${scanLine}%, rgba(0,180,255,0.04) ${scanLine+2}%, transparent ${scanLine+4}%)` };
-
-
-useEffect(() => {
-  if (screen !== "complete") {
-    recordSavedRef.current = false;
-    setRecordStatus({ busy: false, message: "", error: "", saved: false, record: null, user: null });
-    return;
-  }
-
-  if (recordSavedRef.current) return;
-  recordSavedRef.current = true;
-
-  let cancelled = false;
-  const completionRecord = {
-    attemptId: `/arcflash:${Date.now()}:${Math.random().toString(36).slice(2, 8)}`,
-    modulePath: "/arcflash",
-    moduleTitle: "Arc Flash & Electrical Safety",
-    categoryKey: activeCategory,
-    categoryLabel: "Electrical Safety",
-    score: MODULES.length,
-    quizCorrect: MODULES.length,
-    quizTotal: MODULES.length,
-    passed: true,
-    completedAt: new Date().toISOString(),
-    runtimeMinutes: 25,
-    certificateClass: "Portal Completion Record",
-    certificateEligible: true,
-    source: "custom-module",
-  };
-
-  setRecordStatus({ busy: true, message: "", error: "", saved: false, record: completionRecord, user: null });
-
-  persistTrainingRecordNetlifyIdentity(null, completionRecord).then((result) => {
-    if (cancelled) return;
-    if (result?.skipped) {
-      setRecordStatus({ busy: false, message: "", error: "", saved: false, record: completionRecord, user: result?.user || null });
-    } else if (result?.error) {
-      setRecordStatus({ busy: false, message: "", error: result.error, saved: false, record: completionRecord, user: result?.user || null });
-    } else {
-      setRecordStatus({
-        busy: false,
-        message: result?.message || "Retained training record saved to your A.I.R.O.N. account.",
-        error: "",
-        saved: Boolean(result?.saved),
-        record: result?.record || completionRecord,
-        user: result?.user || null,
-      });
-    }
-  });
-
-  return () => {
-    cancelled = true;
-  };
-}, [screen, activeCategory]);
 
   if(screen==="home") return (
     <div style={{ minHeight:"100vh", background:"#010408", fontFamily:"'IBM Plex Sans',sans-serif", display:"flex", flexDirection:"column", ...scanStyle }}>
@@ -564,23 +556,15 @@ useEffect(() => {
     </div>
   );
 
-  
-if(screen==="complete") return (
-    <CompletionResultScreen
-      accentColor="#00BFFF"
-      title="Arc Flash & Electrical Safety"
-      modulePath="/arcflash"
-      passed={true}
-      score={MODULES.length}
-      quizCorrect={MODULES.length}
-      quizTotal={MODULES.length}
-      runtimeMinutes={25}
-      completedAt={recordStatus?.record?.completedAt || new Date().toISOString()}
-      recordStatus={recordStatus}
-      statusLabel="Requirement met"
-      subtitle="Arc flash awareness is complete. Review the retained result, then continue to your next card or issue the certificate."
-      onRestart={()=>{setCompleted({});setScreen("home");}}
-    />
+  if(screen==="complete") return (
+    <div style={{ minHeight:"100vh", background:"#010408", display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", padding:28, textAlign:"center" }}>
+      <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+      <div style={{ fontSize:64, marginBottom:16 }}>✅</div>
+      <h1 style={{ color:"#00BFFF", fontFamily:"'IBM Plex Mono',monospace", fontSize:28, margin:"0 0 10px" }}>ARC FLASH TRAINING<br />COMPLETE</h1>
+      <p style={{ color:"#556", fontSize:14, fontFamily:"'IBM Plex Sans',sans-serif", marginBottom:24, lineHeight:1.6, maxWidth:440 }}>All 4 modules passed. NFPA 70E awareness training complete for the Dingfelder campus.<br />Annual recertification required. Hands-on equipment training required before live electrical work.</p>
+      <div style={{ color:"#224", fontSize:10, fontFamily:"'IBM Plex Mono',monospace", letterSpacing:2 }}>DINGFELDER SAFETY · NFPA 70E · OSHA 1910.333 · {new Date().toLocaleDateString()}</div>
+      <button onClick={()=>{setCompleted({});setScreen("home");}} style={{ marginTop:20, padding:"10px 24px", background:"transparent", border:"1px solid #0a1825", borderRadius:3, color:"#334", cursor:"pointer", fontFamily:"'IBM Plex Mono',monospace", fontSize:11, letterSpacing:2 }}>RESTART</button>
+    </div>
   );
 
   return (

@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useLocation } from "react-router-dom";
 import { persistTrainingRecordNetlifyIdentity } from "../auth/netlifyIdentity.js";
-import CompletionResultScreen from "../components/CompletionResultScreen.jsx";
 
 // ─── PALETTE & CONSTANTS ──────────────────────────────────────────────────────
 const Y = "#FFD100";      // hazard yellow
@@ -643,7 +642,7 @@ export default function SATOrientation() {
   const [screen, setScreen] = useState("welcome"); // welcome | training | complete
   const location = useLocation();
   const activeCategory = typeof location.state?.activeCategory === "string" ? location.state.activeCategory : "campus";
-  const [recordStatus, setRecordStatus] = useState({ busy: false, message: "", error: "", saved: false, record: null, user: null });
+  const [recordStatus, setRecordStatus] = useState({ busy: false, message: "", error: "" });
   const recordSavedRef = useRef(false);
   const [name, setName] = useState("");
   const [nameInput, setNameInput] = useState("");
@@ -664,6 +663,8 @@ export default function SATOrientation() {
     else setSlideIdx(s => s + 1);
   };
   const handlePrev = () => { if (slideIdx > 0) setSlideIdx(s => s - 1); };
+  const returnToPortal = () => { window.location.href = "/"; };
+
   const handleQuizResult = (passed) => {
     if (!passed) { setSlideIdx(0); setPhase("slides"); return; }
     setCleared(c => ({ ...c, [section.id]: true }));
@@ -671,59 +672,58 @@ export default function SATOrientation() {
     setSectionIdx(i => i + 1); setSlideIdx(0); setPhase("slides");
   };
 
+  // ── COMPLETE SCREEN ───────────────────────────────────────────
+
+
+
   // ── WELCOME SCREEN ────────────────────────────────────────────
-useEffect(() => {
-  if (screen !== "complete") {
-    recordSavedRef.current = false;
-    setRecordStatus({ busy: false, message: "", error: "", saved: false, record: null, user: null });
-    return;
-  }
-
-  if (recordSavedRef.current) return;
-  recordSavedRef.current = true;
-
-  let cancelled = false;
-  const completionRecord = {
-  attemptId: `/sat:${Date.now()}:${Math.random().toString(36).slice(2, 8)}`,
-  modulePath: "/sat",
-  moduleTitle: "S.A.T. Visitor Orientation",
-  categoryKey: activeCategory,
-  categoryLabel: "Campus",
-  score: SECTIONS.length,
-  quizCorrect: SECTIONS.length,
-  quizTotal: SECTIONS.length,
-  passed: true,
-  completedAt: new Date().toISOString(),
-  runtimeMinutes: 15,
-  certificateClass: "Portal Completion Record",
-  certificateEligible: true,
-  source: "custom-module",
-};
-
-  setRecordStatus({ busy: true, message: "", error: "", saved: false, record: completionRecord, user: null });
-
-  persistTrainingRecordNetlifyIdentity(null, completionRecord).then((result) => {
-    if (cancelled) return;
-    if (result?.skipped) {
-      setRecordStatus({ busy: false, message: "", error: "", saved: false, record: completionRecord, user: result?.user || null });
-    } else if (result?.error) {
-      setRecordStatus({ busy: false, message: "", error: result.error, saved: false, record: completionRecord, user: result?.user || null });
-    } else {
-      setRecordStatus({
-        busy: false,
-        message: result?.message || "Retained training record saved to your A.I.R.O.N. account.",
-        error: "",
-        saved: Boolean(result?.saved),
-        record: result?.record || completionRecord,
-        user: result?.user || null,
-      });
+  useEffect(() => {
+    if (screen !== "complete") {
+      recordSavedRef.current = false;
+      setRecordStatus({ busy: false, message: "", error: "" });
+      return;
     }
-  });
 
-  return () => {
-    cancelled = true;
-  };
-}, [screen, activeCategory]);
+    if (recordSavedRef.current) return;
+    recordSavedRef.current = true;
+
+    let cancelled = false;
+    setRecordStatus({ busy: true, message: "", error: "" });
+
+    persistTrainingRecordNetlifyIdentity(null, {
+      attemptId: `/sat:${Date.now()}:${Math.random().toString(36).slice(2, 8)}`,
+      modulePath: "/sat",
+      moduleTitle: "S.A.T. Visitor Orientation",
+      categoryKey: activeCategory,
+      categoryLabel: "Campus",
+      score: SECTIONS.length,
+      quizCorrect: SECTIONS.length,
+      quizTotal: SECTIONS.length,
+      passed: true,
+      completedAt: new Date().toISOString(),
+      runtimeMinutes: 15,
+      certificateClass: "Portal Completion Record",
+      certificateEligible: true,
+      source: "custom-module",
+    }).then((result) => {
+      if (cancelled) return;
+      if (result?.skipped) {
+        setRecordStatus({ busy: false, message: "", error: "" });
+      } else if (result?.error) {
+        setRecordStatus({ busy: false, message: "", error: result.error });
+      } else {
+        setRecordStatus({
+          busy: false,
+          message: result?.message || "Retained training record saved to your A.I.R.O.N. account.",
+          error: "",
+        });
+      }
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [screen, activeCategory]);
 
   if (screen === "welcome") return (
     <div style={{ minHeight: "100vh", background: BK, display: "flex", flexDirection: "column", fontFamily: "'Source Serif 4', serif", position: "relative", overflow: "hidden" }}>
@@ -779,28 +779,39 @@ useEffect(() => {
 
   // ── COMPLETE SCREEN ───────────────────────────────────────────
 
-  
+  if (screen === "complete") return (
+    <div style={{ minHeight: "100vh", background: BK, fontFamily: "'Source Serif 4', serif", position: "relative", overflow: "hidden" }}>
+      <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Source+Serif+4:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet" />
+      <ChevronBg color={Y} opacity={0.03} />
 
+      <div style={{ background: Y, padding: "12px 24px", position: "relative", zIndex: 1 }}>
+        <span style={{ fontFamily: "'Oswald', sans-serif", fontWeight: 700, fontSize: 13, letterSpacing: 3, color: BK }}>A.I.R.O.N. SAFETY TRAINING — ORIENTATION COMPLETE</span>
+      </div>
 
-if (screen === "complete") return (
-  <CompletionResultScreen
-    accentColor={Y}
-    title="S.A.T. Visitor Orientation"
-    modulePath="/sat"
-    passed={true}
-    score={SECTIONS.length}
-    quizCorrect={SECTIONS.length}
-    quizTotal={SECTIONS.length}
-    runtimeMinutes={15}
-    completedAt={recordStatus?.record?.completedAt || new Date().toISOString()}
-    recordStatus={recordStatus}
-    statusLabel="Orientation passed"
-    subtitle="Your visitor orientation has been retained. Present the visitor pass as needed, then continue to your next portal step or certificate action."
-    completedBy={name || ""}
-    heroContent={
-      <div style={{ display: "grid", gap: 16 }}>
+      <div style={{ position: "relative", zIndex: 1, padding: "28px 22px", maxWidth: 460, margin: "0 auto" }}>
+        <div style={{ textAlign: "center", marginBottom: 24 }}>
+          <div style={{ fontSize: 56, marginBottom: 10 }}>✅</div>
+          <div style={{ fontFamily: "'Oswald', sans-serif", fontSize: 11, letterSpacing: 4, color: GRN, marginBottom: 6 }}>ALL CHECKPOINTS CLEARED</div>
+          <h1 style={{ fontFamily: "'Oswald', sans-serif", fontSize: 32, color: Y, margin: "0 0 8px" }}>ORIENTATION PASSED</h1>
+          <p style={{ fontFamily: "'Source Serif 4', serif", fontSize: 14, color: "#9a8c5a", lineHeight: 1.6 }}>
+            Your visitor pass is below. Present it at the gate and to your escort. It is valid for today only. Your escort must accompany you at all times on campus.
+          </p>
+        </div>
+
         <VisitorPass name={name} />
-        <div style={{ padding: "14px", background: "#141209", border: "1px solid #3a3018", borderRadius: 6 }}>
+
+      {recordStatus.message ? (
+        <div style={{ padding:"12px 14px", background:"rgba(34,204,102,0.10)", border:"1px solid rgba(34,204,102,0.35)", borderRadius:8, color:"#9AF0B9", fontSize:13, lineHeight:1.6, maxWidth:520, marginBottom:16 }}>
+          {recordStatus.message}
+        </div>
+      ) : null}
+      {recordStatus.error ? (
+        <div style={{ padding:"12px 14px", background:"rgba(255,107,0,0.10)", border:"1px solid rgba(255,107,0,0.35)", borderRadius:8, color:"#FFB27A", fontSize:13, lineHeight:1.6, maxWidth:520, marginBottom:16 }}>
+          {recordStatus.error}
+        </div>
+      ) : null}
+
+        <div style={{ marginTop: 20, padding: "14px", background: "#141209", border: "1px solid #3a3018", borderRadius: 3 }}>
           <p style={{ fontFamily: "'Oswald', sans-serif", fontSize: 11, letterSpacing: 2, color: "#6a5e30", margin: 0, lineHeight: 1.8 }}>
             REMEMBER ON CAMPUS:<br />
             <span style={{ color: Y }}>• Stay with your escort at all times</span><br />
@@ -809,13 +820,15 @@ if (screen === "complete") return (
             <span style={{ color: GRN }}>• Never stand under suspended loads or touch any equipment</span>
           </p>
         </div>
-      </div>
-    }
-    onRestart={() => { setScreen("welcome"); setCleared({}); setSectionIdx(0); setSlideIdx(0); setPhase("slides"); }}
-  />
-);
 
-// ── TRAINING SCREEN ───────────────────────────────────────────
+        <button onClick={returnToPortal} style={{ marginTop: 16, width: "100%", padding: "12px", background: Y, border: "none", borderRadius: 3, color: BK, cursor: "pointer", fontFamily: "'Oswald', sans-serif", fontSize: 12, fontWeight: 700, letterSpacing: 3 }}>RETURN TO MAIN PORTAL</button>
+
+        <button onClick={() => { setScreen("welcome"); setCleared({}); setSectionIdx(0); setSlideIdx(0); setPhase("slides"); }} style={{ marginTop: 12, width: "100%", padding: "11px", background: "transparent", border: "1px solid #3a3018", borderRadius: 3, color: "#4a4220", cursor: "pointer", fontFamily: "'Oswald', sans-serif", fontSize: 12, letterSpacing: 3 }}>RESTART FOR NEXT VISITOR</button>
+      </div>
+    </div>
+  );
+
+  // ── TRAINING SCREEN ───────────────────────────────────────────
   return (
     <div style={{ minHeight: "100vh", background: BK, display: "flex", flexDirection: "column", position: "relative", overflow: "hidden" }}>
       <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Source+Serif+4:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet" />

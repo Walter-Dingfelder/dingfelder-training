@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useLocation } from "react-router-dom";
 import { persistTrainingRecordNetlifyIdentity } from "../auth/netlifyIdentity.js";
-import CompletionResultScreen from "../components/CompletionResultScreen.jsx";
 
 // ─── DATA ────────────────────────────────────────────────────────────────────
 
@@ -439,19 +438,66 @@ const QuizView = ({ questions, moduleColor, onComplete, moduleName }) => {
 
 // ─── MAIN APP ─────────────────────────────────────────────────────────────────
 
+function formatCategoryLabel(categoryKey) {
+  if (typeof categoryKey !== "string" || !categoryKey.trim()) return "A.I.R.O.N. training";
+  return categoryKey
+    .replace(/[-_]+/g, " ")
+    .replace(/\b\w/g, (match) => match.toUpperCase());
+}
+
 export default function LOTOTraining() {
-  const [screen, setScreen] = useState("home"); // home | module | complete
   const location = useLocation();
-  const activeCategory = typeof location.state?.activeCategory === "string" ? location.state.activeCategory : "loto";
+  const [screen, setScreen] = useState("home"); // home | module | complete
   const [moduleIdx, setModuleIdx] = useState(0);
   const [slideIdx, setSlideIdx] = useState(0);
   const [phase, setPhase] = useState("slides"); // slides | quiz
   const [completedModules, setCompletedModules] = useState({});
   const [allDone, setAllDone] = useState(false);
-  const [recordStatus, setRecordStatus] = useState({ busy: false, message: "", error: "", saved: false, record: null, user: null });
   const recordSavedRef = useRef(false);
+  const activeCategory = typeof location.state?.activeCategory === "string" ? location.state.activeCategory : "foundry";
 
   const mod = MODULES[moduleIdx] || MODULES[0];
+
+  useEffect(() => {
+    if (screen !== "complete") {
+      recordSavedRef.current = false;
+      return;
+    }
+
+    if (recordSavedRef.current) return;
+    recordSavedRef.current = true;
+
+    let cancelled = false;
+
+    persistTrainingRecordNetlifyIdentity(null, {
+      attemptId: `/loto:${Date.now()}:${Math.random().toString(36).slice(2, 8)}`,
+      modulePath: "/loto",
+      moduleTitle: "LOTO — Foundry Focus",
+      categoryKey: activeCategory,
+      categoryLabel: formatCategoryLabel(activeCategory),
+      score: MODULES.length,
+      quizCorrect: MODULES.length,
+      quizTotal: MODULES.length,
+      passed: true,
+      completedAt: new Date().toISOString(),
+      runtimeMinutes: 20,
+      certificateClass: "Portal Completion Record",
+      certificateEligible: true,
+      source: "custom-module",
+    })
+      .then((result) => {
+        if (cancelled || !result?.error) return;
+        console.error("A.I.R.O.N. retained record write failed.", result.error);
+      })
+      .catch((error) => {
+        if (cancelled) return;
+        console.error("A.I.R.O.N. retained record write failed.", error);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [activeCategory, screen]);
 
   const startModule = (idx) => {
     setModuleIdx(idx);
@@ -476,60 +522,6 @@ export default function LOTOTraining() {
     if (nextIdx >= MODULES.length) { setAllDone(true); setScreen("complete"); }
     else { startModule(nextIdx); }
   };
-
-
-useEffect(() => {
-  if (screen !== "complete") {
-    recordSavedRef.current = false;
-    setRecordStatus({ busy: false, message: "", error: "", saved: false, record: null, user: null });
-    return;
-  }
-
-  if (recordSavedRef.current) return;
-  recordSavedRef.current = true;
-
-  let cancelled = false;
-  const completionRecord = {
-    attemptId: `/loto:${Date.now()}:${Math.random().toString(36).slice(2, 8)}`,
-    modulePath: "/loto",
-    moduleTitle: "LOTO — Foundry Focus",
-    categoryKey: activeCategory,
-    categoryLabel: "LOTO",
-    score: MODULES.length,
-    quizCorrect: MODULES.length,
-    quizTotal: MODULES.length,
-    passed: true,
-    completedAt: new Date().toISOString(),
-    runtimeMinutes: 20,
-    certificateClass: "Portal Completion Record",
-    certificateEligible: true,
-    source: "custom-module",
-  };
-
-  setRecordStatus({ busy: true, message: "", error: "", saved: false, record: completionRecord, user: null });
-
-  persistTrainingRecordNetlifyIdentity(null, completionRecord).then((result) => {
-    if (cancelled) return;
-    if (result?.skipped) {
-      setRecordStatus({ busy: false, message: "", error: "", saved: false, record: completionRecord, user: result?.user || null });
-    } else if (result?.error) {
-      setRecordStatus({ busy: false, message: "", error: result.error, saved: false, record: completionRecord, user: result?.user || null });
-    } else {
-      setRecordStatus({
-        busy: false,
-        message: result?.message || "Retained training record saved to your A.I.R.O.N. account.",
-        error: "",
-        saved: Boolean(result?.saved),
-        record: result?.record || completionRecord,
-        user: result?.user || null,
-      });
-    }
-  });
-
-  return () => {
-    cancelled = true;
-  };
-}, [screen, activeCategory]);
 
   // ── HOME ──────────────────────────────────────────────────────────────────
   if (screen === "home") return (
@@ -606,23 +598,31 @@ useEffect(() => {
   );
 
   // ── COMPLETE ───────────────────────────────────────────────────────────────
-  
-if (screen === "complete") return (
-    <CompletionResultScreen
-      accentColor="#FF6B00"
-      title="LOTO — Foundry Focus"
-      modulePath="/loto"
-      passed={true}
-      score={MODULES.length}
-      quizCorrect={MODULES.length}
-      quizTotal={MODULES.length}
-      runtimeMinutes={20}
-      completedAt={recordStatus?.record?.completedAt || new Date().toISOString()}
-      recordStatus={recordStatus}
-      statusLabel="Requirement met"
-      subtitle="Foundry-focused lockout/tagout awareness is complete. Review the saved result, then continue or issue the certificate."
-      onRestart={() => { setCompletedModules({}); setAllDone(false); setScreen("home"); }}
-    />
+  if (screen === "complete") return (
+    <div style={{
+      minHeight: "100vh", background: "#0a0a0a", display: "flex",
+      flexDirection: "column", alignItems: "center", justifyContent: "center",
+      padding: 32, textAlign: "center"
+    }}>
+      <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;700;800;900&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+      <div style={{ fontSize: 80, marginBottom: 24 }}>🏆</div>
+      <h1 style={{ color: "#FF6B00", fontFamily: "'Barlow Condensed', sans-serif", fontSize: 38, fontWeight: 900, margin: "0 0 12px" }}>TRAINING COMPLETE</h1>
+      <p style={{ color: "#aaa", fontFamily: "'IBM Plex Sans', sans-serif", fontSize: 16, marginBottom: 32, lineHeight: 1.6 }}>
+        You have completed all 5 LOTO training modules.<br />
+        This session satisfies the Dingfelder LOTO awareness requirement under 29 CFR 1910.147.<br />
+        Present your completion record to your supervisor.
+      </p>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, width: "100%", maxWidth: 400, marginBottom: 32 }}>
+        {MODULES.map(m => (
+          <div key={m.id} style={{ padding: "10px", background: `${m.color}15`, border: `1px solid ${m.color}40`, borderRadius: 6 }}>
+            <span style={{ color: m.color, fontFamily: "'Barlow Condensed', sans-serif", fontSize: 13 }}>{m.icon} {m.title}</span>
+          </div>
+        ))}
+      </div>
+      <div style={{ color: "#444", fontSize: 12, fontFamily: "'Barlow Condensed', sans-serif", letterSpacing: 2 }}>
+        DINGFELDER SAFETY TRAINING · OSHA 29 CFR 1910.147 · {new Date().toLocaleDateString()}
+      </div>
+    </div>
   );
 
   // ── MODULE ─────────────────────────────────────────────────────────────────

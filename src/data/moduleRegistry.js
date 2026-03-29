@@ -1,130 +1,156 @@
-import { getRequirementDefinition } from "./requirementRegistry.js"
+import { getRequirementById } from "./requirementRegistry.js";
 
-const DEFAULT_MODULE_VERSION = "1.0.0"
-
-export const MODULE_REGISTRY = {
+const MANAGED_MODULE_REGISTRY = {
   "/sat": {
     moduleId: "MOD-SAT-001",
+    path: "/sat",
     title: "S.A.T. Visitor Orientation",
-    moduleVersion: DEFAULT_MODULE_VERSION,
+    category: "common",
+    categoryKey: "campus",
+    categoryLabel: "Campus",
     requirementIds: ["REQ-CMN-SAT-001"],
-    requirementType: "common",
-    completionBucket: "common",
     reviewEnabled: true,
     recordRequired: true,
+    passScore: 80,
+    version: "1.0.0",
+    source: "custom-module",
   },
   "/evacuation": {
     moduleId: "MOD-EVAC-001",
+    path: "/evacuation",
     title: "Emergency Evacuation & Muster",
-    moduleVersion: DEFAULT_MODULE_VERSION,
+    category: "common",
+    categoryKey: "campus",
+    categoryLabel: "Campus",
     requirementIds: ["REQ-CMN-EVAC-001"],
-    requirementType: "common",
-    completionBucket: "common",
     reviewEnabled: true,
     recordRequired: true,
+    passScore: 80,
+    version: "1.0.0",
+    source: "custom-module",
   },
   "/h2s": {
     moduleId: "MOD-H2S-001",
+    path: "/h2s",
     title: "H₂S Awareness & SCBA",
-    moduleVersion: DEFAULT_MODULE_VERSION,
+    category: "common",
+    categoryKey: "process-gas",
+    categoryLabel: "Process / Gas",
     requirementIds: ["REQ-CMN-H2S-001"],
-    requirementType: "common",
-    completionBucket: "common",
     reviewEnabled: true,
     recordRequired: true,
+    passScore: 80,
+    version: "1.0.0",
+    source: "custom-module",
   },
   "/arcflash": {
     moduleId: "MOD-ARC-001",
+    path: "/arcflash",
     title: "Arc Flash & Electrical Safety",
-    moduleVersion: DEFAULT_MODULE_VERSION,
+    category: "common",
+    categoryKey: "electrical-safety",
+    categoryLabel: "Electrical Safety",
     requirementIds: ["REQ-CMN-ARC-001"],
-    requirementType: "common",
-    completionBucket: "common",
     reviewEnabled: true,
     recordRequired: true,
+    passScore: 80,
+    version: "1.0.0",
+    source: "custom-module",
   },
   "/loto-campus": {
-    moduleId: "MOD-LOTO-CMN-001",
+    moduleId: "MOD-LOTO-CAMPUS-001",
+    path: "/loto-campus",
     title: "LOTO — Full Campus",
-    moduleVersion: DEFAULT_MODULE_VERSION,
+    category: "common",
+    categoryKey: "loto",
+    categoryLabel: "LOTO",
     requirementIds: ["REQ-CMN-LOTO-001"],
-    requirementType: "common",
-    completionBucket: "common",
     reviewEnabled: true,
     recordRequired: true,
+    passScore: 80,
+    version: "1.0.0",
+    source: "custom-module",
   },
   "/loto": {
     moduleId: "MOD-LOTO-FDY-001",
+    path: "/loto",
     title: "LOTO — Foundry Focus",
-    moduleVersion: DEFAULT_MODULE_VERSION,
-    prerequisiteRequirementIds: ["REQ-CMN-LOTO-001"],
+    category: "specific",
+    categoryKey: "loto",
+    categoryLabel: "LOTO",
     requirementIds: ["REQ-SPC-LOTO-FDY-001"],
-    requirementType: "specific",
-    completionBucket: "specific",
+    prerequisiteRequirementIds: ["REQ-CMN-LOTO-001"],
     reviewEnabled: true,
     recordRequired: true,
+    passScore: 80,
+    version: "1.0.0",
+    source: "custom-module",
   },
-}
+};
 
-function slugToCode(pathOrSlug) {
-  return String(pathOrSlug || "")
-    .replace(/^\/+/, "")
-    .replace(/[^a-z0-9]+/gi, "-")
+export const MODULE_REGISTRY = MANAGED_MODULE_REGISTRY;
+export const MODULE_REGISTRY_LIST = Object.values(MODULE_REGISTRY);
+
+function slugifyModulePath(value) {
+  const input = typeof value === "string" && value.trim() ? value.trim() : "module";
+  return input
+    .replace(/^\//, "")
+    .replace(/[^a-zA-Z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "")
-    .toUpperCase()
+    .toUpperCase();
 }
 
-export function getModuleDefinition(moduleOrPath) {
-  const path =
-    typeof moduleOrPath === "string"
-      ? moduleOrPath
-      : typeof moduleOrPath?.path === "string"
-      ? moduleOrPath.path
-      : ""
+function makeAutoModuleId(path) {
+  return `MOD-AUTO-${slugifyModulePath(path)}`;
+}
 
-  const explicit = path ? MODULE_REGISTRY[path] : null
-  if (explicit) {
+function makeAutoRequirementId(path) {
+  return `REQ-AUTO-${slugifyModulePath(path)}`;
+}
+
+export function getManagedModuleByPath(path) {
+  if (typeof path !== "string" || !path.trim()) return null;
+  return MODULE_REGISTRY[path] || null;
+}
+
+export function resolveModuleRecordMeta({
+  path,
+  label,
+  categoryKey = "",
+  categoryLabel = "",
+  source = "portal",
+  version = "1.0.0",
+  passScore = 80,
+} = {}) {
+  const managed = getManagedModuleByPath(path);
+  if (managed) {
     return {
-      path,
-      ...explicit,
-      requirementDefs: explicit.requirementIds
-        .map((requirementId) => getRequirementDefinition(requirementId))
-        .filter(Boolean),
-    }
+      ...managed,
+      source: source || managed.source || "portal",
+    };
   }
 
-  const fallbackTitle =
-    typeof moduleOrPath?.label === "string" && moduleOrPath.label.trim()
-      ? moduleOrPath.label.trim()
-      : typeof moduleOrPath?.title === "string" && moduleOrPath.title.trim()
-      ? moduleOrPath.title.trim()
-      : "Training Module"
-
-  const fallbackCode = slugToCode(path || fallbackTitle || "GENERIC")
+  const requirementId = makeAutoRequirementId(path || label || "module");
+  const requirement = getRequirementById(requirementId);
 
   return {
-    path,
-    moduleId: `MOD-AUTO-${fallbackCode}`,
-    title: fallbackTitle,
-    moduleVersion: DEFAULT_MODULE_VERSION,
-    requirementIds: [`REQ-AUTO-${fallbackCode}`],
-    requirementType: null,
-    completionBucket: null,
+    moduleId: makeAutoModuleId(path || label || "module"),
+    path: typeof path === "string" ? path : "",
+    title: typeof label === "string" && label.trim() ? label.trim() : "Training Module",
+    category: requirement?.category || "specific",
+    categoryKey: categoryKey || "uncategorized",
+    categoryLabel: categoryLabel || "Uncategorized",
+    requirementIds: [requirementId],
     reviewEnabled: true,
     recordRequired: true,
-    requirementDefs: [],
-  }
+    passScore,
+    version,
+    source: source || "portal",
+  };
 }
 
-export function getModuleRecordMeta(moduleOrPath) {
-  const moduleDef = getModuleDefinition(moduleOrPath)
-  return {
-    moduleId: moduleDef.moduleId,
-    moduleVersion: moduleDef.moduleVersion,
-    requirementIds: moduleDef.requirementIds,
-    requirementType: moduleDef.requirementType,
-    completionBucket: moduleDef.completionBucket,
-    reviewEnabled: Boolean(moduleDef.reviewEnabled),
-    recordRequired: Boolean(moduleDef.recordRequired),
-  }
+export function getRequirementStatusForRecord(record, requirementId) {
+  if (!record || typeof record !== "object") return false;
+  if (!Array.isArray(record.requirementIds)) return false;
+  return Boolean(record.passed) && record.requirementIds.includes(requirementId);
 }

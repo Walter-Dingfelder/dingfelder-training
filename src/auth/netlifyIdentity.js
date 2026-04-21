@@ -46,6 +46,8 @@ function buildPortalLaunchUser(session) {
     moduleKey: session.moduleKey || '',
     modulePath: session.modulePath || '',
     moduleTitle: session.moduleTitle || '',
+    portalAppUrl: session.portalAppUrl || '',
+    portalReturnUrl: session.portalReturnUrl || '',
     user_metadata: {
       airon_capture: {
         acceptance: { accepted: true, version: 'portal-launch', acceptedAt: new Date().toISOString() },
@@ -92,6 +94,8 @@ export async function consumePortalLaunchNetlifyIdentity(token) {
       moduleKey: payload?.user?.moduleKey || '',
       modulePath: payload?.user?.modulePath || '',
       moduleTitle: payload?.user?.moduleTitle || '',
+      portalAppUrl: payload?.user?.portalAppUrl || '',
+      portalReturnUrl: payload?.user?.portalReturnUrl || '',
       expiresAt: Date.now() + (8 * 60 * 60 * 1000),
     }
     savePortalLaunchSession(session)

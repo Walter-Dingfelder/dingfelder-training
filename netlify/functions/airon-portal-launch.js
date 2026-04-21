@@ -1,3 +1,9 @@
+function env(name, required = true) {
+  const value = process.env[name] || ''
+  if (required && !value) throw new Error(`Missing environment variable: ${name}`)
+  return value
+}
+
 import { verifySignedToken, makePortalSessionToken } from './_portalSession.js'
 
 export default async (req) => {
@@ -19,6 +25,8 @@ export default async (req) => {
       })
     }
     const sessionToken = makePortalSessionToken(payload)
+    const portalAppUrl = env('PORTAL_APP_URL')
+    const portalReturnUrl = `${portalAppUrl.replace(/\/$/, '')}/portal/${String(payload.workspaceSlug || '').trim()}/my-training.html`
     return Response.json({
       ok: true,
       sessionToken,
@@ -32,7 +40,9 @@ export default async (req) => {
         assignmentId: payload.assignmentId || '',
         moduleKey: payload.moduleKey || '',
         modulePath: payload.modulePath || '',
-        moduleTitle: payload.moduleTitle || ''
+        moduleTitle: payload.moduleTitle || '',
+        portalAppUrl,
+        portalReturnUrl
       },
     })
   } catch (error) {

@@ -34,6 +34,35 @@ function forceScrollTop() {
 
 const PORTAL_CONTEXT_KEY = "airon.portalContext";
 
+
+const PORTAL_LAUNCH_SESSION_KEY = "airon.portalLaunchSession";
+
+function readPortalLaunchSession() {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = window.localStorage.getItem(PORTAL_LAUNCH_SESSION_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    return parsed && typeof parsed === "object" ? parsed : null;
+  } catch {
+    return null;
+  }
+}
+
+function resolvePortalReturnUrl() {
+  const session = readPortalLaunchSession();
+  if (typeof session?.portalReturnUrl === "string" && session.portalReturnUrl.trim()) {
+    return session.portalReturnUrl.trim();
+  }
+  const appUrl = typeof session?.portalAppUrl === "string" ? session.portalAppUrl.trim() : "";
+  const slug = typeof session?.workspaceSlug === "string" ? session.workspaceSlug.trim() : "";
+  if (appUrl && slug) {
+    return `${appUrl.replace(/\/$/, "")}/portal/${slug}/my-training.html`;
+  }
+  return "";
+}
+
+
 function readStoredPortalContext() {
   if (typeof window === "undefined") {
     return { portalSearch: "", seriesPaths: [] };
@@ -258,6 +287,11 @@ export default function TrainingModuleShell({ module }) {
   const returnToPortal = () => {
     writeStoredPortalContext(portalSearch, seriesPaths);
     forceScrollTop();
+    const portalReturnUrl = resolvePortalReturnUrl();
+    if (portalReturnUrl && typeof window !== "undefined") {
+      window.location.assign(portalReturnUrl);
+      return;
+    }
     navigate({ pathname: "/", search: portalSearch || "" });
   };
 

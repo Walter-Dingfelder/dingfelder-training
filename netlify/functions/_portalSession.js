@@ -54,6 +54,10 @@ export function makePortalSessionToken(launchPayload) {
     workspaceSlug: String(launchPayload.workspaceSlug || '').trim(),
     workspaceName: String(launchPayload.workspaceName || '').trim(),
     role: String(launchPayload.role || '').trim(),
+    assignmentId: String(launchPayload.assignmentId || '').trim(),
+    moduleKey: String(launchPayload.moduleKey || '').trim(),
+    modulePath: String(launchPayload.modulePath || '').trim(),
+    moduleTitle: String(launchPayload.moduleTitle || '').trim(),
     iat: now,
     exp: now + (8 * 60 * 60)
   })
@@ -92,6 +96,14 @@ export function getPortalSessionUser(req) {
           userType: 'portal'
         }
       }
-    }
+    },
+    workspaceSlug: String(payload.workspaceSlug || '').trim(),
+    workspaceName: String(payload.workspaceName || '').trim(),
+    roleName: String(payload.role || '').trim(),
+    assignmentId: String(payload.assignmentId || '').trim(),
+    moduleKey: String(payload.moduleKey || '').trim(),
+    modulePath: String(payload.modulePath || '').trim(),
+    moduleTitle: String(payload.moduleTitle || '').trim(),
+    portalSessionToken: token
   }
 }

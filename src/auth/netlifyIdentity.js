@@ -42,6 +42,10 @@ function buildPortalLaunchUser(session) {
     workspaceSlug: session.workspaceSlug || '',
     workspaceName: session.workspaceName || '',
     roleName: session.role || '',
+    assignmentId: session.assignmentId || '',
+    moduleKey: session.moduleKey || '',
+    modulePath: session.modulePath || '',
+    moduleTitle: session.moduleTitle || '',
     user_metadata: {
       airon_capture: {
         acceptance: { accepted: true, version: 'portal-launch', acceptedAt: new Date().toISOString() },
@@ -84,6 +88,10 @@ export async function consumePortalLaunchNetlifyIdentity(token) {
       workspaceSlug: payload?.user?.workspaceSlug || '',
       workspaceName: payload?.user?.workspaceName || '',
       role: payload?.user?.role || '',
+      assignmentId: payload?.user?.assignmentId || '',
+      moduleKey: payload?.user?.moduleKey || '',
+      modulePath: payload?.user?.modulePath || '',
+      moduleTitle: payload?.user?.moduleTitle || '',
       expiresAt: Date.now() + (8 * 60 * 60 * 1000),
     }
     savePortalLaunchSession(session)
@@ -348,6 +356,62 @@ async function callCertificateEmailFunction(user, payload) {
   return payloadResponse || {}
 }
 
+
+async function callPortalCompletionFunction(user, record) {
+  const currentUser = user || await getCurrentAuthUser()
+  const token = await getAccessTokenFromIdentityUser(currentUser)
+
+  const response = await fetch('/.netlify/functions/airon-portal-completion', {
+    method: 'POST',
+    credentials: 'include',
+    headers: {
+      'Content-Type': 'application/json',
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
+    body: JSON.stringify({ record }),
+  })
+
+  let payload = null
+  try {
+    payload = await response.json()
+  } catch (error) {
+    payload = null
+  }
+
+  if (!response.ok) {
+    const serverError =
+      (payload && typeof payload.error === 'string' && payload.error.trim()) ||
+      'Unable to sync completion back to the portal right now.'
+    throw new Error(serverError)
+  }
+
+  return payload || {}
+}
+
+async function syncPortalCompletionNetlifyIdentity(user, record) {
+  const currentUser = user || await getCurrentAuthUser()
+  if (!currentUser || !currentUser.portalSession) {
+    return { synced: false, skipped: true, message: '', error: '' }
+  }
+
+  try {
+    const payload = await callPortalCompletionFunction(currentUser, normalizeTrainingRecordShape(record))
+    return {
+      synced: Boolean(payload?.result?.synced || payload?.synced),
+      skipped: false,
+      message: payload?.result?.synced ? 'Portal assignment marked complete.' : '',
+      error: '',
+    }
+  } catch (error) {
+    return {
+      synced: false,
+      skipped: false,
+      message: '',
+      error: normalizeIdentityError(error),
+    }
+  }
+}
+
 export async function persistTrainingRecordNetlifyIdentity(user, record) {
   const currentUser = user || await getCurrentAuthUser()
   const normalizedRecord = normalizeTrainingRecordShape(record)
@@ -365,12 +429,17 @@ export async function persistTrainingRecordNetlifyIdentity(user, record) {
 
   try {
     const payload = await callTrainingRecordsFunction('POST', currentUser, normalizedRecord)
+    const savedRecord = normalizeTrainingRecordShape(payload?.record) || normalizedRecord
+    const portalSync = await syncPortalCompletionNetlifyIdentity(currentUser, savedRecord)
     return {
       user: currentUser,
-      record: normalizeTrainingRecordShape(payload?.record) || normalizedRecord,
+      record: savedRecord,
       saved: true,
       skipped: false,
-      message: 'Retained training record saved to your A.I.R.O.N. account.',
+      portalSync,
+      message: portalSync && portalSync.synced
+        ? 'Retained training record saved to your A.I.R.O.N. account. Portal assignment marked complete.'
+        : 'Retained training record saved to your A.I.R.O.N. account.',
       error: '',
     }
   } catch (error) {

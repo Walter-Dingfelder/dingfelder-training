@@ -29,6 +29,10 @@ export default async (req) => {
         workspaceSlug: payload.workspaceSlug || '',
         workspaceName: payload.workspaceName || payload.workspaceSlug || '',
         role: payload.role || '',
+        assignmentId: payload.assignmentId || '',
+        moduleKey: payload.moduleKey || '',
+        modulePath: payload.modulePath || '',
+        moduleTitle: payload.moduleTitle || ''
       },
     })
   } catch (error) {

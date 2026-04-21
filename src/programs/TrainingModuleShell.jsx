@@ -263,6 +263,7 @@ export default function TrainingModuleShell({ module }) {
   const [answers, setAnswers] = useState({});
   const [submitted, setSubmitted] = useState(false);
   const recordSavedRef = useRef(false);
+  const [recordSyncState, setRecordSyncState] = useState({ busy: false, synced: false, error: "", message: "" });
 
   const activeCategory = typeof location.state?.activeCategory === "string" ? location.state.activeCategory : "campus";
   const portalContext = useMemo(() => getPortalContext(location.state), [location.state]);
@@ -330,6 +331,7 @@ export default function TrainingModuleShell({ module }) {
   useEffect(() => {
     if (!submitted || !passed) {
       recordSavedRef.current = false;
+      setRecordSyncState({ busy: false, synced: false, error: "", message: "" });
       return;
     }
 
@@ -338,6 +340,7 @@ export default function TrainingModuleShell({ module }) {
 
     let cancelled = false;
     const completedAt = new Date().toISOString();
+    setRecordSyncState({ busy: true, synced: false, error: "", message: "Saving completion and syncing the portal assignment..." });
 
     persistTrainingRecordNetlifyIdentity(null, {
       attemptId: `${module.path || module.label || "training-module"}:${Date.now()}:${Math.random().toString(36).slice(2, 8)}`,
@@ -369,12 +372,33 @@ export default function TrainingModuleShell({ module }) {
       source: "shared-shell",
     })
       .then((result) => {
-        if (cancelled || !result?.error) return;
-        console.error("A.I.R.O.N. retained record write failed.", result.error);
+        if (cancelled) return;
+        if (result?.error) {
+          console.error("A.I.R.O.N. retained record write failed.", result.error);
+          setRecordSyncState({
+            busy: false,
+            synced: false,
+            error: result.error,
+            message: "",
+          });
+          return;
+        }
+        setRecordSyncState({
+          busy: false,
+          synced: Boolean(result?.portalSync?.synced),
+          error: result?.portalSync?.error || "",
+          message: result?.message || "Completion saved.",
+        });
       })
       .catch((error) => {
         if (cancelled) return;
         console.error("A.I.R.O.N. retained record write failed.", error);
+        setRecordSyncState({
+          busy: false,
+          synced: false,
+          error: error?.message || "Unable to save completion right now.",
+          message: "",
+        });
       });
 
     return () => {
@@ -462,9 +486,38 @@ export default function TrainingModuleShell({ module }) {
               </div>
             </div>
 
+            {recordSyncState.busy ? (
+              <div style={{
+                marginTop: 18,
+                background: "#0d2f1f",
+                border: "1px solid #1f7a4b",
+                borderRadius: 8,
+                padding: "12px 14px",
+                color: "#d9ffe8",
+                fontSize: 14,
+                lineHeight: 1.5,
+              }}>
+                {recordSyncState.message || "Saving completion and syncing the portal assignment..."}
+              </div>
+            ) : null}
+            {!recordSyncState.busy && recordSyncState.error ? (
+              <div style={{
+                marginTop: 18,
+                background: "#2f1616",
+                border: "1px solid #8d2b2b",
+                borderRadius: 8,
+                padding: "12px 14px",
+                color: "#ffd8d8",
+                fontSize: 14,
+                lineHeight: 1.5,
+              }}>
+                {recordSyncState.error}
+              </div>
+            ) : null}
             <div style={{ display: "flex", gap: 12, marginTop: 22, flexWrap: "wrap" }}>
               <button
                 onClick={returnToPortal}
+                disabled={recordSyncState.busy}
                 style={{
                   background: module.color,
                   color: "#0b0b0b",
@@ -474,10 +527,11 @@ export default function TrainingModuleShell({ module }) {
                   fontWeight: 800,
                   fontFamily: CONDENSED,
                   letterSpacing: 1,
-                  cursor: "pointer",
+                  cursor: recordSyncState.busy ? "not-allowed" : "pointer",
+                  opacity: recordSyncState.busy ? 0.65 : 1,
                 }}
               >
-                Return to Portal
+                {recordSyncState.busy ? "Syncing portal..." : "Return to Portal"}
               </button>
               <button
                 onClick={goToNextModule}

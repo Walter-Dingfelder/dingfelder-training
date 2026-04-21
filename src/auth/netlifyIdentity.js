@@ -1,5 +1,98 @@
 import { getUser, handleAuthCallback, login, logout, signup } from '@netlify/identity'
 
+const PORTAL_SESSION_KEY = 'airon.portalLaunchSession'
+
+function loadPortalLaunchSession() {
+  if (typeof window === 'undefined') return null
+  try {
+    const raw = window.localStorage.getItem(PORTAL_SESSION_KEY)
+    if (!raw) return null
+    const parsed = JSON.parse(raw)
+    if (!parsed || typeof parsed !== 'object') return null
+    const expMs = Number(parsed?.expiresAt || 0)
+    if (expMs && Date.now() > expMs) {
+      window.localStorage.removeItem(PORTAL_SESSION_KEY)
+      return null
+    }
+    return parsed
+  } catch {
+    return null
+  }
+}
+
+function savePortalLaunchSession(session) {
+  if (typeof window === 'undefined') return null
+  try { window.localStorage.setItem(PORTAL_SESSION_KEY, JSON.stringify(session || {})) } catch {}
+  return session || null
+}
+
+function clearPortalLaunchSession() {
+  if (typeof window === 'undefined') return
+  try { window.localStorage.removeItem(PORTAL_SESSION_KEY) } catch {}
+}
+
+function buildPortalLaunchUser(session) {
+  if (!session || !session.email || !session.sessionToken) return null
+  return {
+    email: session.email,
+    id: `portal:${session.email}`,
+    sub: `portal:${session.email}`,
+    portalSessionToken: session.sessionToken,
+    portalSession: true,
+    workspaceSlug: session.workspaceSlug || '',
+    workspaceName: session.workspaceName || '',
+    roleName: session.role || '',
+    user_metadata: {
+      airon_capture: {
+        acceptance: { accepted: true, version: 'portal-launch', acceptedAt: new Date().toISOString() },
+        profile: {
+          firstName: typeof session.displayName === 'string' ? session.displayName.split(/\s+/)[0] || '' : '',
+          lastName: typeof session.displayName === 'string' ? session.displayName.split(/\s+/).slice(1).join(' ') : '',
+          companyName: session.workspaceName || session.workspaceSlug || '',
+          departmentName: 'Portal Launch',
+          roleName: session.role || '',
+          employeeId: '',
+          userType: 'portal',
+        },
+      },
+    },
+  }
+}
+
+async function getCurrentAuthUser() {
+  const realUser = await getUser().catch(() => null)
+  if (realUser) return realUser
+  return buildPortalLaunchUser(loadPortalLaunchSession())
+}
+
+export async function consumePortalLaunchNetlifyIdentity(token) {
+  const launchToken = typeof token === 'string' ? token.trim() : ''
+  if (!launchToken) {
+    return { user: null, targetPath: '/', message: '', error: 'Training handoff token is missing.' }
+  }
+  try {
+    const response = await fetch(`/.netlify/functions/airon-portal-launch?token=${encodeURIComponent(launchToken)}`, { method: 'GET', credentials: 'include' })
+    let payload = null
+    try { payload = await response.json() } catch { payload = null }
+    if (!response.ok) {
+      return { user: null, targetPath: '/', message: '', error: (payload && payload.error) || 'Unable to complete the training handoff.' }
+    }
+    const session = {
+      sessionToken: payload?.sessionToken || '',
+      email: payload?.user?.email || '',
+      displayName: payload?.user?.displayName || payload?.user?.email || '',
+      workspaceSlug: payload?.user?.workspaceSlug || '',
+      workspaceName: payload?.user?.workspaceName || '',
+      role: payload?.user?.role || '',
+      expiresAt: Date.now() + (8 * 60 * 60 * 1000),
+    }
+    savePortalLaunchSession(session)
+    return { user: buildPortalLaunchUser(session), targetPath: payload?.targetPath || '/', message: `Training handoff complete for ${session.email || 'portal launch user'}.`, error: '' }
+  } catch (error) {
+    return { user: null, targetPath: '/', message: '', error: normalizeIdentityError(error) }
+  }
+}
+
 function normalizeIdentityError(error) {
   if (!error) return 'Unable to complete the identity action.'
   if (typeof error === 'string') return error
@@ -37,6 +130,7 @@ export function getUserCaptureFromIdentityUser(user) {
 
 async function getAccessTokenFromIdentityUser(user) {
   if (!user) return ''
+  if (typeof user?.portalSessionToken === 'string' && user.portalSessionToken) return user.portalSessionToken
   if (typeof user?.token?.access_token === 'string' && user.token.access_token) return user.token.access_token
   if (typeof user?.jwt === 'function') {
     try {
@@ -81,7 +175,7 @@ async function callUserCaptureFunction(method, user, capture) {
 }
 
 export async function loadCurrentUserCaptureNetlifyIdentity(user) {
-  const currentUser = user || await getUser().catch(() => null)
+  const currentUser = user || await getCurrentAuthUser()
 
   if (!currentUser) {
     return {
@@ -111,7 +205,7 @@ export async function loadCurrentUserCaptureNetlifyIdentity(user) {
 }
 
 export async function persistUserCaptureNetlifyIdentity(user, capture) {
-  const currentUser = user || await getUser().catch(() => null)
+  const currentUser = user || await getCurrentAuthUser()
 
   if (!currentUser) {
     return {
@@ -255,7 +349,7 @@ async function callCertificateEmailFunction(user, payload) {
 }
 
 export async function persistTrainingRecordNetlifyIdentity(user, record) {
-  const currentUser = user || await getUser().catch(() => null)
+  const currentUser = user || await getCurrentAuthUser()
   const normalizedRecord = normalizeTrainingRecordShape(record)
 
   if (!currentUser) {
@@ -292,7 +386,7 @@ export async function persistTrainingRecordNetlifyIdentity(user, record) {
 }
 
 export async function loadTrainingRecordsNetlifyIdentity(user) {
-  const currentUser = user || await getUser().catch(() => null)
+  const currentUser = user || await getCurrentAuthUser()
 
   if (!currentUser) {
     return {
@@ -334,7 +428,7 @@ export async function bootstrapNetlifyIdentity() {
     }
   }
 
-  const user = await getUser().catch(() => null)
+  const user = await getCurrentAuthUser()
 
   if (typeof window !== 'undefined' && window.location.hash) {
     window.history.replaceState({}, document.title, `${window.location.pathname}${window.location.search}`)
@@ -361,6 +455,7 @@ export async function bootstrapNetlifyIdentity() {
 
 export async function signInNetlifyIdentity(email, password) {
   try {
+    clearPortalLaunchSession()
     const user = await login(email, password)
     return {
       user,
@@ -381,6 +476,7 @@ export async function signInNetlifyIdentity(email, password) {
 export async function createAccountNetlifyIdentity(email, password) {
   try {
     await signup(email, password)
+    clearPortalLaunchSession()
     const user = await login(email, password)
     return {
       user,
@@ -398,15 +494,24 @@ export async function createAccountNetlifyIdentity(email, password) {
 }
 
 export async function signOutNetlifyIdentity() {
+  const currentUser = await getCurrentAuthUser()
+  if (currentUser?.portalSessionToken && !currentUser?.token?.access_token && !currentUser?.jwt) {
+    clearPortalLaunchSession()
+    return {
+      user: null,
+      message: 'Signed out of the training portal.',
+      error: '',
+    }
+  }
   try {
     await logout()
+    clearPortalLaunchSession()
     return {
       user: null,
       message: 'Signed out of the training portal.',
       error: '',
     }
   } catch (error) {
-    const currentUser = await getUser().catch(() => null)
     return {
       user: currentUser,
       message: '',
@@ -417,7 +522,7 @@ export async function signOutNetlifyIdentity() {
 
 
 export async function emailTrainingCertificateNetlifyIdentity(user, payload) {
-  const currentUser = user || await getUser().catch(() => null)
+  const currentUser = user || await getCurrentAuthUser()
 
   if (!currentUser) {
     return {

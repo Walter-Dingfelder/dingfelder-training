@@ -2,7 +2,7 @@
 import { Routes, Route, useNavigate, useLocation } from 'react-router-dom'
 import { useState, useEffect, useMemo } from 'react'
 import aironSplash from './assets/airon-splash.png'
-import { bootstrapNetlifyIdentity, signInNetlifyIdentity, signOutNetlifyIdentity, createAccountNetlifyIdentity, getUserCaptureFromIdentityUser, loadCurrentUserCaptureNetlifyIdentity, persistUserCaptureNetlifyIdentity, loadTrainingRecordsNetlifyIdentity } from './auth/netlifyIdentity.js'
+import { bootstrapNetlifyIdentity, signInNetlifyIdentity, signOutNetlifyIdentity, createAccountNetlifyIdentity, getUserCaptureFromIdentityUser, loadCurrentUserCaptureNetlifyIdentity, persistUserCaptureNetlifyIdentity, loadTrainingRecordsNetlifyIdentity, consumePortalLaunchNetlifyIdentity } from './auth/netlifyIdentity.js'
 import { buildProgramResolutionMap } from './utils/trainingRecordResolver.js'
 
 // ─── Training Programs ────────────────────────────────────────────────────────
@@ -1335,6 +1335,7 @@ function AIRONSplash({ onDone }) {
       clearTimeout(gate)
     }
   }, [])
+
 
   return (
     <div style={{
@@ -4332,6 +4333,7 @@ export default function App() {
     error: '',
   })
   const [showSplash, setShowSplash] = useState(() => location.pathname === '/' && !hasIdentityCallbackInUrl())
+  const [portalLaunchState, setPortalLaunchState] = useState({ busy: false, error: '', message: '' })
 
   useEffect(() => {
     let cancelled = false
@@ -4354,6 +4356,27 @@ export default function App() {
       cancelled = true
     }
   }, [])
+
+  useEffect(() => {
+    if (location.pathname !== '/launch') return
+    let cancelled = false
+    async function completePortalLaunch() {
+      const token = new URLSearchParams(location.search || '').get('token') || ''
+      setPortalLaunchState({ busy: true, error: '', message: 'Verifying portal handoff and opening your assigned training...' })
+      const result = await consumePortalLaunchNetlifyIdentity(token)
+      if (cancelled) return
+      if (result.error) {
+        setPortalLaunchState({ busy: false, error: result.error, message: '' })
+        setAuthState(prev => ({ ...prev, ready: true }))
+        return
+      }
+      setAuthState({ ready: true, user: result.user, message: result.message || '', error: '' })
+      setPortalLaunchState({ busy: false, error: '', message: result.message || '' })
+      navigate(result.targetPath || '/', { replace: true, state: { portalLaunch: true } })
+    }
+    completePortalLaunch()
+    return () => { cancelled = true }
+  }, [location.pathname, location.search, navigate])
 
   useEffect(() => {
     if (location.pathname !== '/') {
@@ -4428,6 +4451,22 @@ export default function App() {
       returnToPortal()
     }
     return result
+  }
+
+  if (location.pathname === '/launch') {
+    return (
+      <div style={{ minHeight: '100vh', background: '#050505', color: '#f4f4f4', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "'IBM Plex Sans', sans-serif", padding: 24 }}>
+        <GlobalFonts />
+        <div style={{ maxWidth: 720, width: '100%', border: '1px solid rgba(255,255,255,0.12)', borderTop: '6px solid #FFD100', borderRadius: 18, background: '#0d0d0d', padding: 28 }}>
+          <div style={{ color: '#FFD100', fontSize: 12, letterSpacing: '0.22em', textTransform: 'uppercase', marginBottom: 10 }}>A.I.R.O.N. training handoff</div>
+          <h1 style={{ margin: '0 0 12px', fontSize: 38, lineHeight: 0.95, fontFamily: "'Barlow Condensed', sans-serif" }}>Opening assigned learning</h1>
+          <p style={{ color: '#b5b5b5', lineHeight: 1.7, margin: 0 }}>
+            {portalLaunchState.error || portalLaunchState.message || 'Preparing your signed training launch from the portal...'}
+          </p>
+          {portalLaunchState.error ? <p style={{ color: '#FFB48F', marginTop: 14 }}>The handoff could not be completed. Try launching again from the portal assignment card.</p> : null}
+        </div>
+      </div>
+    )
   }
 
   if (showSplash) {

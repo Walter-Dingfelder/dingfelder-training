@@ -1,5 +1,6 @@
 
 import { getUser } from '@netlify/identity'
+import { getPortalSessionUser } from './_portalSession.js'
 
 function escapeHtml(value) {
   return String(value ?? '')
@@ -168,7 +169,7 @@ function normalizePayload(body) {
 }
 
 export default async (req) => {
-  const currentUser = await getUser()
+  const currentUser = await getUser() || getPortalSessionUser(req)
 
   if (!currentUser) {
     return new Response(JSON.stringify({ error: 'Unauthorized' }), {

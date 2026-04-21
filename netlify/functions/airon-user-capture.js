@@ -1,5 +1,6 @@
 import { getStore } from '@netlify/blobs'
 import { getUser } from '@netlify/identity'
+import { getPortalSessionUser } from './_portalSession.js'
 
 function normalizeUserCaptureShape(rawCapture) {
   if (!rawCapture || typeof rawCapture !== 'object') return null
@@ -38,7 +39,7 @@ function makeStore() {
 }
 
 export default async (req) => {
-  const currentUser = await getUser()
+  const currentUser = await getUser() || getPortalSessionUser(req)
 
   if (!currentUser) {
     return new Response(JSON.stringify({ error: 'Unauthorized' }), {

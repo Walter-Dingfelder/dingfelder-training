@@ -73,6 +73,7 @@ export default function CompletionResultScreen({
   })
 
   const canIssueCertificate = Boolean(recordStatus?.saved || recordStatus?.record?.completedAt || recordStatus?.message)
+  const canEmailCertificate = Boolean(canIssueCertificate && recordStatus?.user?.portalSession)
   const effectiveCompletedAt = recordStatus?.record?.completedAt || completedAt || new Date().toISOString()
   const completedByLabel = getCompletedByLabel(recordStatus, completedBy)
   const accountEmail =
@@ -375,39 +376,41 @@ export default function CompletionResultScreen({
                     Save Certificate
                   </button>
 
-                  <button
-                    onClick={async () => {
-                      if (!canIssueCertificate || emailState.busy) return
-                      setEmailState({ busy: true, message: "", error: "" })
-                      const result = await emailTrainingCertificateNetlifyIdentity(recordStatus?.user || null, {
-                        record: currentRecord,
-                        title,
-                        subtitle,
-                        completedAt: effectiveCompletedAt,
-                        completedBy: completedByLabel,
-                        accentColor,
-                      })
-                      setEmailState({
-                        busy: false,
-                        message: result?.message || "",
-                        error: result?.error || "",
-                      })
-                    }}
-                    disabled={!canIssueCertificate || emailState.busy}
-                    style={{
-                      background: "transparent",
-                      color: canIssueCertificate ? "#fff" : "#666",
-                      border: `1px solid ${canIssueCertificate ? "#333" : "#222"}`,
-                      borderRadius: 10,
-                      padding: "12px 16px",
-                      cursor: !canIssueCertificate || emailState.busy ? "not-allowed" : "pointer",
-                      fontFamily: "'Barlow Condensed', sans-serif",
-                      letterSpacing: 1,
-                      opacity: emailState.busy ? 0.65 : 1,
-                    }}
-                  >
-                    {emailState.busy ? "Sending Certificate…" : "Email Certificate"}
-                  </button>
+                  {canEmailCertificate ? (
+                    <button
+                      onClick={async () => {
+                        if (!canEmailCertificate || emailState.busy) return
+                        setEmailState({ busy: true, message: "", error: "" })
+                        const result = await emailTrainingCertificateNetlifyIdentity(recordStatus?.user || null, {
+                          record: currentRecord,
+                          title,
+                          subtitle,
+                          completedAt: effectiveCompletedAt,
+                          completedBy: completedByLabel,
+                          accentColor,
+                        })
+                        setEmailState({
+                          busy: false,
+                          message: result?.message || "",
+                          error: result?.error || "",
+                        })
+                      }}
+                      disabled={!canEmailCertificate || emailState.busy}
+                      style={{
+                        background: "transparent",
+                        color: canEmailCertificate ? "#fff" : "#666",
+                        border: `1px solid ${canEmailCertificate ? "#333" : "#222"}`,
+                        borderRadius: 10,
+                        padding: "12px 16px",
+                        cursor: !canEmailCertificate || emailState.busy ? "not-allowed" : "pointer",
+                        fontFamily: "'Barlow Condensed', sans-serif",
+                        letterSpacing: 1,
+                        opacity: emailState.busy ? 0.65 : 1,
+                      }}
+                    >
+                      {emailState.busy ? "Emailing..." : "Email Certificate"}
+                    </button>
+                  ) : null}
 
                   <button
                     onClick={() => historyAnchorRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })}

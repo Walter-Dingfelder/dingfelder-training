@@ -612,6 +612,7 @@ export async function emailTrainingCertificateNetlifyIdentity(user, payload) {
     return {
       user: currentUser,
       sent: true,
+      allowed: true,
       destination:
         (typeof responsePayload?.destination === 'string' && responsePayload.destination.trim()) ||
         (typeof currentUser?.email === 'string' ? currentUser.email : ''),
@@ -628,6 +629,7 @@ export async function emailTrainingCertificateNetlifyIdentity(user, payload) {
     return {
       user: currentUser,
       sent: false,
+      allowed: Boolean(currentUser?.portalSession),
       destination: typeof currentUser?.email === 'string' ? currentUser.email : '',
       message: '',
       error: normalizeIdentityError(error),

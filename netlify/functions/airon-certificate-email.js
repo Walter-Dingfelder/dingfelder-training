@@ -170,10 +170,18 @@ function normalizePayload(body) {
 
 export default async (req) => {
   const currentUser = await getUser() || getPortalSessionUser(req)
+  const isPortalSession = Boolean(currentUser && currentUser.portalSession)
 
   if (!currentUser) {
     return new Response(JSON.stringify({ error: 'Unauthorized' }), {
       status: 401,
+      headers: { 'Content-Type': 'application/json' },
+    })
+  }
+
+  if (!isPortalSession) {
+    return new Response(JSON.stringify({ error: 'Certificates can be emailed only for portal-assigned training. Public/free completions can still be saved locally.' }), {
+      status: 403,
       headers: { 'Content-Type': 'application/json' },
     })
   }

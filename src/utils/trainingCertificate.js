@@ -38,6 +38,11 @@ export function buildTrainingCertificateHtml(record, options = {}) {
       : typeof record?.score === 'number'
       ? String(record.score)
       : 'Complete'
+  const recordClass = record?.certificateClass || 'Portal Completion Record'
+  const isPublicCopy = String(recordClass).toLowerCase().includes('public')
+  const footerText = isPublicCopy
+    ? 'This certificate is a public completion copy saved from the A.I.R.O.N. training experience. Retained account history and emailed certificate delivery remain available only through portal-backed training launches.'
+    : 'This certificate reflects a retained training record saved through the Dingfelder Industrial Campus training portal. Additional hands-on qualification, authorization, or employer verification may still be required based on the training topic and role.'
 
   return `<!DOCTYPE html>
 <html lang="en">
@@ -93,13 +98,12 @@ export function buildTrainingCertificateHtml(record, options = {}) {
         </div>
         <div class="card">
           <div class="label">Record Class</div>
-          <div class="value">${escapeHtml(record?.certificateClass || 'Portal Completion Record')}</div>
+          <div class="value">${escapeHtml(recordClass)}</div>
         </div>
       </div>
 
       <div class="foot">
-        This certificate reflects a retained training record saved through the Dingfelder Industrial Campus training portal.
-        Additional hands-on qualification, authorization, or employer verification may still be required based on the training topic and role.
+        ${escapeHtml(footerText)}
       </div>
     </div>
   </div>

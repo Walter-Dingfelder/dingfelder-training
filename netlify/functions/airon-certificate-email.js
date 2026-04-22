@@ -170,7 +170,7 @@ function normalizePayload(body) {
 
 export default async (req) => {
   const currentUser = await getUser() || getPortalSessionUser(req)
-  const isPortalSession = Boolean(currentUser && currentUser.portalSession)
+  const isPortalSession = Boolean(currentUser && (currentUser.portalSession || currentUser.portal_session))
 
   if (!currentUser) {
     return new Response(JSON.stringify({ error: 'Unauthorized' }), {

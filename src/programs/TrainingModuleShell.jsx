@@ -1,10 +1,11 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { persistTrainingRecordNetlifyIdentity } from "../auth/netlifyIdentity.js";
+import { emailTrainingCertificateNetlifyIdentity, persistTrainingRecordNetlifyIdentity } from "../auth/netlifyIdentity.js";
 import { resolveModuleRecordMeta } from "../data/moduleRegistry.js";
 import ReviewStatusBanner from "../components/ReviewStatusBanner.jsx";
 import { buildRenewalPolicyFields, resolveReviewLaunchState } from "../utils/reviewMode.js";
+import { openTrainingCertificatePrintView } from "../utils/trainingCertificate.js";
 
 const PAGE_BG = "#080808";
 const PANEL = "#0f0f0f";
@@ -263,7 +264,8 @@ export default function TrainingModuleShell({ module }) {
   const [answers, setAnswers] = useState({});
   const [submitted, setSubmitted] = useState(false);
   const recordSavedRef = useRef(false);
-  const [recordSyncState, setRecordSyncState] = useState({ busy: false, synced: false, error: "", message: "" });
+  const [recordSyncState, setRecordSyncState] = useState({ busy: false, synced: false, error: "", message: "", user: null, record: null });
+  const [emailState, setEmailState] = useState({ busy: false, message: "", error: "" });
 
   const activeCategory = typeof location.state?.activeCategory === "string" ? location.state.activeCategory : "campus";
   const portalContext = useMemo(() => getPortalContext(location.state), [location.state]);
@@ -327,11 +329,28 @@ export default function TrainingModuleShell({ module }) {
   );
   const passThreshold = Math.ceil(quiz.length * 0.7);
   const passed = score >= passThreshold;
+  const currentRecord = useMemo(() => ({
+    moduleTitle: typeof module.label === "string" && module.label.trim() ? module.label.trim() : "A.I.R.O.N. training module",
+    modulePath: typeof module.path === "string" ? module.path : "",
+    completedAt: recordSyncState.record?.completedAt || new Date().toISOString(),
+    completedBy: recordSyncState.user?.email || "Training participant",
+    score,
+    quizCorrect: score,
+    quizTotal: quiz.length,
+    runtimeMinutes: Number.isFinite(Number(module.minutes)) ? Number(module.minutes) : null,
+    certificateClass: recordSyncState.user?.portalSession
+      ? "Portal-backed completion"
+      : (recordSyncState.user ? "Retained A.I.R.O.N. account record" : "Public / local completion copy"),
+    passed,
+  }), [module.label, module.minutes, module.path, passed, quiz.length, recordSyncState.record?.completedAt, recordSyncState.user, score]);
+  const canIssueCertificate = Boolean(passed);
+  const canEmailCertificate = Boolean(passed && recordSyncState.user?.portalSession);
 
   useEffect(() => {
     if (!submitted || !passed) {
       recordSavedRef.current = false;
-      setRecordSyncState({ busy: false, synced: false, error: "", message: "" });
+      setRecordSyncState({ busy: false, synced: false, error: "", message: "", user: null, record: null });
+      setEmailState({ busy: false, message: "", error: "" });
       return;
     }
 
@@ -340,7 +359,7 @@ export default function TrainingModuleShell({ module }) {
 
     let cancelled = false;
     const completedAt = new Date().toISOString();
-    setRecordSyncState({ busy: true, synced: false, error: "", message: "Saving completion and syncing the portal assignment..." });
+    setRecordSyncState({ busy: true, synced: false, error: "", message: "Saving completion and syncing the portal assignment...", user: null, record: null });
 
     persistTrainingRecordNetlifyIdentity(null, {
       attemptId: `${module.path || module.label || "training-module"}:${Date.now()}:${Math.random().toString(36).slice(2, 8)}`,
@@ -380,6 +399,8 @@ export default function TrainingModuleShell({ module }) {
             synced: false,
             error: result.error,
             message: "",
+            user: result?.user || null,
+            record: result?.record || null,
           });
           return;
         }
@@ -388,6 +409,8 @@ export default function TrainingModuleShell({ module }) {
           synced: Boolean(result?.portalSync?.synced),
           error: result?.portalSync?.error || "",
           message: result?.message || "Completion saved.",
+          user: result?.user || null,
+          record: result?.record || null,
         });
       })
       .catch((error) => {
@@ -486,6 +509,34 @@ export default function TrainingModuleShell({ module }) {
               </div>
             </div>
 
+            {emailState.message ? (
+              <div style={{
+                marginTop: 18,
+                background: "#0d2f1f",
+                border: "1px solid #1f7a4b",
+                borderRadius: 8,
+                padding: "12px 14px",
+                color: "#d9ffe8",
+                fontSize: 14,
+                lineHeight: 1.5,
+              }}>
+                {emailState.message}
+              </div>
+            ) : null}
+            {emailState.error ? (
+              <div style={{
+                marginTop: 18,
+                background: "#2f1616",
+                border: "1px solid #8d2b2b",
+                borderRadius: 8,
+                padding: "12px 14px",
+                color: "#ffd8d8",
+                fontSize: 14,
+                lineHeight: 1.5,
+              }}>
+                {emailState.error}
+              </div>
+            ) : null}
             {recordSyncState.busy ? (
               <div style={{
                 marginTop: 18,
@@ -549,6 +600,68 @@ export default function TrainingModuleShell({ module }) {
               >
                 Next Card
               </button>
+              {passed ? (
+                <>
+                  <button
+                    onClick={() => {
+                      openTrainingCertificatePrintView(currentRecord, {
+                        accentColor: module.color,
+                        title: currentRecord.moduleTitle,
+                        completedAt: currentRecord.completedAt,
+                        completedBy: currentRecord.completedBy,
+                        filenameBase: currentRecord.moduleTitle,
+                      });
+                    }}
+                    disabled={!canIssueCertificate}
+                    style={{
+                      background: "transparent",
+                      color: canIssueCertificate ? "#fff" : "#666",
+                      border: `1px solid ${canIssueCertificate ? "#333" : "#222"}`,
+                      borderRadius: 8,
+                      padding: "12px 16px",
+                      cursor: canIssueCertificate ? "pointer" : "not-allowed",
+                      fontFamily: CONDENSED,
+                      letterSpacing: 1,
+                    }}
+                  >
+                    Print / Save Certificate
+                  </button>
+                  {canEmailCertificate ? (
+                    <button
+                      onClick={async () => {
+                        if (!canEmailCertificate || emailState.busy) return;
+                        setEmailState({ busy: true, message: "", error: "" });
+                        const result = await emailTrainingCertificateNetlifyIdentity(recordSyncState.user || null, {
+                          record: currentRecord,
+                          title: currentRecord.moduleTitle,
+                          completedAt: currentRecord.completedAt,
+                          completedBy: currentRecord.completedBy,
+                          accentColor: module.color,
+                        });
+                        setEmailState({
+                          busy: false,
+                          message: result?.message || "",
+                          error: result?.error || "",
+                        });
+                      }}
+                      disabled={!canEmailCertificate || emailState.busy}
+                      style={{
+                        background: "transparent",
+                        color: canEmailCertificate ? "#fff" : "#666",
+                        border: `1px solid ${canEmailCertificate ? "#333" : "#222"}`,
+                        borderRadius: 8,
+                        padding: "12px 16px",
+                        cursor: !canEmailCertificate || emailState.busy ? "not-allowed" : "pointer",
+                        fontFamily: CONDENSED,
+                        letterSpacing: 1,
+                        opacity: emailState.busy ? 0.65 : 1,
+                      }}
+                    >
+                      {emailState.busy ? "Emailing..." : "Email Certificate"}
+                    </button>
+                  ) : null}
+                </>
+              ) : null}
               {!passed && (
                 <button
                   onClick={() => {

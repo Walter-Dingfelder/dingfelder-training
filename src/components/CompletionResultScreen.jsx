@@ -72,11 +72,15 @@ export default function CompletionResultScreen({
     error: "",
   })
 
-  const canIssueCertificate = Boolean(recordStatus?.saved || recordStatus?.record?.completedAt || recordStatus?.message)
-  const canPrintCertificate = Boolean(passed)
+  const canIssueCertificate = Boolean(passed && (recordStatus?.saved || recordStatus?.record?.completedAt || recordStatus?.message || completedAt))
   const canEmailCertificate = Boolean(canIssueCertificate && recordStatus?.user?.portalSession)
   const effectiveCompletedAt = recordStatus?.record?.completedAt || completedAt || new Date().toISOString()
   const completedByLabel = getCompletedByLabel(recordStatus, completedBy)
+  const currentCertificateClass = recordStatus?.user?.portalSession
+    ? "Portal-backed completion"
+    : recordStatus?.saved
+    ? "Retained A.I.R.O.N. account record"
+    : "Public / local completion copy"
   const accountEmail =
     (typeof recordStatus?.user?.email === "string" && recordStatus.user.email.trim()) ||
     ""
@@ -108,9 +112,9 @@ export default function CompletionResultScreen({
     score: typeof score === "number" ? score : quizCorrect,
     quizCorrect: typeof quizCorrect === "number" ? quizCorrect : score,
     quizTotal: typeof quizTotal === "number" ? quizTotal : undefined,
-    certificateClass: canIssueCertificate ? "Portal Completion Record" : "Public Completion Copy",
+    certificateClass: currentCertificateClass,
     passed,
-  }), [canIssueCertificate, completedByLabel, effectiveCompletedAt, modulePath, passed, quizCorrect, quizTotal, score, title])
+  }), [completedByLabel, currentCertificateClass, effectiveCompletedAt, modulePath, passed, quizCorrect, quizTotal, score, title])
 
   const latestRecords = useMemo(
     () => (Array.isArray(historyState.records) ? historyState.records.filter(item => item?.passed).slice(0, 6) : []),
@@ -291,22 +295,14 @@ export default function CompletionResultScreen({
               <SummaryCard label="Completed" value={formatTrainingTimestamp(effectiveCompletedAt)} accentColor={TEXT} />
               <SummaryCard label="Completed by" value={completedByLabel} accentColor={TEXT} />
               <SummaryCard label="Score" value={scoreValue} accentColor={accentColor} />
-              <SummaryCard
-                label="Record path"
-                value={canEmailCertificate ? "Portal-backed" : canIssueCertificate ? "Retained account" : "Public / local only"}
-                accentColor={canIssueCertificate ? "#22CC66" : "#FFB27A"}
-              />
+              <SummaryCard label="Record path" value={recordStatus?.user?.portalSession ? "Portal-backed" : recordStatus?.saved ? "Retained account" : "Public / local only"} accentColor={canIssueCertificate ? "#22CC66" : "#FFB27A"} />
               {typeof runtimeMinutes === "number" ? (
                 <SummaryCard label="Runtime" value={`~${runtimeMinutes} min`} accentColor={TEXT} />
               ) : null}
-              <SummaryCard
-                label="Certificate"
-                value={canEmailCertificate ? "Print / save / email" : canPrintCertificate ? "Print / save" : "Available after completion"}
-                accentColor={canPrintCertificate ? "#22CC66" : "#FFB27A"}
-              />
+              <SummaryCard label="Certificate" value={canIssueCertificate ? "Ready" : "Available after saved record"} accentColor={canIssueCertificate ? "#22CC66" : "#FFB27A"} />
             </div>
 
-            {passed ? (
+            {canIssueCertificate ? (
               <div
                 style={{
                   marginBottom: 14,
@@ -317,9 +313,7 @@ export default function CompletionResultScreen({
                   letterSpacing: 0.6,
                 }}
               >
-                {canEmailCertificate
-                  ? `Certificate email delivery uses the retained account inbox${accountEmail ? `: ${accountEmail}` : '.'}`
-                  : 'Print / Save is available for this completion. Email certificate remains reserved for portal-backed training launches.'}
+                Certificate email delivery uses the retained account inbox{accountEmail ? `: ${accountEmail}` : "."}
               </div>
             ) : null}
 
@@ -372,14 +366,14 @@ export default function CompletionResultScreen({
                         filenameBase: title,
                       })
                     }}
-                    disabled={!canPrintCertificate}
+                    disabled={!canIssueCertificate}
                     style={{
                       background: "transparent",
-                      color: canPrintCertificate ? "#fff" : "#666",
-                      border: `1px solid ${canPrintCertificate ? "#333" : "#222"}`,
+                      color: canIssueCertificate ? "#fff" : "#666",
+                      border: `1px solid ${canIssueCertificate ? "#333" : "#222"}`,
                       borderRadius: 10,
                       padding: "12px 16px",
-                      cursor: canPrintCertificate ? "pointer" : "not-allowed",
+                      cursor: canIssueCertificate ? "pointer" : "not-allowed",
                       fontFamily: "'Barlow Condensed', sans-serif",
                       letterSpacing: 1,
                     }}

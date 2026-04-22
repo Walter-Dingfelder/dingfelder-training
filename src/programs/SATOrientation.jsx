@@ -1,9 +1,10 @@
 import { useState, useEffect, useRef, useMemo } from "react";
 import { useLocation } from "react-router-dom";
-import { persistTrainingRecordNetlifyIdentity } from "../auth/netlifyIdentity.js";
+import { emailTrainingCertificateNetlifyIdentity, persistTrainingRecordNetlifyIdentity } from "../auth/netlifyIdentity.js";
 import { resolveModuleRecordMeta } from "../data/moduleRegistry.js";
 import ReviewStatusBanner from "../components/ReviewStatusBanner.jsx";
 import { buildRenewalPolicyFields, resolveReviewLaunchState } from "../utils/reviewMode.js";
+import { openTrainingCertificatePrintView } from "../utils/trainingCertificate.js";
 
 const MODULE_PATH = "/sat";
 const MODULE_TITLE = "S.A.T. Visitor Orientation";
@@ -657,7 +658,8 @@ export default function SATOrientation() {
     source: "custom-module",
   }), [activeCategory]);
   const reviewState = useMemo(() => resolveReviewLaunchState(location.state, recordMeta), [location.state, recordMeta]);
-  const [recordStatus, setRecordStatus] = useState({ busy: false, message: "", error: "" });
+  const [recordStatus, setRecordStatus] = useState({ busy: false, message: "", error: "", user: null, record: null });
+  const [emailState, setEmailState] = useState({ busy: false, message: "", error: "" });
   const recordSavedRef = useRef(false);
   const [name, setName] = useState("");
   const [nameInput, setNameInput] = useState("");
@@ -679,6 +681,22 @@ export default function SATOrientation() {
   };
   const handlePrev = () => { if (slideIdx > 0) setSlideIdx(s => s - 1); };
   const returnToPortal = () => { window.location.href = "/"; };
+  const currentRecord = useMemo(() => ({
+    moduleTitle: MODULE_TITLE,
+    modulePath: MODULE_PATH,
+    completedAt: recordStatus.record?.completedAt || new Date().toISOString(),
+    completedBy: name || "Campus Visitor",
+    score: SECTIONS.length,
+    quizCorrect: SECTIONS.length,
+    quizTotal: SECTIONS.length,
+    runtimeMinutes: 15,
+    certificateClass: recordStatus.user?.portalSession
+      ? "Portal-backed completion"
+      : (recordStatus.user ? "Retained A.I.R.O.N. account record" : "Public / local completion copy"),
+    passed: true,
+  }), [name, recordStatus.record?.completedAt, recordStatus.user]);
+  const canIssueCertificate = screen === "complete";
+  const canEmailCertificate = Boolean(screen === "complete" && recordStatus.user?.portalSession);
 
   const handleQuizResult = (passed) => {
     if (!passed) { setSlideIdx(0); setPhase("slides"); return; }
@@ -695,7 +713,8 @@ export default function SATOrientation() {
   useEffect(() => {
     if (screen !== "complete") {
       recordSavedRef.current = false;
-      setRecordStatus({ busy: false, message: "", error: "" });
+      setRecordStatus({ busy: false, message: "", error: "", user: null, record: null });
+      setEmailState({ busy: false, message: "", error: "" });
       return;
     }
 
@@ -703,7 +722,7 @@ export default function SATOrientation() {
     recordSavedRef.current = true;
 
     let cancelled = false;
-    setRecordStatus({ busy: true, message: "", error: "" });
+    setRecordStatus({ busy: true, message: "", error: "", user: null, record: null });
 
     const completedAt = new Date().toISOString();
 
@@ -733,7 +752,8 @@ export default function SATOrientation() {
     }).then((result) => {
       if (cancelled) return;
       if (result?.skipped) {
-        setRecordStatus({ busy: false, message: "", error: "" });
+        setRecordStatus({ busy: false, message: "", error: "", user: null, record: null });
+      setEmailState({ busy: false, message: "", error: "" });
       } else if (result?.error) {
         setRecordStatus({ busy: false, message: "", error: result.error });
       } else {
@@ -836,6 +856,16 @@ export default function SATOrientation() {
           {recordStatus.error}
         </div>
       ) : null}
+      {emailState.message ? (
+        <div style={{ padding:"12px 14px", background:"rgba(34,204,102,0.10)", border:"1px solid rgba(34,204,102,0.35)", borderRadius:8, color:"#9AF0B9", fontSize:13, lineHeight:1.6, maxWidth:520, marginBottom:16 }}>
+          {emailState.message}
+        </div>
+      ) : null}
+      {emailState.error ? (
+        <div style={{ padding:"12px 14px", background:"rgba(255,107,0,0.10)", border:"1px solid rgba(255,107,0,0.35)", borderRadius:8, color:"#FFB27A", fontSize:13, lineHeight:1.6, maxWidth:520, marginBottom:16 }}>
+          {emailState.error}
+        </div>
+      ) : null}
 
         <div style={{ marginTop: 20, padding: "14px", background: "#141209", border: "1px solid #3a3018", borderRadius: 3 }}>
           <p style={{ fontFamily: "'Oswald', sans-serif", fontSize: 11, letterSpacing: 2, color: "#6a5e30", margin: 0, lineHeight: 1.8 }}>
@@ -847,7 +877,44 @@ export default function SATOrientation() {
           </p>
         </div>
 
-        <button onClick={returnToPortal} style={{ marginTop: 16, width: "100%", padding: "12px", background: Y, border: "none", borderRadius: 3, color: BK, cursor: "pointer", fontFamily: "'Oswald', sans-serif", fontSize: 12, fontWeight: 700, letterSpacing: 3 }}>RETURN TO MAIN PORTAL</button>
+        <button
+          onClick={() => {
+            openTrainingCertificatePrintView(currentRecord, {
+              accentColor: Y,
+              title: currentRecord.moduleTitle,
+              completedAt: currentRecord.completedAt,
+              completedBy: currentRecord.completedBy,
+              filenameBase: currentRecord.moduleTitle,
+            });
+          }}
+          disabled={!canIssueCertificate}
+          style={{ marginTop: 16, width: "100%", padding: "12px", background: "transparent", border: "1px solid #3a3018", borderRadius: 3, color: canIssueCertificate ? LT : "#4a4220", cursor: canIssueCertificate ? "pointer" : "not-allowed", fontFamily: "'Oswald', sans-serif", fontSize: 12, fontWeight: 700, letterSpacing: 3 }}
+        >PRINT / SAVE CERTIFICATE</button>
+
+        {canEmailCertificate ? (
+          <button
+            onClick={async () => {
+              if (!canEmailCertificate || emailState.busy) return;
+              setEmailState({ busy: true, message: "", error: "" });
+              const result = await emailTrainingCertificateNetlifyIdentity(recordStatus.user || null, {
+                record: currentRecord,
+                title: currentRecord.moduleTitle,
+                completedAt: currentRecord.completedAt,
+                completedBy: currentRecord.completedBy,
+                accentColor: Y,
+              });
+              setEmailState({
+                busy: false,
+                message: result?.message || "",
+                error: result?.error || "",
+              });
+            }}
+            disabled={!canEmailCertificate || emailState.busy}
+            style={{ marginTop: 12, width: "100%", padding: "12px", background: "transparent", border: "1px solid #3a3018", borderRadius: 3, color: canEmailCertificate ? LT : "#4a4220", cursor: !canEmailCertificate || emailState.busy ? "not-allowed" : "pointer", fontFamily: "'Oswald', sans-serif", fontSize: 12, fontWeight: 700, letterSpacing: 3, opacity: emailState.busy ? 0.65 : 1 }}
+          >{emailState.busy ? "EMAILING..." : "EMAIL CERTIFICATE"}</button>
+        ) : null}
+
+        <button onClick={returnToPortal} style={{ marginTop: 12, width: "100%", padding: "12px", background: Y, border: "none", borderRadius: 3, color: BK, cursor: "pointer", fontFamily: "'Oswald', sans-serif", fontSize: 12, fontWeight: 700, letterSpacing: 3 }}>RETURN TO MAIN PORTAL</button>
 
         <button onClick={() => { setScreen("welcome"); setCleared({}); setSectionIdx(0); setSlideIdx(0); setPhase("slides"); }} style={{ marginTop: 12, width: "100%", padding: "11px", background: "transparent", border: "1px solid #3a3018", borderRadius: 3, color: "#4a4220", cursor: "pointer", fontFamily: "'Oswald', sans-serif", fontSize: 12, letterSpacing: 3 }}>RESTART FOR NEXT VISITOR</button>
       </div>

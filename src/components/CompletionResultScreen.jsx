@@ -3,7 +3,7 @@ import { useLocation, useNavigate } from "react-router-dom"
 import { emailTrainingCertificateNetlifyIdentity, loadTrainingRecordsNetlifyIdentity } from "../auth/netlifyIdentity.js"
 import { navigateToNextCard, navigateToPortal, getNextCardPath } from "../programs/portalNavigation.js"
 import {
-  downloadTrainingCertificateHtml,
+  openTrainingCertificatePrintView,
   formatTrainingTimestamp,
   getCompletedByLabel,
 } from "../utils/trainingCertificate.js"
@@ -353,7 +353,7 @@ export default function CompletionResultScreen({
                 <>
                   <button
                     onClick={() => {
-                      downloadTrainingCertificateHtml(currentRecord, {
+                      openTrainingCertificatePrintView(currentRecord, {
                         accentColor,
                         title,
                         completedAt: effectiveCompletedAt,
@@ -373,7 +373,7 @@ export default function CompletionResultScreen({
                       letterSpacing: 1,
                     }}
                   >
-                    Save Certificate
+                    Print / Save Certificate
                   </button>
 
                   {canEmailCertificate ? (

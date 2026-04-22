@@ -107,6 +107,20 @@ export function buildTrainingCertificateHtml(record, options = {}) {
 </html>`
 }
 
+
+export function openTrainingCertificatePrintView(record, options = {}) {
+  if (typeof window === 'undefined' || typeof document === 'undefined') return false
+  const html = buildTrainingCertificateHtml(record, options)
+  const popup = window.open('', '_blank', 'noopener,noreferrer,width=980,height=760')
+  if (!popup) {
+    return downloadTrainingCertificateHtml(record, options)
+  }
+  popup.document.open()
+  popup.document.write(html + `<script>window.addEventListener('load', function () { setTimeout(function () { window.print(); }, 180); });<\/script>`)
+  popup.document.close()
+  return true
+}
+
 export function downloadTrainingCertificateHtml(record, options = {}) {
   if (typeof window === 'undefined' || typeof document === 'undefined') return false
   const html = buildTrainingCertificateHtml(record, options)
